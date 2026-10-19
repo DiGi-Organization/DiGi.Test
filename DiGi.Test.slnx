@@ -302,6 +302,10 @@
       <BuildDependency Project="../DiGi.Unit/DiGi.Unit/DiGi.Unit.csproj" />
     </Project>
     <Project Path="../DiGi.GML/DiGi.GML/DiGi.GML.csproj" />
+    <Project Path="DiGi.GML.xUnit/DiGi.GML.xUnit.csproj">
+      <BuildDependency Project="../DiGi.GML/DiGi.GML/DiGi.GML.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
   </Folder>
   <Folder Name="/GLTF/">
     <Project Path="../DiGi.GLTF/DiGi.GLTF/DiGi.GLTF.csproj">
