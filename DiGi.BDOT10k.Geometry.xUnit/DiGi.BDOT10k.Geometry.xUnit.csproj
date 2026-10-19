@@ -45,6 +45,12 @@
     <Reference Include="DiGi.Geometry">
       <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.dll</HintPath>
     </Reference>
+    <Reference Include="DiGi.Geometry.Object">
+      <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.Object.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Geometry.Visual">
+      <HintPath>..\..\DiGi.Geometry.Visual\bin\DiGi.Geometry.Visual.dll</HintPath>
+    </Reference>
     <Reference Include="DiGi.GML">
       <HintPath>..\..\DiGi.GML\bin\DiGi.GML.dll</HintPath>
     </Reference>

@@ -290,6 +290,8 @@
       <BuildDependency Project="../DiGi.BDOT10k/DiGi.BDOT10k.Geometry/DiGi.BDOT10k.Geometry.csproj" />
       <BuildDependency Project="../DiGi.BDOT10k/DiGi.BDOT10k/DiGi.BDOT10k.csproj" />
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry.Object/DiGi.Geometry.Object.csproj" />
+      <BuildDependency Project="../DiGi.Geometry.Visual/DiGi.Geometry.Visual/DiGi.Geometry.Visual.csproj" />
       <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
       <BuildDependency Project="../DiGi.GML/DiGi.GML/DiGi.GML.csproj" />
       <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
