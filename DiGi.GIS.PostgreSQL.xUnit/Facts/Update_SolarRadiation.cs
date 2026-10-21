@@ -85,7 +85,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(0, modifyResult.SkippedSurfaceCount);
 
             List<Column> columns = DiGi.GIS.IO.Create.Columns_SolarRadiation();
-            Assert.Equal(22, columns.Count);
+            Assert.Equal(25, columns.Count);
 
             // Building totals (index 0-5): the area-weighted averages over the two walls, and the energy sum.
             Assert.Equal(10000.0 / 30.0, SolarFloat(table, columns[0])!.Value, 1e-2); // SolarIrradiation
@@ -136,10 +136,15 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(1, result_Modified.SkippedSurfaceCount);
 
             List<Column> columns = DiGi.GIS.IO.Create.Columns_SolarRadiation();
-            for (int i = 0; i < columns.Count; i++)
+            for (int i = 0; i < 22; i++)
             {
                 Assert.Null(SolarFloat(table_Skipped, columns[i]));
             }
+
+            // The three metadata columns (index 22-24) carry the weather source identity and the range, independent of surface usability.
+            Assert.Equal("1", SolarCell(table_Skipped, columns[22]));            // SolarWeatherSourceId
+            Assert.Equal(0, SolarCell(table_Skipped, columns[23]));              // SolarWeatherSourceType (EPW = 0)
+            Assert.Equal(50.0f, SolarFloat(table_Skipped, columns[24])!.Value, 1e-2); // SolarRadius
         }
 
         /// <summary>
