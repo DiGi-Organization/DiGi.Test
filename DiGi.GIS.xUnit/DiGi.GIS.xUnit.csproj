@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -44,11 +44,32 @@
     <Reference Include="DiGi.Geometry">
       <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.dll</HintPath>
     </Reference>
+    <Reference Include="DiGi.Geometry.Object">
+      <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.Object.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Geometry.Visual">
+      <HintPath>..\..\DiGi.Geometry.Visual\bin\DiGi.Geometry.Visual.dll</HintPath>
+    </Reference>
     <Reference Include="DiGi.GIS.IO">
       <HintPath>..\..\DiGi.GIS.IO\bin\DiGi.GIS.IO.dll</HintPath>
     </Reference>
     <Reference Include="DiGi.GIS.ML">
       <HintPath>..\..\DiGi.GIS.ML\bin\DiGi.GIS.ML.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.BDL">
+      <HintPath>..\..\DiGi.BDL\bin\DiGi.BDL.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.BDOT10k">
+      <HintPath>..\..\DiGi.BDOT10k\bin\DiGi.BDOT10k.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GML">
+      <HintPath>..\..\DiGi.GML\bin\DiGi.GML.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.PRG">
+      <HintPath>..\..\DiGi.PRG\bin\DiGi.PRG.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.PRG.Geometry">
+      <HintPath>..\..\DiGi.PRG\bin\DiGi.PRG.Geometry.dll</HintPath>
     </Reference>
     <Reference Include="DiGi.Typology">
       <HintPath>..\..\DiGi.Typology\bin\DiGi.Typology.dll</HintPath>
