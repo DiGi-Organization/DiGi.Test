@@ -16,17 +16,36 @@ namespace DiGi.GIS.xUnit
         /// <returns>The occupancy of each building, in the order of <paramref name="occupancyAreas"/>.</returns>
         private static List<uint> CalculateOccupancy_Building2DOccupancies(uint occupancy, params double[] occupancyAreas)
         {
+            List<Tuple<string, double>> tuples = [];
+            for (int i = 0; i < occupancyAreas.Length; i++)
+            {
+                tuples.Add(new Tuple<string, double>($"building_{i:D3}", occupancyAreas[i]));
+            }
+
+            return CalculateOccupancy_Building2DOccupancies(occupancy, tuples);
+        }
+
+        /// <summary>
+        /// Recalculates occupancy for one subdivision with buildings of the given references and occupancy areas (footprint area, one storey each), related to the subdivision in the given order, and returns the occupancy assigned to each building.
+        /// </summary>
+        /// <param name="occupancy">The population of the subdivision.</param>
+        /// <param name="tuples">The reference and footprint area of each building, in relation order.</param>
+        /// <returns>The occupancy of each building, in the order of <paramref name="tuples"/>.</returns>
+        private static List<uint> CalculateOccupancy_Building2DOccupancies(uint occupancy, IEnumerable<Tuple<string, double>> tuples)
+        {
             GISModel gISModel = new();
 
             List<Building2D> building2Ds = [];
             double x = 0;
-            foreach (double occupancyArea in occupancyAreas)
+            foreach (Tuple<string, double> tuple in tuples)
             {
+                double occupancyArea = tuple.Item2;
+
                 Polygon2D polygon2D = new([new Point2D(x, 0), new Point2D(x + occupancyArea, 0), new Point2D(x + occupancyArea, 1), new Point2D(x, 1)]);
                 PolygonalFace2D? polygonalFace2D = Geometry.Planar.Create.PolygonalFace2D(polygon2D);
                 Assert.NotNull(polygonalFace2D);
 
-                Building2D building2D = new(Guid.NewGuid(), Guid.NewGuid().ToString(), polygonalFace2D, 1, BuildingPhase.occupied, BuildingGeneralFunction.residential_buildings, [BuildingSpecificFunction.single_family_building]);
+                Building2D building2D = new(Guid.NewGuid(), tuple.Item1, polygonalFace2D, 1, BuildingPhase.occupied, BuildingGeneralFunction.residential_buildings, [BuildingSpecificFunction.single_family_building]);
                 Assert.True(gISModel.Update(building2D));
                 building2Ds.Add(building2D);
 
@@ -93,6 +112,42 @@ namespace DiGi.GIS.xUnit
 
             List<uint> occupancies_FewerThanBuildings = CalculateOccupancy_Building2DOccupancies(2, 1, 1, 100, 1, 1);
             Assert.Equal(2U, Sum(occupancies_FewerThanBuildings));
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="Modify.CalculateOccupancy"/> gives every building the same occupancy whatever the order in which the buildings are related to the subdivision (original, reversed and interleaved order of seven buildings sharing a population of 20, so that the pseudo-random remainder is drawn).
+        /// <para>Reference: DiGi.GIS#13 — the remainder was drawn by position in the input, so the same buildings in a different order received different occupancies.</para>
+        /// </summary>
+        [Fact]
+        public void CalculateOccupancy_Order()
+        {
+            List<Tuple<string, double>> tuples =
+            [
+                new("A", 11), new("B", 23), new("C", 37), new("D", 5), new("E", 61), new("F", 17), new("G", 29),
+            ];
+
+            List<Tuple<string, double>> tuples_Reversed = [.. tuples];
+            tuples_Reversed.Reverse();
+
+            List<Tuple<string, double>> tuples_Interleaved = [tuples[3], tuples[0], tuples[6], tuples[2], tuples[5], tuples[1], tuples[4]];
+
+            Dictionary<string, uint> Occupancies(List<Tuple<string, double>> tuples_Order)
+            {
+                List<uint> occupancies = CalculateOccupancy_Building2DOccupancies(20, tuples_Order);
+                Assert.Equal(20U, Sum(occupancies));
+
+                Dictionary<string, uint> result = [];
+                for (int i = 0; i < tuples_Order.Count; i++)
+                {
+                    result[tuples_Order[i].Item1] = occupancies[i];
+                }
+
+                return result;
+            }
+
+            Dictionary<string, uint> occupancies_Original = Occupancies(tuples);
+            Assert.Equal(occupancies_Original, Occupancies(tuples_Reversed));
+            Assert.Equal(occupancies_Original, Occupancies(tuples_Interleaved));
         }
 
         private static uint Sum(IEnumerable<uint> values)
