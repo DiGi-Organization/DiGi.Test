@@ -296,6 +296,29 @@
       <BuildDependency Project="../DiGi.GML/DiGi.GML/DiGi.GML.csproj" />
       <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
     </Project>
+    <Project Path="../DiGi.PRG/DiGi.PRG/DiGi.PRG.csproj">
+      <BuildDependency Project="../DiGi.GML/DiGi.GML/DiGi.GML.csproj" />
+    </Project>
+    <Project Path="../DiGi.PRG/DiGi.PRG.Geometry/DiGi.PRG.Geometry.csproj">
+      <BuildDependency Project="../DiGi.PRG/DiGi.PRG/DiGi.PRG.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry.Object/DiGi.Geometry.Object.csproj" />
+      <BuildDependency Project="../DiGi.Geometry.Visual/DiGi.Geometry.Visual/DiGi.Geometry.Visual.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.GML/DiGi.GML/DiGi.GML.csproj" />
+    </Project>
+    <Project Path="DiGi.PRG.Geometry.xUnit/DiGi.PRG.Geometry.xUnit.csproj">
+      <BuildDependency Project="../DiGi.PRG/DiGi.PRG.Geometry/DiGi.PRG.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.PRG/DiGi.PRG/DiGi.PRG.csproj" />
+      <BuildDependency Project="../DiGi.BDOT10k/DiGi.BDOT10k.Geometry/DiGi.BDOT10k.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.BDOT10k/DiGi.BDOT10k/DiGi.BDOT10k.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry.Object/DiGi.Geometry.Object.csproj" />
+      <BuildDependency Project="../DiGi.Geometry.Visual/DiGi.Geometry.Visual/DiGi.Geometry.Visual.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.GML/DiGi.GML/DiGi.GML.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
     <Project Path="../DiGi.GIS.IO/DiGi.GIS.IO/DiGi.GIS.IO.csproj">
       <BuildDependency Project="../DiGi.Core/DiGi.Core.IO/DiGi.Core.IO.csproj" />
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />

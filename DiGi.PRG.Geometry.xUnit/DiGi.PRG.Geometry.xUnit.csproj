@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+
+    <LangVersion>latest</LangVersion>
+    <OutputPath>..\bin\$(MSBuildProjectName)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="10.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DiGi.PRG\DiGi.PRG.Geometry\DiGi.PRG.Geometry.csproj" />
+    <ProjectReference Include="..\DiGi.Core.xUnit\DiGi.Core.xUnit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DiGi.PRG">
+      <HintPath>..\..\DiGi.PRG\bin\DiGi.PRG.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.PRG.Geometry">
+      <HintPath>..\..\DiGi.PRG\bin\DiGi.PRG.Geometry.dll</HintPath>
+    </Reference>
+    <!-- BDOT10k is referenced for the axis-order fact, which loads a carriageway through DiGi.BDOT10k.Geometry, and so that
+         the BDOT10k member of the PRG fixture resolves to a real type and must still be skipped -->
+    <Reference Include="DiGi.BDOT10k">
+      <HintPath>..\..\DiGi.BDOT10k\bin\DiGi.BDOT10k.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.BDOT10k.Geometry">
+      <HintPath>..\..\DiGi.BDOT10k\bin\DiGi.BDOT10k.Geometry.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Core">
+      <HintPath>..\..\DiGi.Core\bin\DiGi.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Geometry">
+      <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Geometry.Object">
+      <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.Object.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Geometry.Visual">
+      <HintPath>..\..\DiGi.Geometry.Visual\bin\DiGi.Geometry.Visual.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GML">
+      <HintPath>..\..\DiGi.GML\bin\DiGi.GML.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

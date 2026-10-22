@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gml:FeatureCollection xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:prgad="https://geoportal.gov.pl/schemas/prgad/1.0" xmlns:ot="urn:gugik:specyfikacje:gmlas:bazaDanychObiektowTopograficznych10k:2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://geoportal.gov.pl/schemas/prgad/1.0 https://opendata.geoportal.gov.pl/prg/schemas/prgad/1.0/PRGAD.xsd">
+	<gml:featureMember>
+		<prgad:AD_Miejscowosc gml:id="PL.ZIPIN.401.EMUiA_0364618_2025-07-24T21_38_11_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>2ead00c0-97aa-4261-a5a5-2e7d980a8c39</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2025-07-24T21:38:11+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2025-07-24T21:38:11</prgad:poczatekWersjiObiektu>
+			<prgad:nazwa>Babin</prgad:nazwa>
+			<prgad:rodzaj>01</prgad:rodzaj>
+			<prgad:identyfikatorSIMC>0364618</prgad:identyfikatorSIMC>
+			<prgad:identyfikatorPRNG/>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_2ead00c0-97aa-4261-a5a5-2e7d980a8c39_GEO">
+					<gml:pos>369105 299479</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:TERYTGminy>0209032</prgad:TERYTGminy>
+		</prgad:AD_Miejscowosc>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_Miejscowosc gml:id="PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>4f31e456-42db-4106-b2b2-49f53ad94b0d</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:07:00+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:07:00</prgad:poczatekWersjiObiektu>
+			<prgad:nazwa>Legnica</prgad:nazwa>
+			<prgad:rodzaj>96</prgad:rodzaj>
+			<prgad:identyfikatorSIMC>0954047</prgad:identyfikatorSIMC>
+			<prgad:identyfikatorPRNG/>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_4f31e456-42db-4106-b2b2-49f53ad94b0d_GEO">
+					<gml:pos>376101.68 302745.96</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:TERYTGminy>0262011</prgad:TERYTGminy>
+		</prgad:AD_Miejscowosc>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_UlicaPlac gml:id="PL.ZIPIN.1050.EMUiA_7310b7a5-cae3-4ba2-bdfe-b6dbdb10d05c_2026-10-20T13_07_28_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>d1c5859a-d432-4fcc-b3c6-928f546784e8</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:07:28+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:07:28</prgad:poczatekWersjiObiektu>
+			<prgad:geometria>
+				<gml:Polygon srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_d1c5859a-d432-4fcc-b3c6-928f546784e8_GEO">
+					<gml:exterior>
+						<gml:LinearRing>
+							<gml:posList>374872.24 301782.06 374871.05 301778.72 374844.2 301790.51 374845.73 301794.08 374814.14 301807.54 374812.82 301804.28 374804.98 301807.72 374800.62 301801.03 374803.35 301794.34 374802.74 301792.88 374796.95 301795.53 374750.04 301827.71 374768.22 301868.18 374795.44 301911.7 374807.76 301896.89 374810.14 301895.86 374815.1 301893.33 374827.73 301887.01 374832.67 301884.57 374848.74 301876.48 374854.17 301873.73 374855.83 301872.91 374878.02 301861.84 374880.48 301860.39 374894.13 301853.59 374910.24 301843.55 374921.38 301833.76 374914.68 301826.29 374905.15 301824.43 374903 301823.75 374900.77 301822.9 374898.37 301821.76 374896.3 301820.62 374894.21 301819.13 374892.44 301817.58 374891.18 301816.23 374889.94 301814.65 374888.73 301812.96 374887.62 301811.1 374887.49 301810.77 374884.92 301811.88 374872.24 301782.06</gml:posList>
+						</gml:LinearRing>
+					</gml:exterior>
+				</gml:Polygon>
+			</prgad:geometria>
+			<prgad:nazwaPelna>Słowiański</prgad:nazwaPelna>
+			<prgad:rodzaj>3</prgad:rodzaj>
+			<prgad:TERYTNazwa1>Słowiański</prgad:TERYTNazwa1>
+			<prgad:identyfikatorULIC>20295</prgad:identyfikatorULIC>
+			<prgad:miejsce xlink:href="#PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00"/>
+			<prgad:adres2 xlink:href="#PL.ZIPIN.1050.EMUiA_9a246672-e1d3-4322-85de-723f75923f7e_2026-10-20T13_14_22_02_00"/>
+			<prgad:adres2 xlink:href="#PL.ZIPIN.1050.EMUiA_d89a75fe-df31-41a5-ab87-ff5f4c6c2bb2_2026-10-20T13_07_39_02_00"/>
+			<prgad:adres2 xlink:href="#PL.ZIPIN.1050.EMUiA_96a30329-80d1-4d05-b7a9-128882d4cbf5_2026-10-20T13_07_39_02_00"/>
+			<prgad:adres2 xlink:href="#PL.ZIPIN.1050.EMUiA_6930ebf0-5efb-414f-ba69-1968b63bcace_2026-10-20T13_10_29_02_00"/>
+		</prgad:AD_UlicaPlac>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_UlicaPlac gml:id="PL.ZIPIN.1050.EMUiA_46af77f3-68fc-4f8c-99bc-468c470fe412_2026-10-20T13_07_25_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>bd1cd77f-2b07-42e3-b184-20bd18f6a347</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:07:25+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:07:25</prgad:poczatekWersjiObiektu>
+			<prgad:geometria>
+				<gml:LineString srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_bd1cd77f-2b07-42e3-b184-20bd18f6a347_GEO">
+					<gml:posList>375459.17 304538.29 375441.81 304536.22 375325.33 304535.17 375282.09 304535.44</gml:posList>
+				</gml:LineString>
+			</prgad:geometria>
+			<prgad:nazwaPelna>Czysta</prgad:nazwaPelna>
+			<prgad:rodzaj>1</prgad:rodzaj>
+			<prgad:TERYTNazwa1>Czysta</prgad:TERYTNazwa1>
+			<prgad:identyfikatorULIC>03513</prgad:identyfikatorULIC>
+			<prgad:miejsce xlink:href="#PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00"/>
+			<prgad:adres2 xlink:href="#PL.ZIPIN.1050.EMUiA_d4436355-1540-4e7a-874a-a64850dec4f7_2026-10-20T13_14_23_02_00"/>
+			<prgad:adres2 xlink:href="#PL.ZIPIN.1050.EMUiA_490f113e-221c-4ced-a595-e4545c82290f_2026-10-20T13_07_40_02_00"/>
+		</prgad:AD_UlicaPlac>
+	</gml:featureMember>
+	<gml:featureMember>
+		<ot:OT_SKJZ_L gml:id="id_fd53462e-fa53-40f2-bb71-bad80c33af1e">
+			<ot:lokalnyId>fd53462e-fa53-40f2-bb71-bad80c33af1e</ot:lokalnyId>
+			<ot:przestrzenNazw>PL.PZGiK.337.BDOT10k</ot:przestrzenNazw>
+			<ot:wersja>2023-12-31T12:00:00</ot:wersja>
+			<ot:poczatekWersjiObiektu>2023-12-31T12:00:00</ot:poczatekWersjiObiektu>
+			<ot:oznaczenieZmiany>GI-TOPO.600.116.2023</ot:oznaczenieZmiany>
+			<ot:zrodloDanychGeometrycznych>pomiar terenowy</ot:zrodloDanychGeometrycznych>
+			<ot:kategoriaIstnienia>eksploatowany</ot:kategoriaIstnienia>
+			<ot:uwagi>szerokoscNawierzchni: tymczasowy brak danych</ot:uwagi>
+			<ot:kategoriaZarzadzania>gminna</ot:kategoriaZarzadzania>
+			<ot:klasaDrogi>droga lokalna</ot:klasaDrogi>
+			<ot:materialNawierzchni>kostka prefabrykowana</ot:materialNawierzchni>
+			<ot:liczbaJezdniDrogi>1</ot:liczbaJezdniDrogi>
+			<ot:polozenie>na powierzchni gruntu</ot:polozenie>
+			<ot:numerDrogi>107680D</ot:numerDrogi>
+			<ot:geometria>
+				<gml:Curve gml:id="id-1bfb6b13-1d51-4e8c-9c70-aee964065ae3-0" srsName="EPSG:2180" srsDimension="2">
+					<gml:segments>
+						<gml:LineStringSegment>
+							<gml:posList>301843.94 374859.87 301851.73 374840.81 301852.96 374837.8</gml:posList>
+						</gml:LineStringSegment>
+					</gml:segments>
+				</gml:Curve>
+			</ot:geometria>
+			<ot:cechaGeometrii>linia umowna</ot:cechaGeometrii>
+			<ot:identyfikatorULIC>20295</ot:identyfikatorULIC>
+			<ot:identyfikatorSIMC>0954047</ot:identyfikatorSIMC>
+			<ot:ulicaCecha>pl.</ot:ulicaCecha>
+			<ot:ulicaNazwa1>Słowiański</ot:ulicaNazwa1>
+		</ot:OT_SKJZ_L>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_PunktAdresowy gml:id="PL.ZIPIN.401.EMUiA_57c3dbeb-6e3e-4762-ab0e-1ac06189ee52_2025-07-24T21_38_46_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>5632bb59-2978-44b1-b71f-fc2da86a0f03</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2025-07-24T21:38:46+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2025-07-24T21:38:46</prgad:poczatekWersjiObiektu>
+			<prgad:numerPorzadkowy>6A</prgad:numerPorzadkowy>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_5632bb59-2978-44b1-b71f-fc2da86a0f03_GEO">
+					<gml:pos>368685.01 299495.12</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:kodPocztowy>59-223</prgad:kodPocztowy>
+			<prgad:dataNadania>2023-09-20</prgad:dataNadania>
+			<prgad:miejscowosc xlink:href="#PL.ZIPIN.401.EMUiA_0364618_2025-07-24T21_38_11_02_00"/>
+		</prgad:AD_PunktAdresowy>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_PunktAdresowy gml:id="PL.ZIPIN.1050.EMUiA_9a246672-e1d3-4322-85de-723f75923f7e_2026-10-20T13_14_22_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>fad42bf4-a0e8-4fe6-85d7-a3b043b185ca</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:14:22+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:14:22</prgad:poczatekWersjiObiektu>
+			<prgad:numerPorzadkowy>7</prgad:numerPorzadkowy>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_fad42bf4-a0e8-4fe6-85d7-a3b043b185ca_GEO">
+					<gml:pos>374887.73 301858.38</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:kodPocztowy>59-220</prgad:kodPocztowy>
+			<prgad:miejscowosc xlink:href="#PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00"/>
+			<prgad:ulica2 xlink:href="#PL.ZIPIN.1050.EMUiA_7310b7a5-cae3-4ba2-bdfe-b6dbdb10d05c_2026-10-20T13_07_28_02_00"/>
+		</prgad:AD_PunktAdresowy>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_PunktAdresowy gml:id="PL.ZIPIN.1050.EMUiA_d4436355-1540-4e7a-874a-a64850dec4f7_2026-10-20T13_14_23_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>d70a8246-9d7b-4946-88b2-732f88b0329c</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:14:23+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:14:23</prgad:poczatekWersjiObiektu>
+			<prgad:numerPorzadkowy>1</prgad:numerPorzadkowy>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_d70a8246-9d7b-4946-88b2-732f88b0329c_GEO">
+					<gml:pos>375432.99 304516.13</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:kodPocztowy>59-220</prgad:kodPocztowy>
+			<prgad:dataNadania>2025-09-26</prgad:dataNadania>
+			<prgad:miejscowosc xlink:href="#PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00"/>
+			<prgad:ulica2 xlink:href="#PL.ZIPIN.1050.EMUiA_46af77f3-68fc-4f8c-99bc-468c470fe412_2026-10-20T13_07_25_02_00"/>
+		</prgad:AD_PunktAdresowy>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_PunktAdresowy gml:id="PL.ZIPIN.1050.EMUiA_d89a75fe-df31-41a5-ab87-ff5f4c6c2bb2_2026-10-20T13_07_39_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>8e01c8da-544a-4a77-9ce9-96f36fdc4d92</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:07:39+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:07:39</prgad:poczatekWersjiObiektu>
+			<prgad:numerPorzadkowy>5</prgad:numerPorzadkowy>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_8e01c8da-544a-4a77-9ce9-96f36fdc4d92_GEO">
+					<gml:pos>374755.25 301850.01</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:kodPocztowy>59-220</prgad:kodPocztowy>
+			<prgad:miejscowosc xlink:href="#PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00"/>
+			<prgad:ulica2 xlink:href="#PL.ZIPIN.1050.EMUiA_7310b7a5-cae3-4ba2-bdfe-b6dbdb10d05c_2026-10-20T13_07_28_02_00"/>
+		</prgad:AD_PunktAdresowy>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_PunktAdresowy gml:id="PL.ZIPIN.1050.EMUiA_96a30329-80d1-4d05-b7a9-128882d4cbf5_2026-10-20T13_07_39_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>1afaca46-f767-4b0f-a0e9-3e25d52cf3a1</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:07:39+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:07:39</prgad:poczatekWersjiObiektu>
+			<prgad:numerPorzadkowy>8</prgad:numerPorzadkowy>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_1afaca46-f767-4b0f-a0e9-3e25d52cf3a1_GEO">
+					<gml:pos>374917.27 301839.52</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:kodPocztowy>59-220</prgad:kodPocztowy>
+			<prgad:miejscowosc xlink:href="#PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00"/>
+			<prgad:ulica2 xlink:href="#PL.ZIPIN.1050.EMUiA_7310b7a5-cae3-4ba2-bdfe-b6dbdb10d05c_2026-10-20T13_07_28_02_00"/>
+		</prgad:AD_PunktAdresowy>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_PunktAdresowy gml:id="PL.ZIPIN.1050.EMUiA_490f113e-221c-4ced-a595-e4545c82290f_2026-10-20T13_07_40_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>8ba20226-6e94-4a81-a018-9cd4e3a5e0d7</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:07:40+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:07:40</prgad:poczatekWersjiObiektu>
+			<prgad:numerPorzadkowy>2/4</prgad:numerPorzadkowy>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_8ba20226-6e94-4a81-a018-9cd4e3a5e0d7_GEO">
+					<gml:pos>375437.23 304439.23</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:kodPocztowy>59-220</prgad:kodPocztowy>
+			<prgad:dataNadania>2025-09-26</prgad:dataNadania>
+			<prgad:miejscowosc xlink:href="#PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00"/>
+			<prgad:ulica2 xlink:href="#PL.ZIPIN.1050.EMUiA_46af77f3-68fc-4f8c-99bc-468c470fe412_2026-10-20T13_07_25_02_00"/>
+		</prgad:AD_PunktAdresowy>
+	</gml:featureMember>
+	<gml:featureMember>
+		<prgad:AD_PunktAdresowy gml:id="PL.ZIPIN.1050.EMUiA_6930ebf0-5efb-414f-ba69-1968b63bcace_2026-10-20T13_10_29_02_00">
+			<prgad:idIIP>
+				<prgad:AD_IdentyfikatorIIP>
+					<prgad:lokalnyId>38a23e87-7c54-4d45-83fd-a7368ca0237f</prgad:lokalnyId>
+					<prgad:przestrzenNazw>PL.PZGIK.200</prgad:przestrzenNazw>
+					<prgad:wersjaId>2026-10-20T13:10:29+02:00</prgad:wersjaId>
+				</prgad:AD_IdentyfikatorIIP>
+			</prgad:idIIP>
+			<prgad:poczatekWersjiObiektu>2026-10-20T13:10:29</prgad:poczatekWersjiObiektu>
+			<prgad:numerPorzadkowy>1</prgad:numerPorzadkowy>
+			<prgad:georeferencja>
+				<gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_38a23e87-7c54-4d45-83fd-a7368ca0237f_GEO">
+					<gml:pos>374835.65 301776.7</gml:pos>
+				</gml:Point>
+			</prgad:georeferencja>
+			<prgad:kodPocztowy>59-220</prgad:kodPocztowy>
+			<prgad:miejscowosc xlink:href="#PL.ZIPIN.1050.EMUiA_1b220bb5-0618-4ed3-bfa8-7ae554dd3952_2026-10-20T13_07_00_02_00"/>
+			<prgad:ulica2 xlink:href="#PL.ZIPIN.1050.EMUiA_7310b7a5-cae3-4ba2-bdfe-b6dbdb10d05c_2026-10-20T13_07_28_02_00"/>
+		</prgad:AD_PunktAdresowy>
+	</gml:featureMember>
+</gml:FeatureCollection>
