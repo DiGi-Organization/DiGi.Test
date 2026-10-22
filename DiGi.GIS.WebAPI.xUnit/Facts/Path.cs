@@ -18,6 +18,17 @@ namespace DiGi.GIS.WebAPI.xUnit
             Assert.Equal("gis/ortodatas/updateitemsbycountyids", DiGi.WebAPI.Query.Path<OrtoDatasController>(nameof(OrtoDatasController.UpdateItemsByCountyIdsAsync)));
             Assert.Equal("gis/yearbuiltdata/updateitemsbycountyids", DiGi.WebAPI.Query.Path<YearBuiltDataController>(nameof(YearBuiltDataController.UpdateItemsByCountyIdsAsync)));
             Assert.Equal("gis/occupancydata/building2d/updateitemsbycountyids", DiGi.WebAPI.Query.Path<OccupancyDataController>(nameof(OccupancyDataController.Building2DUpdateItemsByCountyIdsAsync)));
+            Assert.Equal("gis/addresspoint/updateitemsbycountyids", DiGi.WebAPI.Query.Path<AddressPointController>(nameof(AddressPointController.UpdateItemsByCountyIdsAsync)));
+        }
+
+        /// <summary>
+        /// Asserts the route templates of the address point read endpoints, which the address search clients build by hand.
+        /// </summary>
+        [Fact]
+        public void Path_AddressPoint()
+        {
+            Assert.Equal("gis/addresspoint/buildingsbyaddress", DiGi.WebAPI.Query.Path<AddressPointController>(nameof(AddressPointController.GetBuildingsByAddressAsync)));
+            Assert.Equal("gis/addresspoint/addresspointsbyreference", DiGi.WebAPI.Query.Path<AddressPointController>(nameof(AddressPointController.GetAddressPointsByReferenceAsync)));
         }
 
         /// <summary>
@@ -53,6 +64,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 DiGi.WebAPI.Query.Path<YearBuiltDataController>(nameof(YearBuiltDataController.UpdateItemsByCountyIdsAsync)),
                 DiGi.WebAPI.Query.Path<OccupancyDataController>(nameof(OccupancyDataController.Building2DUpdateItemsAsync)),
                 DiGi.WebAPI.Query.Path<OccupancyDataController>(nameof(OccupancyDataController.Building2DUpdateItemsByCountyIdsAsync)),
+                DiGi.WebAPI.Query.Path<AddressPointController>(nameof(AddressPointController.UpdateItemsByCountyIdsAsync)),
             ];
 
             HashSet<string?> paths_Distinct = [.. paths];

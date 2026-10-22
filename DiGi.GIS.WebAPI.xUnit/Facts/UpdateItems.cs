@@ -176,6 +176,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             System.IO.File.WriteAllLines(result,
             [
                 $"{nameof(GISWebAPIConfigurationFileWatcher.Open)}=true",
+                $"{nameof(GISWebAPIConfigurationFileWatcher.AllowUpdateAddressPoint)}=true",
                 $"{nameof(GISWebAPIConfigurationFileWatcher.AllowUpdateAdministrativeAreal2D)}=true",
                 $"{nameof(GISWebAPIConfigurationFileWatcher.AllowUpdateBuilding)}=true",
                 $"{nameof(GISWebAPIConfigurationFileWatcher.AllowUpdateBuilding2D)}=true",
