@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+	    <TargetFramework>net10.0</TargetFramework>
+
+	    <LangVersion>latest</LangVersion>
+		<OutputPath>..\bin\$(MSBuildProjectName)\</OutputPath>
+	    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	    <Nullable>enable</Nullable>
+
+	    <ImplicitUsings>enable</ImplicitUsings>
+	    <IsPackable>false</IsPackable>
+	    <IsTestProject>true</IsTestProject>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="10.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DiGi.Tas\DiGi.Tas.Core\DiGi.Tas.Core.csproj" />
+    <ProjectReference Include="..\..\DiGi.Tas\DiGi.Tas.TIC\DiGi.Tas.TIC.csproj" />
+    <ProjectReference Include="..\DiGi.Core.xUnit\DiGi.Core.xUnit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DiGi.Analytical">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Analytical.Building">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Analytical.Building.HVAC">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.HVAC.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Core">
+      <HintPath>..\..\DiGi.Core\bin\DiGi.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Core.Parameter">
+      <HintPath>..\..\DiGi.Core\bin\DiGi.Core.Parameter.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.TIC">
+      <HintPath>..\..\DiGi.Tas\references\Interop.TIC.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

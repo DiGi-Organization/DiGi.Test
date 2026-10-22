@@ -583,6 +583,16 @@
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
       <BuildDependency Project="../DiGi.Tas/DiGi.Tas.Core/DiGi.Tas.Core.csproj" />
     </Project>
+    <Project Path="DiGi.Tas.xUnit/DiGi.Tas.xUnit.csproj">
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.HVAC/DiGi.Analytical.Building.HVAC.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building/DiGi.Analytical.Building.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical/DiGi.Analytical.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core.Parameter/DiGi.Core.Parameter.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Tas/DiGi.Tas.Core/DiGi.Tas.Core.csproj" />
+      <BuildDependency Project="../DiGi.Tas/DiGi.Tas.TIC/DiGi.Tas.TIC.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
   </Folder>
   <Folder Name="/Typology/">
     <Project Path="../DiGi.Typology/DiGi.Typology/DiGi.Typology.csproj">
