@@ -198,7 +198,7 @@ namespace DiGi.GIS.WebAPI.xUnit
 
             (ConnectionData connectionData_Main, _) = SolarRadiationTestConnectionDatas();
 
-            EPW.Classes.EPWFile? ePWFile_Fixture = EPW.Modify.Read(Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_Warsaw.123750_IWEC.epw"));
+            EPW.Classes.EPWFile? ePWFile_Fixture = EPW.Modify.Read(Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw"));
             Assert.NotNull(ePWFile_Fixture);
 
             await using NpgsqlConnection? npgsqlConnection = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Main);

@@ -10,7 +10,7 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Tests the annual solar radiation of an unobstructed box in Warsaw over the IWEC year: one result per external wall and roof (the floor faces the soil and is no receiver), a flat roof that receives the annual global horizontal irradiation, and walls ranked by orientation.
+        /// Tests the annual solar radiation of an unobstructed box in Warsaw over the IMGW year: one result per external wall and roof (the floor faces the soil and is no receiver), a flat roof that receives the annual global horizontal irradiation, and walls ranked by orientation.
         /// <para>A flat roof sees the whole sky and no ground, and nothing stands above it, so its irradiation is the beam on the horizontal plus the diffuse horizontal - the global horizontal sum of the file, within 3 % for the file's own inconsistency between the three columns. The south wall receives more than the east and west walls, which receive more than the north wall. Shading can only take radiation away, so no surface exceeds its unshaded twin, and the parts add up.</para>
         /// <para>Medium test (2.0 s): runs when DIGI_TEST_MAX_DURATION is Medium (the default) or Long.</para>
         /// </summary>

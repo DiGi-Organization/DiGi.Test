@@ -12,7 +12,7 @@ namespace DiGi.EPW.xUnit
         [Fact]
         public void MissingValue_Decoding()
         {
-            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_Warsaw.123750_IWEC.epw");
+            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw");
             Assert.False(string.IsNullOrWhiteSpace(path));
 
             string[] lines = System.IO.File.ReadAllLines(path);
@@ -76,7 +76,7 @@ namespace DiGi.EPW.xUnit
         [Fact]
         public void MissingValue_WarsawNone()
         {
-            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_Warsaw.123750_IWEC.epw");
+            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw");
             Assert.False(string.IsNullOrWhiteSpace(path));
 
             EPWFile? ePWFile = Modify.Read(path);

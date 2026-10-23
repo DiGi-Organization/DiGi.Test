@@ -22,7 +22,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             (ConnectionData connectionData_Main, _) = TestConnectionDatas();
 
-            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_Warsaw.123750_IWEC.epw");
+            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw");
             EPWFile? ePWFile_Fixture = EPW.Modify.Read(path);
             Assert.NotNull(ePWFile_Fixture);
 

@@ -86,18 +86,55 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
         }
 
         /// <summary>
-        /// Reads the IWEC Warsaw weather file of <c>DiGi.Test/files</c>: the station file <c>gis/epwfile/item</c> serves for Warsaw Ursynów, whose snow depth is a filler value for most of the year.
+        /// Reads the IMGW Warsaw weather file of <c>DiGi.Test/files</c>: the typical year of Warszawa-Okęcie (WMO 123750; ministry data, CC0 1.0), the station <c>gis/epwfile/item</c> serves for Warsaw. It replaced the ASHRAE-copyrighted IWEC file of the same station (DiGi-Organization/DiGi.Test#4); see <see cref="SolarFixture_EPWFile_SnowFiller"/> for that file's filler snow depth.
         /// </summary>
         /// <returns>The EPW file.</returns>
         private static EPWFile SolarFixture_EPWFile()
         {
-            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_Warsaw.123750_IWEC.epw");
+            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw");
             Assert.False(string.IsNullOrWhiteSpace(path));
 
             EPWFile? ePWFile = EPW.Modify.Read(path);
             Assert.NotNull(ePWFile);
 
             return ePWFile;
+        }
+
+        /// <summary>
+        /// Reads the IMGW Warsaw weather file with the snow filler of the IWEC Warsaw file written into it: a constant 3.0 cm of lying snow for every hour from April to November (DiGi-Organization/DiGi.Solar#2).
+        /// <para>The IWEC file carried that filler and is ASHRAE-copyrighted, so it is no longer in the repository (DiGi-Organization/DiGi.Test#4); the filler is reproduced on the open IMGW file of the same station instead.</para>
+        /// </summary>
+        /// <returns>The EPW file.</returns>
+        private static EPWFile SolarFixture_EPWFile_SnowFiller()
+        {
+            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw");
+            Assert.False(string.IsNullOrWhiteSpace(path));
+
+            string[] lines = System.IO.File.ReadAllLines(path);
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string[] values = lines[i].Split(',');
+                if (values.Length >= 35 && int.TryParse(values[0], out _) && int.TryParse(values[1], out int month) && month is >= 4 and <= 11)
+                {
+                    values[30] = "3.0";
+                    lines[i] = string.Join(",", values);
+                }
+            }
+
+            string path_Temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName() + ".epw");
+            try
+            {
+                System.IO.File.WriteAllLines(path_Temp, lines);
+
+                EPWFile? ePWFile = EPW.Modify.Read(path_Temp);
+                Assert.NotNull(ePWFile);
+
+                return ePWFile;
+            }
+            finally
+            {
+                System.IO.File.Delete(path_Temp);
+            }
         }
 
         /// <summary>

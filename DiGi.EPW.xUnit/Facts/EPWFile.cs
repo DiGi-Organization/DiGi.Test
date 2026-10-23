@@ -7,11 +7,12 @@ namespace DiGi.EPW.xUnit
     {
         /// <summary>
         /// Tests reading a sample EPW file and verifying that the location, header records, and hourly data records are parsed correctly.
+        /// <para>The sample is the IMGW typical year of Warszawa-Okęcie (WMO 123750; ministry data, CC0 1.0), which replaced the ASHRAE-copyrighted IWEC file of the same station (DiGi-Organization/DiGi.Test#4).</para>
         /// </summary>
         [Fact]
         public void Read()
         {
-            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_Warsaw.123750_IWEC.epw");
+            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw");
             Assert.False(string.IsNullOrWhiteSpace(path));
             Assert.True(System.IO.File.Exists(path));
 
@@ -20,10 +21,10 @@ namespace DiGi.EPW.xUnit
 
             Location? location = ePWFile.Location;
             Assert.NotNull(location);
-            Assert.Equal("WARSAW", location.City);
-            Assert.Equal(52.17, location.Latitude);
-            Assert.Equal(20.97, location.Longitude);
-            Assert.Equal(107.0, location.Elevation);
+            Assert.Equal("Warszawa-Chopina Intl AP", location.City);
+            Assert.Equal(52.25, location.Latitude);
+            Assert.Equal(21.0, location.Longitude);
+            Assert.Equal(106.0, location.Elevation);
 
             Assert.NotNull(ePWFile.DesignConditions);
 
@@ -45,10 +46,10 @@ namespace DiGi.EPW.xUnit
             Assert.Equal(8760, ePWFile.DataRecords.Count);
 
             DataRecord dataRecord_First = ePWFile.DataRecords[0];
-            Assert.Equal(new System.DateTime(1992, 1, 1, 1, 0, 0, System.DateTimeKind.Unspecified), dataRecord_First.DateTime);
-            Assert.Equal(-2.5f, dataRecord_First.DryBulbTemperature);
-            Assert.Equal(-3.1f, dataRecord_First.DewPointTemperature);
-            Assert.Equal(95f, dataRecord_First.RelativeHumidity);
+            Assert.Equal(new System.DateTime(2005, 1, 1, 1, 0, 0, System.DateTimeKind.Unspecified), dataRecord_First.DateTime);
+            Assert.Equal(0.6f, dataRecord_First.DryBulbTemperature);
+            Assert.Equal(-0.7f, dataRecord_First.DewPointTemperature);
+            Assert.Equal(91f, dataRecord_First.RelativeHumidity);
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace DiGi.EPW.xUnit
         [Fact]
         public void Write()
         {
-            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_Warsaw.123750_IWEC.epw");
+            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw");
             Assert.False(string.IsNullOrWhiteSpace(path));
 
             EPWFile? ePWFile_1 = Modify.Read(path);
@@ -101,7 +102,7 @@ namespace DiGi.EPW.xUnit
         [Fact]
         public void SerializationCheck()
         {
-            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_Warsaw.123750_IWEC.epw");
+            string? path = Core.xUnit.Query.FilePath(Assembly.GetExecutingAssembly(), "POL_MZ_Warszawa-Chopina.Intl.AP.123750_IMGW.epw");
             Assert.False(string.IsNullOrWhiteSpace(path));
 
             EPWFile? ePWFile = Modify.Read(path);
