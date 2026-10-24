@@ -45,13 +45,38 @@ namespace DiGi.GIS.WebAPI.xUnit
                 return result;
             }
 
+            /// <summary>
+            /// Gets every request answered, in order: its path and query, and its body when it had one.
+            /// </summary>
+            public ConcurrentQueue<(string PathAndQuery, string? Body)> Requests { get; } = new();
+
             /// <inheritdoc />
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 string path = request.RequestUri?.AbsolutePath ?? string.Empty;
                 int count = counts_ByPath.AddOrUpdate(path, 1, (key, value) => value + 1);
 
-                return Task.FromResult(response(path, count));
+                // The DiGi clients gzip their bodies, so a compressed one is unpacked before it is recorded.
+                string? body = null;
+                if (request.Content is not null)
+                {
+                    byte[] bytes = await request.Content.ReadAsByteArrayAsync(cancellationToken);
+                    if (request.Content.Headers.ContentEncoding.Contains("gzip"))
+                    {
+                        using System.IO.MemoryStream memoryStream = new(bytes);
+                        using System.IO.Compression.GZipStream gZipStream = new(memoryStream, System.IO.Compression.CompressionMode.Decompress);
+                        using System.IO.StreamReader streamReader = new(gZipStream);
+                        body = await streamReader.ReadToEndAsync(cancellationToken);
+                    }
+                    else
+                    {
+                        body = System.Text.Encoding.UTF8.GetString(bytes);
+                    }
+                }
+
+                Requests.Enqueue((request.RequestUri?.PathAndQuery ?? string.Empty, body));
+
+                return response(path, count);
             }
         }
     }
