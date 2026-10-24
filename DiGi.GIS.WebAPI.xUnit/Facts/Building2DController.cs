@@ -44,6 +44,36 @@ namespace DiGi.GIS.WebAPI.xUnit
                 Assert.IsType<BadRequestResult>(await controller.GetReferenceUniquenessSummaryAsync(-1));
                 Assert.IsType<BadRequestResult>(await controller.UpdateItemAsync(null, "code"));
                 Assert.IsType<BadRequestResult>(await controller.UpdateItemsByCountyIdsAsync(new JsonArray(), []));
+                Assert.IsType<BadRequestResult>(await controller.GetEstimatedCountsByCountyIdsAsync(null));
+                Assert.IsType<BadRequestResult>(await controller.GetEstimatedCountsByCountyIdsAsync([]));
+                Assert.IsType<BadRequestResult>(await controller.GetEstimatedCountsByCountyIdsAsync([5, 0]));
+                Assert.IsType<BadRequestResult>(await controller.GetEstimatedCountsByCountyIdsAsync([5], -1));
+                Assert.IsType<BadRequestResult>(await controller.GetEstimatedCountsByCountyIdsAsync([.. System.Linq.Enumerable.Range(1, Constants.Building2D.MaximumEstimatedCountCountyCount + 1)]));
+            }
+            finally
+            {
+                System.IO.File.Delete(path);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="Building2DController.GetEstimatedCountsByCountyIdsAsync"/> answers 500 when the estimates cannot be read, rather than an empty or zero answer.
+        /// <para>A caller turns these counts into a coverage share, and a zero read as a real count would show every county as not covered. "Could not read" has to stay distinguishable from "nothing there".</para>
+        /// </summary>
+        [Fact]
+        public async Task Building2DController_GetEstimatedCountsByCountyIds_Unreadable()
+        {
+            string path = ConfigurationFilePath();
+
+            try
+            {
+                using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
+                Building2DController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+
+                IActionResult actionResult = await controller.GetEstimatedCountsByCountyIdsAsync([5, 204]);
+
+                ObjectResult objectResult = Assert.IsType<ObjectResult>(actionResult);
+                Assert.Equal(500, objectResult.StatusCode);
             }
             finally
             {

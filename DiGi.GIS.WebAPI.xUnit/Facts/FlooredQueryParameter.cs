@@ -21,6 +21,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 // commandTimeout: floor 0 - the action guards commandTimeout < 0 (a value of 0 legitimately disables the timeout).
                 (typeof(BuildingController), nameof(BuildingController.GetCountAsync), "commandTimeout", 0, false),
                 (typeof(Building2DController), nameof(Building2DController.GetCountyPartMismatchesAsync), "commandTimeout", 0, false),
+                (typeof(Building2DController), nameof(Building2DController.GetEstimatedCountsByCountyIdsAsync), "commandTimeout", 0, false),
                 (typeof(Building2DController), nameof(Building2DController.GetPoint2DsByAdministrativeAreal2DIdAsync), "commandTimeout", 0, false),
                 (typeof(Building2DController), nameof(Building2DController.GetCentroidsByAdministrativeAreal2DIdAsync), "commandTimeout", 0, false),
                 (typeof(Building2DController), nameof(Building2DController.GetReferenceDuplicatesAsync), "commandTimeout", 0, false),
@@ -122,7 +123,7 @@ namespace DiGi.GIS.WebAPI.xUnit
         }
 
         /// <summary>
-        /// Asserts every <c>commandTimeout</c> parameter on every action of every gis controller carries <see cref="MinimumAttribute"/>(0), and that there are exactly fifty-eight of them - fifty after DiGi-Organization/DiGi.GIS.WebAPI#48, the five year built maintenance actions of DiGi-Organization/DiGi.GIS.WebAPI#50, the filtered row count of DiGi-Organization/DiGi.GIS.WebAPI#52, the area row count of DiGi-Organization/DiGi.GIS.WebAPI#53, and the aggregate summaries batch of DiGi-Organization/DiGi.GIS.WebAPI#56, each floored.
+        /// Asserts every <c>commandTimeout</c> parameter on every action of every gis controller carries <see cref="MinimumAttribute"/>(0), and that there are exactly fifty-nine of them - fifty after DiGi-Organization/DiGi.GIS.WebAPI#48, the five year built maintenance actions of DiGi-Organization/DiGi.GIS.WebAPI#50, the filtered row count of DiGi-Organization/DiGi.GIS.WebAPI#52, the area row count of DiGi-Organization/DiGi.GIS.WebAPI#53, the aggregate summaries batch of DiGi-Organization/DiGi.GIS.WebAPI#56, and the estimated building 2D counts of DiGi-Organization/DiGi.GIS.PostgreSQL.UI#32, each floored.
         /// <para>Derived from the assembly rather than from a named list, so a controller added later is swept in instead of left out: the named facts pin the endpoints DiGi-Organization/DiGi.GIS.WebAPI#48 changed, while this one fails on the next one added - a new action whose timeout could reach the database negative, with no floor and no recorded decision to omit one. The count is a tripwire, not a target: it is what forces a decision either way (DiGi-Organization/DiGi.GIS.WebAPI#48).</para>
         /// </summary>
         [Fact]
@@ -163,7 +164,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 }
             }
 
-            Assert.Equal(58, count);
+            Assert.Equal(59, count);
         }
 
         /// <summary>
