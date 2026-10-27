@@ -228,5 +228,107 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             Assert.True(countiesCarried);
             Assert.True(untouchedSurvived);
         }
+
+        /// <summary>
+        /// Verifies that the Year Built prediction options window opens with <c>scratch</c> in the scratch directory box when the options carry none, and shows a carried value exactly as it is.
+        /// <para>A first run carries no options, so the scratch directory is null and the box used to open empty, which OK then refused until a path was typed by hand. Null, an empty string and whitespace all count as none; a window given no options at all is the first-run case itself.</para>
+        /// <para>The carried value is padded on purpose: a default substituted by trimming, or by testing the trimmed value and writing it back, would change what an earlier run had chosen.</para>
+        /// </summary>
+        [Fact]
+        public void YearBuiltPredictionsOptionsWindow_ScratchDirectory_Default()
+        {
+            Exception? exception = null;
+            List<string?> scratchDirectories = [];
+
+            Thread thread = new(() =>
+            {
+                try
+                {
+                    List<YearBuiltPredictionPipelineOptions?> yearBuiltPredictionPipelineOptionsList =
+                    [
+                        null,
+                        new() { ScratchDirectory = null },
+                        new() { ScratchDirectory = string.Empty },
+                        new() { ScratchDirectory = "   " },
+                        new() { ScratchDirectory = @" C:\YOLO\scratch " }
+                    ];
+
+                    foreach (YearBuiltPredictionPipelineOptions? yearBuiltPredictionPipelineOptions in yearBuiltPredictionPipelineOptionsList)
+                    {
+                        YearBuiltPredictionsOptionsWindow yearBuiltPredictionsOptionsWindow = new(yearBuiltPredictionPipelineOptions, []);
+                        scratchDirectories.Add(((TextBoxControl)yearBuiltPredictionsOptionsWindow.FindName("TextBoxControl_ScratchDirectory")!).Value);
+                    }
+                }
+                catch (Exception exception_Temp)
+                {
+                    exception = exception_Temp;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            Assert.Null(exception);
+            Assert.Equal(5, scratchDirectories.Count);
+            for (int i = 0; i < 4; i++)
+            {
+                Assert.Equal("scratch", scratchDirectories[i]);
+            }
+
+            Assert.Equal(@" C:\YOLO\scratch ", scratchDirectories[4]);
+        }
+
+        /// <summary>
+        /// Verifies that closing the Year Built prediction options window with OK while the scratch directory box is empty or whitespace writes <c>scratch</c> to the options instead of refusing.
+        /// <para>The inputs other than the scratch directory are valid on purpose: the old refusal put a message box on screen, which would block this test rather than fail it, so the options carrying the value at all is what shows it is gone. The click is raised on a window that was never shown, so the handler runs to its final DialogResult assignment, which throws - everything it writes has been written by then.</para>
+        /// </summary>
+        [Fact]
+        public void YearBuiltPredictionsOptionsWindow_ScratchDirectory_Ok()
+        {
+            Exception? exception = null;
+            List<string?> scratchDirectories = [];
+
+            Thread thread = new(() =>
+            {
+                try
+                {
+                    foreach (string text in new string[] { string.Empty, "   " })
+                    {
+                        List<AdministrativeAreal2DReference> administrativeAreal2DReferences =
+                        [
+                            new() { Id = 22138, Code = "2412", Name = "rybnicki", AdministrativeArealType = AdministrativeArealType.County }
+                        ];
+
+                        YearBuiltPredictionsOptionsWindow yearBuiltPredictionsOptionsWindow = new(new YearBuiltPredictionPipelineOptions() { CountyIds = [22138] }, administrativeAreal2DReferences);
+
+                        ((TextBoxControl)yearBuiltPredictionsOptionsWindow.FindName("TextBoxControl_ScratchDirectory")!).Value = text;
+                        ((TextBoxControl)yearBuiltPredictionsOptionsWindow.FindName("TextBoxControl_MaxConcurrentRequests")!).Value = "3";
+
+                        try
+                        {
+                            ((System.Windows.Controls.Button)yearBuiltPredictionsOptionsWindow.FindName("Button_OK")!).RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // DialogResult refuses a window that was never shown as a dialog.
+                        }
+
+                        scratchDirectories.Add(yearBuiltPredictionsOptionsWindow.YearBuiltPredictionPipelineOptions.ScratchDirectory);
+                    }
+                }
+                catch (Exception exception_Temp)
+                {
+                    exception = exception_Temp;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            Assert.Null(exception);
+            Assert.Equal(["scratch", "scratch"], scratchDirectories);
+        }
     }
 }
