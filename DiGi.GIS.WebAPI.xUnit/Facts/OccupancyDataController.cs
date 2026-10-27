@@ -139,8 +139,33 @@ namespace DiGi.GIS.WebAPI.xUnit
         }
 
         /// <summary>
+        /// Verifies that <see cref="OccupancyDataController.GetBuilding2DSnapshotByCountyIdAsync"/> refuses a negative command timeout with HTTP 400 before any database access.
+        /// </summary>
+        [Fact]
+        public async Task OccupancyDataController_SnapshotByCountyId_NegativeTimeout_AnswersBadRequest()
+        {
+            string path = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllLines(path, [$"{nameof(GISWebAPIConfigurationFileWatcher.Open)}=true"]);
+
+                using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
+                OccupancyDataController occupancyDataController = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.Building2DOccupancyDataPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DOccupancyDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+
+                Assert.IsType<BadRequestResult>(await occupancyDataController.GetBuilding2DSnapshotByCountyIdAsync(null, -1));
+            }
+            finally
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+        }
+
+        /// <summary>
         /// A transient database failure is a "retry can succeed" class, so it must answer 503 with a Retry-After header rather than the uniform 500.
-        /// <para>Drives a real transient failure through the real stack with no server: a dead loopback host makes the converter's OpenAsync throw a genuine NpgsqlException, which Npgsql classifies IsTransient = true. Both read actions of <see cref="OccupancyDataController"/> are asserted, so a 503 mapping added to one action and forgotten in a sibling cannot pass.</para>
+        /// <para>Drives a real transient failure through the real stack with no server: a dead loopback host makes the converter's OpenAsync throw a genuine NpgsqlException, which Npgsql classifies IsTransient = true. All three read actions of <see cref="OccupancyDataController"/> are asserted, so a 503 mapping added to one action and forgotten in a sibling cannot pass.</para>
         /// <para>Red before the 503 mapping existed (the path answered 500); green after.</para>
         /// <para>Medium test (4.1 s): runs when DIGI_TEST_MAX_DURATION is Medium (the default) or Long.</para>
         /// </summary>
@@ -157,6 +182,7 @@ namespace DiGi.GIS.WebAPI.xUnit
 
                 AssertTransient503(controller, await controller.GetBuilding2DDuplicateReferencesAsync(null));
                 AssertTransient503(controller, await controller.GetBuilding2DDuplicatesCountAsync(null));
+                AssertTransient503(controller, await controller.GetBuilding2DSnapshotByCountyIdAsync(null));
             }
             finally
             {
