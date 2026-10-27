@@ -25,7 +25,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
         /// <summary>
         /// Verifies, on the throwaway main test database, the storage and search of <see cref="AddressPointPostgreSQLConverter"/>: the upsert, the fuzzy and partial search over the normalised <c>search_text</c>, the house number exact-then-prefix match, the county part filter, the version guard of a re-import, the reverse lookup by building reference and the delete.
-        /// <para>The fact writes scratch rows (<c>XUNIT-ADDRESS-*</c>) under scratch county parts and searches with the county filter, so rows anything else stored in the table cannot reach the assertions; it removes its rows before and in <c>finally</c>. The table and the GIN trigram index are created when the test database has none. A table this small is always read by a sequential scan, so the fact asserts that the index exists, not that the planner uses it. Medium test (a live database server). Reference: DiGi.GIS.PostgreSQL#103.</para>
+        /// <para>The fact writes scratch rows (<c>XUNIT-ADDRESS-*</c>) under scratch county parts and searches with the county filter, so rows anything else stored in the table cannot reach the assertions; it removes its rows before and in <c>finally</c>. The table and the GIN trigram index are created when the test database has none. A table this small is always read by a sequential scan, so the fact asserts that the index exists, not that the planner uses it. Every search assertion also exercises the shipped <c>pg_trgm.similarity_threshold</c> raise (0.4, DiGi.GIS.PostgreSQL#112): the typo case would lose its 4 hits at 0.5, and the session-leak assertion proves the raise stays scoped to one statement. Medium test (a live database server). Reference: DiGi.GIS.PostgreSQL#103, DiGi.GIS.PostgreSQL#112.</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task AddressPointPostgreSQLConverter_SearchAndUpdate()
@@ -76,6 +76,20 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.NotNull(addressPointMatches);
                 Assert.Equal(4, addressPointMatches.Count);
                 Assert.All(addressPointMatches, x => Assert.Equal("Marszałkowska", x.AddressPoint?.StreetName));
+
+                // The search raises pg_trgm.similarity_threshold for its own statement only: the same query through the
+                // static overload on THIS connection still finds the typo, and the session's value reads the same
+                // before and after it - SET LOCAL must never reach a pooled connection (DiGi.GIS.PostgreSQL#112).
+                // similarity() first loads pg_trgm in this session, so current_setting then reports a value at all.
+                await ScalarAsync(npgsqlConnection, "SELECT similarity('x', 'x');");
+                object? similarity_Threshold_Before = await ScalarAsync(npgsqlConnection, "SELECT current_setting('pg_trgm.similarity_threshold', true);");
+
+                List<AddressPointMatch>? addressPointMatches_Session = await AddressPointPostgreSQLConverter.GetAddressPointMatchesByAddressAsync(npgsqlConnection, "marszalkowsak", null, countyId_AddressPoint_A);
+                Assert.NotNull(addressPointMatches_Session);
+                Assert.Equal(4, addressPointMatches_Session.Count);
+
+                object? similarity_Threshold_After = await ScalarAsync(npgsqlConnection, "SELECT current_setting('pg_trgm.similarity_threshold', true);");
+                Assert.Equal(similarity_Threshold_Before?.ToString(), similarity_Threshold_After?.ToString());
 
                 // A missing diacritic
                 addressPointMatches = await addressPointPostgreSQLConverter.GetAddressPointMatchesByAddressAsync("lodzka", null, countyId_AddressPoint_A);
