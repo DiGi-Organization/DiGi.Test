@@ -11,7 +11,7 @@ namespace DiGi.GIS.WebAPI.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Verifies that <see cref="AddressPointController"/> answers BadRequest for a missing or blank text, a limit outside 1-100, a non-positive county id, a blank reference and missing county ids.
+        /// Verifies that <see cref="AddressPointController"/> answers BadRequest for a missing or blank text, a limit outside 1-100, a non-positive county id, a blank reference, missing county ids, and a non-positive county part or negative timeout of the count (a valid count request with no database answers 500).
         /// <para>Every guard runs before the database is touched, so converters without connection data suffice.</para>
         /// </summary>
         [Fact]
@@ -36,6 +36,13 @@ namespace DiGi.GIS.WebAPI.xUnit
                 Assert.IsType<BadRequestResult>(await addressPointController.UpdateItemsByCountyIdsAsync(new JsonArray(), []));
                 Assert.IsType<BadRequestResult>(await addressPointController.UpdateItemsByCountyIdsAsync(new JsonArray(), [0]));
                 Assert.IsType<NoContentResult>(await addressPointController.UpdateItemsByCountyIdsAsync(new JsonArray(), [1]));
+
+                // The count: a non-positive county part and a negative timeout are refused; a valid request with no database answers 500, never an empty count
+                Assert.IsType<BadRequestResult>(await addressPointController.GetCountByCountyIdAsync(0));
+                Assert.IsType<BadRequestResult>(await addressPointController.GetCountByCountyIdAsync(-5));
+                Assert.IsType<BadRequestResult>(await addressPointController.GetCountByCountyIdAsync(1, -1));
+                Assert.Equal(500, Assert.IsType<ObjectResult>(await addressPointController.GetCountByCountyIdAsync(null)).StatusCode);
+                Assert.Equal(500, Assert.IsType<ObjectResult>(await addressPointController.GetCountByCountyIdAsync(1)).StatusCode);
             }
             finally
             {
@@ -110,6 +117,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 [nameof(AddressPointController.UpdateItemsByCountyIdsAsync)] = ["countyids"],
                 [nameof(AddressPointController.GetBuildingsByAddressAsync)] = ["text", "housenumber", "countyid", "limit"],
                 [nameof(AddressPointController.GetAddressPointsByReferenceAsync)] = ["reference"],
+                [nameof(AddressPointController.GetCountByCountyIdAsync)] = ["countyid", "commandtimeout"],
             };
 
             foreach (KeyValuePair<string, string[]> keyValuePair in names_ByMethodName)
@@ -146,6 +154,11 @@ namespace DiGi.GIS.WebAPI.xUnit
                     Assert.NotNull(Nullable.GetUnderlyingType(parameterInfo.ParameterType));
                 }
             }
+
+            // The count's county id is optional - omitting it means the whole table - so it must be nullable, not default(int)
+            MethodInfo? methodInfo_Count = typeof(AddressPointController).GetMethod(nameof(AddressPointController.GetCountByCountyIdAsync));
+            Assert.NotNull(methodInfo_Count);
+            Assert.NotNull(Nullable.GetUnderlyingType(methodInfo_Count.GetParameters()[0].ParameterType));
         }
 
         private static AddressPointController AddressPointController_Default(GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher)
