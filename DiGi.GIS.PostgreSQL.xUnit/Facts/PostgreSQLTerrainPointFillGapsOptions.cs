@@ -35,15 +35,15 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         public void PostgreSQLTerrainPointFillGapsOptions_LatticeAgreesWithSampling()
         {
             PostgreSQLTerrainPointFillGapsOptions postgreSQLTerrainPointFillGapsOptions = new();
-            PostgreSQLTerrainPointCreateTableOptions postgreSQLTerrainPointCreateTableOptions = new();
+            PostgreSQLTerrainPointUpdateOptions postgreSQLTerrainPointUpdateOptions = new();
 
-            Assert.Equal(postgreSQLTerrainPointCreateTableOptions.OriginX, postgreSQLTerrainPointFillGapsOptions.OriginX);
-            Assert.Equal(postgreSQLTerrainPointCreateTableOptions.OriginY, postgreSQLTerrainPointFillGapsOptions.OriginY);
-            Assert.Equal(postgreSQLTerrainPointCreateTableOptions.TileSize, postgreSQLTerrainPointFillGapsOptions.TileSize);
+            Assert.Equal(postgreSQLTerrainPointUpdateOptions.OriginX, postgreSQLTerrainPointFillGapsOptions.OriginX);
+            Assert.Equal(postgreSQLTerrainPointUpdateOptions.OriginY, postgreSQLTerrainPointFillGapsOptions.OriginY);
+            Assert.Equal(postgreSQLTerrainPointUpdateOptions.TileSize, postgreSQLTerrainPointFillGapsOptions.TileSize);
 
             // The repair default has to be a whole multiple of the sampling default, or a county sampled at the
             // finer of the two could never be measured by it.
-            Assert.Equal(0d, postgreSQLTerrainPointFillGapsOptions.GridSize % postgreSQLTerrainPointCreateTableOptions.GridSize);
+            Assert.Equal(0d, postgreSQLTerrainPointFillGapsOptions.GridSize % postgreSQLTerrainPointUpdateOptions.GridSize);
         }
 
         /// <summary>

@@ -16,7 +16,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// <para>The second run is the point of the fact. It stores nothing only if the grid, the tiling and the reading back of what is already stored all agree - a grid that is anchored differently on the second run, a tile boundary that overlaps its neighbour, or a stored point that is not recognised as a node would each show up here as points written twice.</para>
         /// </summary>
         [Fact(Skip = "Requires the PostgreSQL configuration files and the live GUGiK elevation service.")]
-        public async Task PostgreSQLTerrainPointCreateTableTask_Integration()
+        public async Task PostgreSQLTerrainPointUpdateTask_Integration()
         {
             // Set to a small county before running. Sampling a large one at this grid size takes hours.
             int countyId = 2405;
@@ -36,7 +36,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             string? directory_Reports = Core.xUnit.Query.ReportsDirectory(Assembly.GetExecutingAssembly());
             Assert.False(string.IsNullOrWhiteSpace(directory_Reports));
 
-            File.WriteAllText(Path.Combine(directory_Reports!, "TerrainPointCreateTable.txt"), $"County {countyId} at grid size {gridSize}: first run stored {pointCount_First} points, second run stored {pointCount_Second}.");
+            File.WriteAllText(Path.Combine(directory_Reports!, "TerrainPointUpdate.txt"), $"County {countyId} at grid size {gridSize}: first run stored {pointCount_First} points, second run stored {pointCount_Second}.");
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// <para>This is the reproduction of DiGi.GIS.PostgreSQL#66. The task used to hand every part of a multi-part county the whole county's subdivisions, sample the whole county bounding box and file the result under the part it was walking - so every partition held the entire county: identical counts, identical extents, disjoint write windows. Here 2405 (będziński) is sampled by naming 76984 alone; if the two partitions' extents come back the same, the county was stored once per part again.</para>
         /// </summary>
         [Fact(Skip = "Requires the PostgreSQL configuration files and the live GUGiK elevation service.")]
-        public async Task PostgreSQLTerrainPointCreateTableTask_CountyPartRouting()
+        public async Task PostgreSQLTerrainPointUpdateTask_CountyPartRouting()
         {
             // 2405 (będziński) is held as two parts: 76984 and 76989. Naming one of them must reach both.
             List<int> countyIds = [76984, 76989];
@@ -83,7 +83,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             string? directory_Reports = Core.xUnit.Query.ReportsDirectory(Assembly.GetExecutingAssembly());
             Assert.False(string.IsNullOrWhiteSpace(directory_Reports));
 
-            File.WriteAllText(Path.Combine(directory_Reports!, "TerrainPointCreateTable_CountyPartRouting.txt"), $"County 2405 at grid size {gridSize}: run over 76984 stored {pointCount} points, run over 76989 stored {pointCount_Second}; partitions 76984 and 76989 report extents {terrainPointCountyResults_Local[0].MinX}-{terrainPointCountyResults_Local[0].MaxX} x {terrainPointCountyResults_Local[0].MinY}-{terrainPointCountyResults_Local[0].MaxY} and {terrainPointCountyResults_Local[1].MinX}-{terrainPointCountyResults_Local[1].MaxX} x {terrainPointCountyResults_Local[1].MinY}-{terrainPointCountyResults_Local[1].MaxY}.");
+            File.WriteAllText(Path.Combine(directory_Reports!, "TerrainPointUpdate_CountyPartRouting.txt"), $"County 2405 at grid size {gridSize}: run over 76984 stored {pointCount} points, run over 76989 stored {pointCount_Second}; partitions 76984 and 76989 report extents {terrainPointCountyResults_Local[0].MinX}-{terrainPointCountyResults_Local[0].MaxX} x {terrainPointCountyResults_Local[0].MinY}-{terrainPointCountyResults_Local[0].MaxY} and {terrainPointCountyResults_Local[1].MinX}-{terrainPointCountyResults_Local[1].MaxX} x {terrainPointCountyResults_Local[1].MinY}-{terrainPointCountyResults_Local[1].MaxY}.");
         }
 
         /// <summary>
@@ -96,9 +96,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// <returns>The number of points stored.</returns>
         private static async Task<long> RunAsync(GISPostgreSQLConverterManager gISPostgreSQLConverterManager, HttpClient httpClient, int countyId, double gridSize)
         {
-            PostgreSQLTerrainPointCreateTableTask postgreSQLTerrainPointCreateTableTask = new(httpClient, gISPostgreSQLConverterManager)
+            PostgreSQLTerrainPointUpdateTask postgreSQLTerrainPointUpdateTask = new(httpClient, gISPostgreSQLConverterManager)
             {
-                PostgreSQLTerrainPointCreateTableOptions = new PostgreSQLTerrainPointCreateTableOptions()
+                PostgreSQLTerrainPointUpdateOptions = new PostgreSQLTerrainPointUpdateOptions()
                 {
                     CountyIds = [countyId],
                     GridSize = gridSize
@@ -107,18 +107,18 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             // The base class starts the work without handing back anything to await, so completion is taken from the event it raises.
             TaskCompletionSource<bool> taskCompletionSource = new();
-            postgreSQLTerrainPointCreateTableTask.Stopped += (object? sender, EventArgs e) => taskCompletionSource.TrySetResult(true);
+            postgreSQLTerrainPointUpdateTask.Stopped += (object? sender, EventArgs e) => taskCompletionSource.TrySetResult(true);
 
-            postgreSQLTerrainPointCreateTableTask.Start();
+            postgreSQLTerrainPointUpdateTask.Start();
 
             await taskCompletionSource.Task;
 
-            Assert.Null(postgreSQLTerrainPointCreateTableTask.Exception);
-            Assert.Equal(0, postgreSQLTerrainPointCreateTableTask.FailedBatchCount);
-            Assert.Equal(0, postgreSQLTerrainPointCreateTableTask.UnresolvedPointCount);
-            Assert.True(postgreSQLTerrainPointCreateTableTask.IsSucceeded);
+            Assert.Null(postgreSQLTerrainPointUpdateTask.Exception);
+            Assert.Equal(0, postgreSQLTerrainPointUpdateTask.FailedBatchCount);
+            Assert.Equal(0, postgreSQLTerrainPointUpdateTask.UnresolvedPointCount);
+            Assert.True(postgreSQLTerrainPointUpdateTask.IsSucceeded);
 
-            return postgreSQLTerrainPointCreateTableTask.PointCount;
+            return postgreSQLTerrainPointUpdateTask.PointCount;
         }
     }
 }
