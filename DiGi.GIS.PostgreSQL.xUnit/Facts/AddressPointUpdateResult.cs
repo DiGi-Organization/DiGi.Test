@@ -11,12 +11,13 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         [Fact]
         public void AddressPointUpdateResult_Serialization()
         {
-            AddressPointUpdateResult addressPointUpdateResult = new([97358, 97360], 1200, 300, 45, 3, 2, 1_545);
+            AddressPointUpdateResult addressPointUpdateResult = new([97358, 97360], 1200, 300, 45, 3, 7, 2, 1_545);
 
             Assert.Equal(1200, addressPointUpdateResult.Inside);
             Assert.Equal(300, addressPointUpdateResult.Nearest);
             Assert.Equal(45, addressPointUpdateResult.Unmatched);
             Assert.Equal(3, addressPointUpdateResult.Outside);
+            Assert.Equal(7, addressPointUpdateResult.Rescued);
             Assert.Equal(2, addressPointUpdateResult.Skipped);
             Assert.Equal(1_545, addressPointUpdateResult.Written);
             Assert.Equal([97358, 97360], addressPointUpdateResult.CountyIds);
@@ -30,6 +31,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(300, addressPointUpdateResult_Json.Nearest);
             Assert.Equal(45, addressPointUpdateResult_Json.Unmatched);
             Assert.Equal(3, addressPointUpdateResult_Json.Outside);
+            Assert.Equal(7, addressPointUpdateResult_Json.Rescued);
             Assert.Equal(2, addressPointUpdateResult_Json.Skipped);
             Assert.Equal(1_545, addressPointUpdateResult_Json.Written);
             Assert.Equal([97358, 97360], addressPointUpdateResult_Json.CountyIds);
@@ -39,12 +41,13 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(300, addressPointUpdateResult_Copy.Nearest);
             Assert.Equal(45, addressPointUpdateResult_Copy.Unmatched);
             Assert.Equal(3, addressPointUpdateResult_Copy.Outside);
+            Assert.Equal(7, addressPointUpdateResult_Copy.Rescued);
             Assert.Equal(2, addressPointUpdateResult_Copy.Skipped);
             Assert.Equal(1_545, addressPointUpdateResult_Copy.Written);
             Assert.Equal([97358, 97360], addressPointUpdateResult_Copy.CountyIds);
 
             Core.xUnit.Query.SerializationCheck(addressPointUpdateResult);
-            Core.xUnit.Query.SerializationCheck(new AddressPointUpdateResult(null, 0, 0, 0, 0, 0, 0));
+            Core.xUnit.Query.SerializationCheck(new AddressPointUpdateResult(null, 0, 0, 0, 0, 0, 0, 0));
         }
     }
 }
