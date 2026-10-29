@@ -23,8 +23,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         private const int countyId_AddressPointCount_B = 990404;
 
         /// <summary>
-        /// Verifies, on the throwaway main test database, <see cref="AddressPointPostgreSQLConverter.GetCountResultAsync(int?, int, System.Threading.CancellationToken)"/>: the counts per match type for one county part, the whole-table count rising by exactly the scratch rows, a county part with no rows counting zero, and a null connection answering null.
-        /// <para>The whole table may hold rows the fact did not write, so the whole-table assertion compares the count before and after the scratch rows are stored, never an absolute figure. The fact removes its rows (<c>XUNIT-ADDRESSCOUNT-*</c>) before and in <c>finally</c>. Medium test (a live database server). Reference: DiGi.GIS.PostgreSQL#110.</para>
+        /// Verifies, on the throwaway main test database, <see cref="AddressPointPostgreSQLConverter.GetCountResultAsync(int?, int, System.Threading.CancellationToken)"/>: the counts per match type for one county part, the distinct buildings reached (two points on one building count once, an unmatched point counts none), the whole-table count rising by exactly the scratch rows, a county part with no rows counting zero, and a null connection answering null.
+        /// <para>The whole table may hold rows the fact did not write, so the whole-table assertion compares the count before and after the scratch rows are stored, never an absolute figure. The scratch county parts have no <c>building_2d</c> partition, so their <c>Buildings2D</c> is zero, and the fact writes no building, so the whole-table <c>Buildings2D</c> does not move. The fact removes its rows (<c>XUNIT-ADDRESSCOUNT-*</c>) before and in <c>finally</c>. Medium test (a live database server). Reference: DiGi.GIS.PostgreSQL#110, DiGi.GIS.PostgreSQL#119.</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task AddressPointPostgreSQLConverter_Count()
@@ -51,16 +51,16 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
                 List<AddressPointMatch> addressPointMatches_A =
                 [
-                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-1", AddressPointMatchType.Inside, version),
-                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-2", AddressPointMatchType.Inside, version),
-                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-3", AddressPointMatchType.Nearest, version),
-                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-4", AddressPointMatchType.Unmatched, version),
+                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-1", AddressPointMatchType.Inside, "XUNIT-ADDRESSCOUNT-BUILDING-1", version),
+                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-2", AddressPointMatchType.Inside, "XUNIT-ADDRESSCOUNT-BUILDING-2", version),
+                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-3", AddressPointMatchType.Nearest, "XUNIT-ADDRESSCOUNT-BUILDING-1", version),
+                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-4", AddressPointMatchType.Unmatched, null, version),
                 ];
 
                 List<AddressPointMatch> addressPointMatches_B =
                 [
-                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-5", AddressPointMatchType.Unmatched, version),
-                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-6", AddressPointMatchType.Unmatched, version),
+                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-5", AddressPointMatchType.Unmatched, null, version),
+                    ScratchAddressPointMatch("XUNIT-ADDRESSCOUNT-6", AddressPointMatchType.Unmatched, null, version),
                 ];
 
                 Assert.Equal(4L, await addressPointPostgreSQLConverter.UpdateAsync(countyId_AddressPointCount_A, addressPointMatches_A));
@@ -73,6 +73,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(1L, addressPointCountResult_A.Nearest);
                 Assert.Equal(1L, addressPointCountResult_A.Unmatched);
                 Assert.Equal(4L, addressPointCountResult_A.Total);
+                Assert.Equal(2L, addressPointCountResult_A.Buildings);
+                Assert.Equal(0L, addressPointCountResult_A.Buildings2D);
 
                 AddressPointCountResult? addressPointCountResult_B = await addressPointPostgreSQLConverter.GetCountResultAsync(countyId_AddressPointCount_B);
                 Assert.NotNull(addressPointCountResult_B);
@@ -80,6 +82,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(0L, addressPointCountResult_B.Nearest);
                 Assert.Equal(2L, addressPointCountResult_B.Unmatched);
                 Assert.Equal(2L, addressPointCountResult_B.Total);
+                Assert.Equal(0L, addressPointCountResult_B.Buildings);
 
                 // The whole table rises by exactly the scratch rows
                 AddressPointCountResult? addressPointCountResult_After = await addressPointPostgreSQLConverter.GetCountResultAsync(null);
@@ -88,11 +91,15 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(addressPointCountResult_Before.Nearest + 1L, addressPointCountResult_After.Nearest);
                 Assert.Equal(addressPointCountResult_Before.Unmatched + 3L, addressPointCountResult_After.Unmatched);
                 Assert.Equal(addressPointCountResult_Before.Total + 6L, addressPointCountResult_After.Total);
+                Assert.Equal(addressPointCountResult_Before.Buildings + 2L, addressPointCountResult_After.Buildings);
+                Assert.Equal(addressPointCountResult_Before.Buildings2D, addressPointCountResult_After.Buildings2D);
 
                 // A county part with no rows counts zero, not null
                 AddressPointCountResult? addressPointCountResult_Empty = await addressPointPostgreSQLConverter.GetCountResultAsync(countyId_AddressPointCount_B + 1);
                 Assert.NotNull(addressPointCountResult_Empty);
                 Assert.Equal(0L, addressPointCountResult_Empty.Total);
+                Assert.Equal(0L, addressPointCountResult_Empty.Buildings);
+                Assert.Equal(0L, addressPointCountResult_Empty.Buildings2D);
 
                 // The static overload on a null connection
                 Assert.Null(await AddressPointPostgreSQLConverter.GetCountResultAsync(null, null));
@@ -102,12 +109,12 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 await ExecuteAsync(npgsqlConnection, commandText_Cleanup);
             }
 
-            static AddressPointMatch ScratchAddressPointMatch(string referenceId, AddressPointMatchType addressPointMatchType, DateTimeOffset version)
+            static AddressPointMatch ScratchAddressPointMatch(string referenceId, AddressPointMatchType addressPointMatchType, string? buildingReference, DateTimeOffset version)
             {
                 AddressPoint addressPoint = new(new Point2D(-9999999, -9999999), "Skrzyzowanie", null, "1", "Testowo", null, null, referenceId, version);
                 return addressPointMatchType == AddressPointMatchType.Unmatched
                     ? new AddressPointMatch(addressPoint, addressPointMatchType, null, null, null)
-                    : new AddressPointMatch(addressPoint, addressPointMatchType, "XUNIT-ADDRESSCOUNT-BUILDING", Guid.NewGuid(), addressPointMatchType == AddressPointMatchType.Inside ? 0.0 : 5.0);
+                    : new AddressPointMatch(addressPoint, addressPointMatchType, buildingReference, Guid.NewGuid(), addressPointMatchType == AddressPointMatchType.Inside ? 0.0 : 5.0);
             }
         }
     }
