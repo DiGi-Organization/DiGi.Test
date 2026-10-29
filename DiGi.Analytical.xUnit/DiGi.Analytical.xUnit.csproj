@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DiGi.Analytical\DiGi.Analytical.Building.HVAC\DiGi.Analytical.Building.HVAC.csproj" />
+    <ProjectReference Include="..\..\DiGi.Analytical\DiGi.Analytical.Building.Regulation\DiGi.Analytical.Building.Regulation.csproj" />
     <ProjectReference Include="..\..\DiGi.Analytical\DiGi.Analytical.Building\DiGi.Analytical.Building.csproj" />
     <ProjectReference Include="..\..\DiGi.Analytical\DiGi.Analytical.Building.Solar\DiGi.Analytical.Building.Solar.csproj" />
     <ProjectReference Include="..\..\DiGi.Analytical\DiGi.Analytical\DiGi.Analytical.csproj" />
