@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -22,116 +21,21 @@ namespace DiGi.PRG.Geometry.xUnit
         [LongFact]
         public void FrontFacade_Counties()
         {
-            const double distance_Match = 10.0;
-
             Assembly assembly = Assembly.GetExecutingAssembly();
 
-            string? directory_UserFiles = Core.xUnit.Query.UserFilesDirectory(assembly);
-            if (string.IsNullOrWhiteSpace(directory_UserFiles))
+            Dictionary<string, string>? settings = FrontFacade_Settings(assembly);
+            if (settings is null)
             {
                 return;
             }
 
-            string path_Configuration = Path.Combine(directory_UserFiles!, "DiGi.PRG.Geometry_FrontFacade.conf");
-            if (!File.Exists(path_Configuration))
-            {
-                return;
-            }
-
-            Dictionary<string, string> settings = [];
-            foreach (string line in File.ReadAllLines(path_Configuration))
-            {
-                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#", StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                int index = line.IndexOf('=');
-                if (index <= 0)
-                {
-                    continue;
-                }
-
-                settings[line.Substring(0, index).Trim()] = line.Substring(index + 1).Trim();
-            }
-
-            settings.TryGetValue("BDOT10kArchive", out string? path_Archive);
-            settings.TryGetValue("PRGDirectory", out string? directory_PRG);
-            settings.TryGetValue("Counties", out string? counties);
-
-            if (string.IsNullOrWhiteSpace(path_Archive) || !File.Exists(path_Archive) || string.IsNullOrWhiteSpace(directory_PRG) || !Directory.Exists(directory_PRG) || string.IsNullOrWhiteSpace(counties))
-            {
-                return;
-            }
-
-            List<string> codes = [.. counties.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct()];
+            string path_Archive = settings["BDOT10kArchive"];
+            string directory_PRG = settings["PRGDirectory"];
+            List<string> codes = FrontFacade_Codes(settings);
             Assert.NotEmpty(codes);
 
             List<string> rows = [];
-            foreach (IGrouping<string, string> grouping in codes.GroupBy(x => x.Substring(0, 2)))
-            {
-                string? path_PRG = Directory.GetFiles(directory_PRG, $"{grouping.Key}_*.gml").FirstOrDefault();
-                Assert.NotNull(path_PRG);
-
-                HashSet<string> codes_Voivodeship = [.. grouping];
-                List<PunktAdresowy>? punktyAdresowe = Create.PunktyAdresowe(path_PRG)?.FindAll(x => x.TERYTGminy is string tERYTGminy && tERYTGminy.Length >= 4 && codes_Voivodeship.Contains(tERYTGminy.Substring(0, 4)));
-                Assert.NotNull(punktyAdresowe);
-
-                string path_Voivodeship = Path.Combine(Path.GetTempPath(), $"DiGi_FrontFacade_{grouping.Key}_{Guid.NewGuid():N}.zip");
-                try
-                {
-                    using (ZipArchive zipArchive_Country = ZipFile.OpenRead(path_Archive))
-                    {
-                        ZipArchiveEntry? zipArchiveEntry_Voivodeship = zipArchive_Country.GetEntry($"BDOT10k/{grouping.Key}_GML.zip");
-                        Assert.NotNull(zipArchiveEntry_Voivodeship);
-                        zipArchiveEntry_Voivodeship.ExtractToFile(path_Voivodeship);
-                    }
-
-                    using ZipArchive zipArchive_Voivodeship = ZipFile.OpenRead(path_Voivodeship);
-                    foreach (string code in grouping)
-                    {
-                        ZipArchiveEntry? zipArchiveEntry_County = zipArchive_Voivodeship.GetEntry($"{grouping.Key}/{code}_GML.zip");
-                        Assert.NotNull(zipArchiveEntry_County);
-
-                        using MemoryStream memoryStream_County = new();
-                        using (Stream stream = zipArchiveEntry_County.Open())
-                        {
-                            stream.CopyTo(memoryStream_County);
-                        }
-
-                        memoryStream_County.Position = 0;
-                        SlownikObiektowGeometrycznych slownikObiektowGeometrycznych = new();
-                        using (ZipArchive zipArchive_County = new(memoryStream_County, ZipArchiveMode.Read))
-                        {
-                            foreach (ZipArchiveEntry zipArchiveEntry in zipArchive_County.Entries)
-                            {
-                                if (!(zipArchiveEntry.Name.EndsWith("__OT_BUBD_A.xml", StringComparison.Ordinal) || zipArchiveEntry.Name.EndsWith("__OT_SKDR_L.xml", StringComparison.Ordinal) || zipArchiveEntry.Name.EndsWith("__OT_SKJZ_L.xml", StringComparison.Ordinal) || zipArchiveEntry.Name.EndsWith("__OT_SKRP_L.xml", StringComparison.Ordinal)))
-                                {
-                                    continue;
-                                }
-
-                                using MemoryStream memoryStream_Entry = new();
-                                using (Stream stream = zipArchiveEntry.Open())
-                                {
-                                    stream.CopyTo(memoryStream_Entry);
-                                }
-
-                                memoryStream_Entry.Position = 0;
-                                Assert.True(BDOT10k.Geometry.Modify.Load(slownikObiektowGeometrycznych, memoryStream_Entry));
-                            }
-                        }
-
-                        rows.Add(Measure(code, slownikObiektowGeometrycznych, punktyAdresowe.FindAll(x => x.TERYTGminy!.StartsWith(code, StringComparison.Ordinal))));
-                    }
-                }
-                finally
-                {
-                    if (File.Exists(path_Voivodeship))
-                    {
-                        File.Delete(path_Voivodeship);
-                    }
-                }
-            }
+            FrontFacade_ForEachCounty(settings, (code, slownikObiektowGeometrycznych, punktyAdresowe_County) => rows.Add(Measure(code, slownikObiektowGeometrycznych, punktyAdresowe_County)));
 
             StringBuilder stringBuilder = new();
             stringBuilder.AppendLine("# Front facade from address point and road: per county (DiGi.Test#5)");
@@ -155,31 +59,10 @@ namespace DiGi.PRG.Geometry.xUnit
                 Assert.NotEmpty(roadSegments);
                 Dictionary<(long, long), List<int>> roadIndex = FrontFacade_Index(roadSegments);
 
-                List<List<Point2D>> rings = [];
-                foreach (BUBD_A bUBD_A in slownikObiektowGeometrycznych.GetObiektyGeometryczne<BUBD_A>() ?? [])
-                {
-                    List<Point2D>? ring = FrontFacade_Ring(bUBD_A.Geometry?.ExternalEdge?.GetPoints());
-                    if (ring is not null)
-                    {
-                        rings.Add(ring);
-                    }
-                }
-
+                List<List<Point2D>> rings = FrontFacade_Footprints(slownikObiektowGeometrycznych).ConvertAll(x => x.Ring);
                 Assert.NotEmpty(rings);
 
-                // Footprints indexed by their edges, so the same grid serves the inside test and the 10 m match
-                List<(Point2D Start, Point2D End, string? ULIC)> edges = [];
-                List<int> edgeRings = [];
-                for (int i = 0; i < rings.Count; i++)
-                {
-                    for (int j = 0; j < rings[i].Count; j++)
-                    {
-                        edges.Add((rings[i][j], rings[i][(j + 1) % rings[i].Count], null));
-                        edgeRings.Add(i);
-                    }
-                }
-
-                Dictionary<(long, long), List<int>> edgeIndex = FrontFacade_Index(edges);
+                (Dictionary<(long, long), List<int>> Index, List<int> EdgeRings) footprintIndex = FrontFacade_FootprintIndex(rings);
 
                 int count_NoULIC = 0;
                 int count_Matched = 0;
@@ -211,11 +94,13 @@ namespace DiGi.PRG.Geometry.xUnit
                         count_NoULIC++;
                     }
 
-                    List<Point2D>? ring = MatchedRing(point2D);
-                    if (ring is null)
+                    int ring_Index = FrontFacade_Match(point2D, rings, footprintIndex);
+                    if (ring_Index == -1)
                     {
                         continue;
                     }
+
+                    List<Point2D> ring = rings[ring_Index];
 
                     count_Matched++;
 
@@ -268,64 +153,6 @@ namespace DiGi.PRG.Geometry.xUnit
                 Assert.True(count_Matched > 0);
 
                 return string.Join(" | ", "| " + code, Count(punktyAdresowe_County.Count), Share(count_NoULIC, punktyAdresowe_County.Count), Share(count_Matched, punktyAdresowe_County.Count), Share(count_SameULIC, count_Matched), Share(count_NearestRoad, count_Matched), Percentiles(distances_Road), Percentiles(distances_SameULIC), Pair(count_Differ_RoadRules, count_Differ_RoadRules_Exact, count_Compared_RoadRules), Pair(count_SameULIC_AddressPoint, count_SameULIC_AddressPoint_Exact, count_SameULIC), Pair(count_NearestRoad_AddressPoint, count_NearestRoad_AddressPoint_Exact, count_NearestRoad), Pair(count_Longest_AddressPoint, count_Longest_AddressPoint_Exact, count_Matched), Count(rings.Count), Count(roadSegments.Count) + " |");
-
-                List<Point2D>? MatchedRing(Point2D point2D)
-                {
-                    HashSet<int> visited = [];
-                    int ring_Nearest = -1;
-                    double distance_Nearest = double.MaxValue;
-                    for (long cellX = FrontFacade_Cell(point2D.X - distance_Match); cellX <= FrontFacade_Cell(point2D.X + distance_Match); cellX++)
-                    {
-                        for (long cellY = FrontFacade_Cell(point2D.Y - distance_Match); cellY <= FrontFacade_Cell(point2D.Y + distance_Match); cellY++)
-                        {
-                            if (!edgeIndex.TryGetValue((cellX, cellY), out List<int>? indexes))
-                            {
-                                continue;
-                            }
-
-                            foreach (int i in indexes)
-                            {
-                                int ring_Index = edgeRings[i];
-                                if (!visited.Add(ring_Index))
-                                {
-                                    continue;
-                                }
-
-                                List<Point2D> ring = rings[ring_Index];
-                                if (Inside(ring, point2D))
-                                {
-                                    return ring;
-                                }
-
-                                for (int j = 0; j < ring.Count; j++)
-                                {
-                                    double distance = FrontFacade_Closest(point2D.X, point2D.Y, ring[j], ring[(j + 1) % ring.Count]).Distance;
-                                    if (distance < distance_Nearest)
-                                    {
-                                        distance_Nearest = distance;
-                                        ring_Nearest = ring_Index;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    return distance_Nearest <= distance_Match ? rings[ring_Nearest] : null;
-                }
-            }
-
-            static bool Inside(List<Point2D> ring, Point2D point2D)
-            {
-                bool result = false;
-                for (int i = 0, j = ring.Count - 1; i < ring.Count; j = i++)
-                {
-                    if ((ring[i].Y > point2D.Y) != (ring[j].Y > point2D.Y) && point2D.X < ((ring[j].X - ring[i].X) * (point2D.Y - ring[i].Y) / (ring[j].Y - ring[i].Y)) + ring[i].X)
-                    {
-                        result = !result;
-                    }
-                }
-
-                return result;
             }
 
             static string Count(int value)
