@@ -25,6 +25,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             const string referenceId_InB = "XUNIT-RESCUE-IN-B";
             const string referenceId_InA = "XUNIT-RESCUE-IN-A";
             const string referenceId_Nowhere = "XUNIT-RESCUE-NOWHERE";
+            const string referenceId_InB_Far = "XUNIT-RESCUE-IN-B-FAR";
             const double x = -9000000;
 
             (ConnectionData connectionData_Main, _) = TestConnectionDatas();
@@ -63,13 +64,14 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 [
                     ScratchAddressPoint(referenceId_InB, new Point2D(x + 145, 45), version),
                     ScratchAddressPoint(referenceId_InA, new Point2D(x + 80, 80), version),
+                    ScratchAddressPoint(referenceId_InB_Far, new Point2D(x + 190, 90), version),
                     ScratchAddressPoint(referenceId_Nowhere, new Point2D(x - 500000, 0), version),
                 ];
 
                 // Without the retry: the point lying in county B is outside, together with the one in no county, and nothing is written for it.
                 AddressPointUpdateResult? addressPointUpdateResult = await addressPointPostgreSQLConverter.UpdateAddressPointsAsync(building2DPostgreSQLConverter, administrativeAreal2DPostgreSQLConverter, addressPoints, [countyId_A], retryOutside: false);
                 Assert.NotNull(addressPointUpdateResult);
-                Assert.Equal(2, addressPointUpdateResult.Outside);
+                Assert.Equal(3, addressPointUpdateResult.Outside);
                 Assert.Equal(0, addressPointUpdateResult.Rescued);
                 Assert.Equal(1, addressPointUpdateResult.Unmatched);
                 Assert.Equal(0L, await ScalarAsync(npgsqlConnection, $"SELECT count(*) FROM {Constants.TableName.AddressPoint} WHERE reference_id = '{referenceId_InB}';"));
@@ -77,12 +79,15 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 // With the retry: the point is filed under county B and matched against its building; the one in no county stays outside.
                 addressPointUpdateResult = await addressPointPostgreSQLConverter.UpdateAddressPointsAsync(building2DPostgreSQLConverter, administrativeAreal2DPostgreSQLConverter, addressPoints, [countyId_A], retryOutside: true);
                 Assert.NotNull(addressPointUpdateResult);
-                Assert.Equal(1, addressPointUpdateResult.Outside);
+                // The far point lies in county B too but matches none of its buildings, like a PRG coordinate error: it stays outside and unwritten.
+                Assert.Equal(2, addressPointUpdateResult.Outside);
                 Assert.Equal(1, addressPointUpdateResult.Rescued);
+               
                 Assert.Equal(1, addressPointUpdateResult.Inside);
                 Assert.Contains(countyId_B, addressPointUpdateResult.CountyIds ?? []);
                 Assert.Equal(countyId_B, await ScalarAsync(npgsqlConnection, $"SELECT county_id FROM {Constants.TableName.AddressPoint} WHERE reference_id = '{referenceId_InB}';"));
                 Assert.Equal(0L, await ScalarAsync(npgsqlConnection, $"SELECT count(*) FROM {Constants.TableName.AddressPoint} WHERE reference_id = '{referenceId_Nowhere}';"));
+                Assert.Equal(0L, await ScalarAsync(npgsqlConnection, $"SELECT count(*) FROM {Constants.TableName.AddressPoint} WHERE reference_id = '{referenceId_InB_Far}';"));
 
                 List<GIS.Classes.AddressPointMatch>? addressPointMatches = await addressPointPostgreSQLConverter.GetAddressPointMatchesByReferencesAsync([reference_Building_B]);
                 Assert.NotNull(addressPointMatches);
