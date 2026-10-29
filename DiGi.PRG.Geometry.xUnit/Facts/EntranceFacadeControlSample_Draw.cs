@@ -28,7 +28,7 @@ namespace DiGi.PRG.Geometry.xUnit
         /// <summary>
         /// Draws the entrance-facade control sample from the road-assessment counties and writes it, unlabelled, to <c>reports/EntranceFacadeControlSample.json</c> with a review page <c>reports/EntranceFacadeControlSample_Review.html</c> for manual labelling. Reference: DiGi.Test#6, tracking issue DiGi.GIS.PostgreSQL#117.
         /// <para>Inputs are those of <see cref="FrontFacade_Counties"/> (<c>user files/DiGi.PRG.Geometry_FrontFacade.conf</c>); without them the fact returns. Candidates are residential BDOT10k buildings (<c>funkcjaOgolnaBudynku</c> mieszkalne, <c>przewazajacaFunkcjaBudynku</c> jednorodzinny or wielorodzinny) with a footprint of 4 or more corners and at least one PRG address point matched to them as the import matches (inside, else nearest within 10 m). Strata: city multi-family and city single-family (3061, 0262), suburban (1405), rural (1436, 1001). Each stratum's candidates are ordered by county code and BDOT10k <c>lokalnyId</c>, shuffled with a fixed seed and the first 30 kept, so the same inputs always draw the same sample.</para>
-        /// <para>Each record is self-contained, so the integrity and scoring facts need no database and no archive: the footprint ring (EPSG:2180, counter-clockwise, edge <c>i</c> from point <c>i</c> to <c>i + 1</c>), the matched address points, and the road segments the four rules of <see cref="FrontFacade_Rules"/> read (every segment within 50 m of the footprint, plus the nearest one within 200 m). The label fields stay empty for the labeller: <c>EntranceEdge</c> and <c>Status</c> (<c>Unlabelled</c>, <c>Labelled</c> or <c>Unknown</c>). The review page shows no road and no rule result, so the labels do not echo a rule. Long test.</para>
+        /// <para>Each record is self-contained, so the integrity and scoring facts need no database and no archive: the footprint ring (EPSG:2180, counter-clockwise, edge <c>i</c> from point <c>i</c> to <c>i + 1</c>), the matched address points, and the road segments the four rules of <see cref="FrontFacade_Rules"/> read (every segment within 50 m of the footprint, plus the nearest one within 200 m) and <c>RulesAtDraw</c>, the edge each rule picks on the full road network (-1 when it finds no road; the address-point and same-ULIC rules read the first point by <c>lokalnyId</c>, the first point with a ULIC respectively), which <see cref="EntranceFacadeControlSample_Scores"/> checks the stored segments reproduce. The label fields stay empty for the labeller: <c>EntranceEdge</c> and <c>Status</c> (<c>Unlabelled</c>, <c>Labelled</c> or <c>Unknown</c>). The review page shows no road and no rule result, so the labels do not echo a rule. Long test.</para>
         /// </summary>
         [LongFact]
         public void EntranceFacadeControlSample_Draw()
@@ -192,6 +192,19 @@ namespace DiGi.PRG.Geometry.xUnit
                     jsonArray_Roads.Add(new JsonObject { ["Start"] = new JsonArray(Round(start.X), Round(start.Y)), ["End"] = new JsonArray(Round(end.X), Round(end.Y)), ["ULIC"] = uLIC });
                 }
 
+                // The rule picks on the full road network, so the scoring fact can check that the stored segments reproduce them
+                PunktAdresowy punktAdresowy_First = punktyAdresowe.OrderBy(x => x.lokalnyId, StringComparer.Ordinal).First();
+                string? uLIC_First = punktyAdresowe.OrderBy(x => x.lokalnyId, StringComparer.Ordinal).Select(x => x.identyfikatorULIC?.Trim()).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+                (Point2D? point2D_SameULIC, _) = uLIC_First is null ? (null, double.MaxValue) : FrontFacade_NearestRoad(ring, roadSegments, roadIndex, uLIC_First, frontFacade_SameULICDistance);
+                (Point2D? point2D_NearestRoad, _) = FrontFacade_NearestRoad(ring, roadSegments, roadIndex, null, frontFacade_SearchDistance);
+                JsonObject rulesAtDraw = new()
+                {
+                    ["SameULIC"] = point2D_SameULIC is null ? -1 : FrontFacade_FacingEdge(ring, point2D_SameULIC),
+                    ["NearestRoad"] = point2D_NearestRoad is null ? -1 : FrontFacade_FacingEdge(ring, point2D_NearestRoad),
+                    ["AddressPoint"] = FrontFacade_NearestEdge(ring, punktAdresowy_First.Geometry!),
+                    ["Longest"] = FrontFacade_LongestEdge(ring),
+                };
+
                 return new JsonObject
                 {
                     ["Index"] = -1,
@@ -205,6 +218,7 @@ namespace DiGi.PRG.Geometry.xUnit
                     ["Ring"] = jsonArray_Ring,
                     ["AddressPoints"] = jsonArray_AddressPoints,
                     ["Roads"] = jsonArray_Roads,
+                    ["RulesAtDraw"] = rulesAtDraw,
                     ["EntranceEdge"] = null,
                     ["Status"] = "Unlabelled",
                 };

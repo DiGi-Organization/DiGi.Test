@@ -4,7 +4,7 @@ namespace DiGi.PRG.Geometry.xUnit
     {
         /// <summary>
         /// The review page written by <see cref="EntranceFacadeControlSample_Draw"/>; <c>__SAMPLE__</c> is replaced by the sample JSON.
-        /// <para>A self-contained local page: each building is drawn north up with numbered edges (edge <c>i</c> from ring point <c>i</c> to <c>i + 1</c>, the numbering of the sample); clicking an edge marks it as the main entrance, <c>Unknown</c> marks a building whose entrance cannot be seen. Labels persist in the browser's local storage and are exported as <c>EntranceFacadeControlSample_Labels.json</c> (<c>{ Index: edge }</c>, -1 for unknown), which is merged into the sample before it is committed to <c>DiGi.Test/files/</c>. Roads and rule results are deliberately not shown.</para>
+        /// <para>A local page: each building is drawn north up over the GUGiK Geoportal orthophoto of the same extent (WMS <c>HighResolution</c>, EPSG:2180, loaded by the browser; transparency set in the header, 60 % by default), with numbered edges (edge <c>i</c> from ring point <c>i</c> to <c>i + 1</c>, the numbering of the sample); clicking an edge marks it as the main entrance, <c>Unknown</c> marks a building whose entrance cannot be seen. Labels persist in the browser's local storage and are exported as <c>EntranceFacadeControlSample_Labels.json</c> (<c>{ Index: edge }</c>, -1 for unknown), which is merged into the sample before it is committed to <c>DiGi.Test/files/</c>. Roads and rule results are deliberately not shown.</para>
         /// </summary>
         private const string entranceFacadeControlSample_ReviewPage = """
 <!doctype html>
@@ -14,7 +14,8 @@ namespace DiGi.PRG.Geometry.xUnit
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Entrance Facade Labelling</title>
 <style>
-  :root { --bg: #f6f6f4; --card: #ffffff; --ink: #1d1d1b; --muted: #6b6b66; --line: #d9d9d4; --edge: #3a5a8c; --pick: #c0392b; --fill: #e8edf5; }
+  :root { --bg: #f6f6f4; --card: #ffffff; --ink: #1d1d1b; --muted: #6b6b66; --line: #d9d9d4; --edge: #1f4f99; --pick: #e0301e; --fill: #e8edf5; --ortho: 0.4; }
+  .ortho { opacity: var(--ortho); }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, sans-serif; }
   header { position: sticky; top: 0; z-index: 2; background: var(--card); border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
@@ -48,11 +49,12 @@ namespace DiGi.PRG.Geometry.xUnit
   <span class="progress" id="progress"></span>
   <label>Labeller <input type="text" id="labeller" size="12"></label>
   <label><input type="checkbox" id="onlyOpen"> Only unlabelled</label>
+  <label>Imagery transparency <input type="range" id="transparency" min="0" max="100" step="5"> <span id="transparencyValue"></span></label>
   <button id="export">Export labels</button>
   <label><button id="importButton" type="button">Import labels</button><input type="file" id="import" accept=".json" class="hidden"></label>
 </header>
 <main id="main">
-  <p class="intro">For each building, click the edge of the footprint that holds the <b>main entrance</b>, using the satellite and Street View links. Use <b>Unknown</b> when the entrance cannot be seen. North is up; red dots are the PRG address points. Labels are kept in this browser; export them when done.</p>
+  <p class="intro">For each building, click the edge of the footprint that holds the <b>main entrance</b>, using the satellite and Street View links. Use <b>Unknown</b> when the entrance cannot be seen. North is up; red dots are the PRG address points; the underlay is the GUGiK Geoportal orthophoto (its date varies by area; set its transparency in the header). Labels are kept in this browser; export them when done.</p>
 </main>
 <script>
 const sample = __SAMPLE__;
@@ -60,6 +62,24 @@ const key = "EntranceFacadeControlSample_" + sample.Seed;
 let state = { labels: {}, labeller: "" };
 try { state = Object.assign(state, JSON.parse(localStorage.getItem(key) || "{}")); } catch (e) { }
 const save = () => { try { localStorage.setItem(key, JSON.stringify(state)); } catch (e) { } };
+// The transparency is stored apart from the labels and only when the slider moves, so a changed default reaches every viewer who has not set one
+const keyTransparency = key + "_Transparency";
+let transparencyValue = 60;
+try { const stored = localStorage.getItem(keyTransparency); if (stored !== null) transparencyValue = Number(stored); } catch (e) { }
+// GUGiK orthophoto WMS; version 1.1.1 takes the EPSG:2180 box easting first, the order of the sample coordinates
+const ortho = "https://mapy.geoportal.gov.pl/wss/service/PZGIK/ORTO/WMS/HighResolution?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Raster&STYLES=&SRS=EPSG:2180&FORMAT=image/jpeg&WIDTH=600&HEIGHT=600&BBOX=";
+const transparency = document.getElementById("transparency");
+const applyTransparency = () => {
+  transparency.value = transparencyValue;
+  document.getElementById("transparencyValue").textContent = transparencyValue + " %";
+  document.documentElement.style.setProperty("--ortho", String(1 - transparencyValue / 100));
+};
+transparency.addEventListener("input", () => {
+  transparencyValue = Number(transparency.value);
+  try { localStorage.setItem(keyTransparency, String(transparencyValue)); } catch (e) { }
+  applyTransparency();
+});
+applyTransparency();
 const ns = "http://www.w3.org/2000/svg";
 const main = document.getElementById("main");
 const labeller = document.getElementById("labeller");
@@ -84,7 +104,11 @@ function draw(building, svg) {
   const scale = 280 / size;
   const sx = x => 150 + (x - cx) * scale;
   const sy = y => 150 - (y - cy) * scale;
-  el("polygon", { points: ring.map(p => sx(p[0]) + "," + sy(p[1])).join(" "), fill: "var(--fill)" }, svg);
+  // The orthophoto of exactly the drawn extent: 300 px span 300 / scale metres around the centre
+  const half = 150 / scale;
+  const box = [cx - half, cy - half, cx + half, cy + half].map(v => v.toFixed(2)).join(",");
+  el("image", { href: ortho + box, x: 0, y: 0, width: 300, height: 300, preserveAspectRatio: "none", class: "ortho" }, svg);
+  el("polygon", { points: ring.map(p => sx(p[0]) + "," + sy(p[1])).join(" "), fill: "var(--fill)", "fill-opacity": 0.3 }, svg);
   const picked = state.labels[building.Index];
   ring.forEach((p, i) => {
     const q = ring[(i + 1) % ring.length];
