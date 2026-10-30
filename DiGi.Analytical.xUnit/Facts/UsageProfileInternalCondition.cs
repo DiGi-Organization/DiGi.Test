@@ -73,17 +73,7 @@ namespace DiGi.Analytical.xUnit
             InternalCondition internalCondition_Hourly = Building.HVAC.Create.UsageProfile(UsageType.Office, hourly: true)!.InternalCondition()!;
             Assert.Equal(168, internalCondition_Hourly.Profile(InternalGainProfileType.TotalInternalGain)!.Count);
 
-            // TODO [FactorRoundTrip]: SerializationCheck(internalCondition_Standard) once DiGi.Core's Factor reloads its value - the readonly
-            // struct's FromJsonObject cannot write its field, so every InternalGain proportion reloads as NaN. Until then the profiles,
-            // system properties and provenance are checked by a string round trip.
-            InternalCondition? internalCondition_Json = Core.Convert.ToDiGi<InternalCondition>(Core.Convert.ToSystem_String(internalCondition_Standard))?.FirstOrDefault();
-            Assert.NotNull(internalCondition_Json);
-            Assert.Equal(7.1, internalCondition_Json.Profile(InternalGainProfileType.TotalInternalGain)!.Values!.Single(), tolerance);
-            Assert.Equal(20.0, internalCondition_Json.Profile(ThermostatProfileType.LowerLimit)!.Values!.Single(), tolerance);
-            Assert.Equal(0.32, internalCondition_Json.SystemProperties()!.OutsideAirPerArea, tolerance);
-            Assert.True(internalCondition_Json.TryGetValue(new EnumParameterDefinition(InternalConditionParameter.UsageSource), out string? usageSource_Json, new GetValueSettings(true, false)));
-            Assert.True(internalCondition_Standard.TryGetValue(new EnumParameterDefinition(InternalConditionParameter.UsageSource), out string? usageSource_Standard, new GetValueSettings(true, false)));
-            Assert.Equal(usageSource_Standard, usageSource_Json);
+            Core.xUnit.Query.SerializationCheck(internalCondition_Standard);
         }
 
         /// <summary>
