@@ -43,7 +43,7 @@ namespace DiGi.GIS.Analytical.xUnit
         }
 
         /// <summary>
-        /// Tests <see cref="DiGi.Analytical.Building.Query.PartyWalls"/> on two touching boxes and on a terrace of three (DiGi-Organization/DiGi.GIS.Analytical#4).
+        /// Tests <see cref="DiGi.Analytical.Building.Query.PartyWalls(BuildingModel?, IEnumerable{BuildingModel?}?, double, double, double, double)"/> on two touching boxes and on a terrace of three (DiGi-Organization/DiGi.GIS.Analytical#4).
         /// <para>Two 10 x 10 m boxes of one 3 m storey sharing the line x = 10 share 30 m2, seen from either side, and the result names the neighbour model and its wall. In a terrace of three the middle building has two party walls and the end buildings one each. A model passed in its own neighbour list is skipped.</para>
         /// </summary>
         [Fact]
@@ -76,11 +76,11 @@ namespace DiGi.GIS.Analytical.xUnit
 
             // No neighbours, no party walls; a null model gives null.
             Assert.Empty(DiGi.Analytical.Building.Query.PartyWalls(buildingModel_A, [])!);
-            Assert.Null(DiGi.Analytical.Building.Query.PartyWalls(null, buildingModels));
+            Assert.Null(DiGi.Analytical.Building.Query.PartyWalls((BuildingModel?)null, buildingModels));
         }
 
         /// <summary>
-        /// Tests that <see cref="DiGi.Analytical.Building.Query.PartyWalls"/> returns only the part both walls cover (DiGi-Organization/DiGi.GIS.Analytical#4).
+        /// Tests that <see cref="DiGi.Analytical.Building.Query.PartyWalls(BuildingModel?, IEnumerable{BuildingModel?}?, double, double, double, double)"/> returns only the part both walls cover (DiGi-Organization/DiGi.GIS.Analytical#4).
         /// <para>A three-storey building next to a one-storey one shares the lower 3 m band only, 30 m2, seen from either side. A neighbour shifted by 4 m along the shared line shares 6 m x 3 m = 18 m2.</para>
         /// <para>Two overlapping footprints - the same building filed twice, shifted by 4 m - have coplanar walls on the same side; they face the same way, so they are no party wall.</para>
         /// </summary>
@@ -100,7 +100,7 @@ namespace DiGi.GIS.Analytical.xUnit
         }
 
         /// <summary>
-        /// Tests the distance and angle limits of <see cref="DiGi.Analytical.Building.Query.PartyWalls"/> just inside and just outside (DiGi-Organization/DiGi.GIS.Analytical#4).
+        /// Tests the distance and angle limits of <see cref="DiGi.Analytical.Building.Query.PartyWalls(BuildingModel?, IEnumerable{BuildingModel?}?, double, double, double, double)"/> just inside and just outside (DiGi-Organization/DiGi.GIS.Analytical#4).
         /// <para>With the default 0.2 m a gap of 0.19 m still makes a party wall and a gap of 0.21 m does not. A neighbour wall at about 2.9 degrees to the wall is parallel enough, one at about 8.5 degrees is not, although both lie within 0.2 m of the plane.</para>
         /// </summary>
         [Fact]
