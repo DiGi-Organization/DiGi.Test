@@ -19,8 +19,10 @@ namespace DiGi.Analytical.xUnit
                 SolarReflectance = new SurfaceValue(0.07, 0.08),
                 LightReflectance = new SurfaceValue(0.08, 0.09),
                 Emissivity = new SurfaceValue(0.84, 0.837),
+                InfraredTransmittance = 0.02,
             };
 
+            Assert.Equal(0.02, transparentMaterial.InfraredTransmittance);
             Assert.Equal(1.0, transparentMaterial.Conductivity);
             Assert.Equal(0.83, transparentMaterial.SolarTransmittance);
             Assert.Equal(0.90, transparentMaterial.LightTransmittance);
@@ -37,6 +39,7 @@ namespace DiGi.Analytical.xUnit
             Assert.Equal(transparentMaterial.LightReflectance?.External, transparentMaterial_Copy.LightReflectance?.External);
             Assert.Equal(transparentMaterial.Emissivity?.Internal, transparentMaterial_Copy.Emissivity?.Internal);
             Assert.NotSame(transparentMaterial.Emissivity, transparentMaterial_Copy.Emissivity);
+            Assert.Equal(0.02, transparentMaterial_Copy.InfraredTransmittance);
 
             string? json = Core.Convert.ToSystem_String(transparentMaterial);
             Assert.NotNull(json);
@@ -61,6 +64,11 @@ namespace DiGi.Analytical.xUnit
                 Density = 1.699,
                 SpecificHeat = 519.0,
                 DynamicViscosity = 0.0000210,
+                ConductivityTemperatureCoefficient = 5.0e-5,
+                DynamicViscosityTemperatureCoefficient = 6.4e-8,
+                SpecificHeatTemperatureCoefficient = 0.001,
+                MolarMass = 39.948,
+                SpecificHeatRatio = 1.67,
             };
 
             FluidMaterial fluidMaterial_Copy = new(fluidMaterial);
@@ -69,6 +77,11 @@ namespace DiGi.Analytical.xUnit
             Assert.Equal(1.699, fluidMaterial_Copy.Density);
             Assert.Equal(519.0, fluidMaterial_Copy.SpecificHeat);
             Assert.Equal(0.0000210, fluidMaterial_Copy.DynamicViscosity);
+            Assert.Equal(5.0e-5, fluidMaterial_Copy.ConductivityTemperatureCoefficient);
+            Assert.Equal(6.4e-8, fluidMaterial_Copy.DynamicViscosityTemperatureCoefficient);
+            Assert.Equal(0.001, fluidMaterial_Copy.SpecificHeatTemperatureCoefficient);
+            Assert.Equal(39.948, fluidMaterial_Copy.MolarMass);
+            Assert.Equal(1.67, fluidMaterial_Copy.SpecificHeatRatio);
 
             string? json = Core.Convert.ToSystem_String(fluidMaterial);
             Assert.NotNull(json);
@@ -76,6 +89,8 @@ namespace DiGi.Analytical.xUnit
             Assert.NotNull(fluidMaterial_Json);
             Assert.Equal(0.0000210, fluidMaterial_Json.DynamicViscosity);
             Assert.Equal(519.0, fluidMaterial_Json.SpecificHeat);
+            Assert.Equal(39.948, fluidMaterial_Json.MolarMass);
+            Assert.Equal(6.4e-8, fluidMaterial_Json.DynamicViscosityTemperatureCoefficient);
 
             Core.xUnit.Query.SerializationCheck(fluidMaterial);
         }

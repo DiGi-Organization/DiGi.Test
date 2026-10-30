@@ -22,6 +22,7 @@ namespace DiGi.Analytical.xUnit
                 (OpeningConstructionParameter.FrameThermalTransmittance, 2.0),
                 (OpeningConstructionParameter.GlazingLinearThermalTransmittance, 0.04),
                 (OpeningConstructionParameter.TotalSolarEnergyTransmittance, 0.75),
+                (OpeningConstructionParameter.LightTransmittance, 0.82),
             ];
 
             foreach ((OpeningConstructionParameter openingConstructionParameter, double value) in values)
