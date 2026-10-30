@@ -17,6 +17,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             Assert.Equal(600, postgreSQLBuildingDataExternalComponentsUpdateOptions.CommandTimeout);
             Assert.Null(postgreSQLBuildingDataExternalComponentsUpdateOptions.CountyIds);
+            Assert.True(postgreSQLBuildingDataExternalComponentsUpdateOptions.PartyWalls);
+            Assert.Equal(0.2, postgreSQLBuildingDataExternalComponentsUpdateOptions.PartyWallMaxDistance);
         }
 
         /// <summary>
@@ -29,7 +31,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             PostgreSQLBuildingDataExternalComponentsUpdateOptions postgreSQLBuildingDataExternalComponentsUpdateOptions = new()
             {
                 CommandTimeout = 120,
-                CountyIds = [55417, 56029, 53477]
+                CountyIds = [55417, 56029, 53477],
+                PartyWalls = false,
+                PartyWallMaxDistance = 0.15
             };
 
             string? text = Core.Convert.ToSystem_String(postgreSQLBuildingDataExternalComponentsUpdateOptions);
@@ -39,6 +43,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.NotNull(postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed);
 
             Assert.Equal(120, postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.CommandTimeout);
+            Assert.False(postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.PartyWalls);
+            Assert.Equal(0.15, postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.PartyWallMaxDistance);
 
             HashSet<int>? countyIds = postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.CountyIds;
             Assert.NotNull(countyIds);
@@ -50,6 +56,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             PostgreSQLBuildingDataExternalComponentsUpdateOptions postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone = new(postgreSQLBuildingDataExternalComponentsUpdateOptions);
 
             Assert.Equal(120, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.CommandTimeout);
+            Assert.False(postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.PartyWalls);
+            Assert.Equal(0.15, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.PartyWallMaxDistance);
             Assert.NotNull(postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.CountyIds);
             Assert.Equal(3, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.CountyIds.Count);
             Assert.NotSame(postgreSQLBuildingDataExternalComponentsUpdateOptions.CountyIds, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.CountyIds);

@@ -26,6 +26,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.ProcessedModelCount);
             Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.SkippedComponentCount);
             Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.UpdatedRowCount);
+            Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.PartyWallBuildingCount);
+            Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.PartyWallFailedBatchCount);
+            Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.MissingNeighbourModelCount);
         }
     }
 }

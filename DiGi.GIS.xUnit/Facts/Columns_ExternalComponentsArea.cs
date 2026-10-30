@@ -183,8 +183,9 @@ namespace DiGi.GIS.xUnit
                 preExistingUniqueIds.Add(uniqueId_Temp);
             }
 
-            // 39 columns before the Solar radiation set landed in Constants.Column (a7134d7 added 22 Solar columns, d4ec436 added 3 more).
-            Assert.Equal(64, preExistingUniqueIds.Count);
+            // 39 columns before the Solar radiation set landed in Constants.Column (a7134d7 added 22 Solar columns, d4ec436 added 3 more),
+            // and the 9 party wall area columns of DiGi-Organization/DiGi.GIS.Analytical#4.
+            Assert.Equal(73, preExistingUniqueIds.Count);
             Assert.Empty(uniqueIds.Intersect(preExistingUniqueIds));
 
             List<Column> dynamicColumns =
