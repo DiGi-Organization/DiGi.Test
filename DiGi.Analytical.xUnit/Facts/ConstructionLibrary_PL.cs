@@ -49,7 +49,7 @@ namespace DiGi.Analytical.xUnit
                 (Date(1945, 12, 31), BuildingType.Terraced, ConstructionRole.ExternalWall, PhysicalComponentConstructionParameter.ThermalTransmittance, 1.95),
                 (Date(1946, 1, 1), BuildingType.Terraced, ConstructionRole.ExternalWall, PhysicalComponentConstructionParameter.ThermalTransmittance, 1.55),
                 (Date(1975, 6, 1), BuildingType.MultiFamily, ConstructionRole.ExternalWall, PhysicalComponentConstructionParameter.ThermalTransmittance, 1.3),
-                (Date(1975, 6, 1), BuildingType.MultiFamily, ConstructionRole.FloorOverUnheated, PhysicalComponentConstructionParameter.ThermalTransmittance, 0.935251798561151),
+                (Date(1975, 6, 1), BuildingType.MultiFamily, ConstructionRole.FloorOverUnheated, PhysicalComponentConstructionParameter.ThermalTransmittance, 1.3),
                 (Date(1975, 6, 1), BuildingType.ApartmentBlock, ConstructionRole.FlatRoof, PhysicalComponentConstructionParameter.ThermalTransmittance, 0.33),
                 (Date(2008, 12, 31), BuildingType.SingleFamily, ConstructionRole.Window, OpeningConstructionParameter.ThermalTransmittance, 1.2),
                 (Date(2009, 1, 1), BuildingType.SingleFamily, ConstructionRole.Window, OpeningConstructionParameter.ThermalTransmittance, 1.1),

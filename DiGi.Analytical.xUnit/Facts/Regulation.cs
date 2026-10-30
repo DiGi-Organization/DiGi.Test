@@ -85,16 +85,16 @@ namespace DiGi.Analytical.xUnit
             DateTimeOffset dateTimeOffset_2014 = new(2014, 1, 1, 0, 0, 0, TimeSpan.Zero);
             DateTimeOffset dateTimeOffset_2017 = new(2017, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-            ConstructionSet constructionSet_2014 = new(ConstructionFlavour.Regulation, BuildingType.SingleFamily, null, dateTimeOffset_2014, dateTimeOffset_2017, "Dz.U. 2013 poz. 926, 2014 stage");
+            ConstructionSet constructionSet_2014 = new(ConstructionFlavour.Regulation, BuildingType.SingleFamily, null, dateTimeOffset_2014, dateTimeOffset_2017, "Dz.U. 2013 poz. 926, 2014 stage", null);
             Assert.True(constructionSet_2014.SetConstruction(ConstructionRole.ExternalWall, wallConstruction_2014));
             Assert.True(constructionSet_2014.SetConstruction(ConstructionRole.Window, windowConstruction));
             Assert.False(constructionSet_2014.SetConstruction(ConstructionRole.Undefined, wallConstruction_2014));
             Assert.False(constructionSet_2014.SetConstruction(ConstructionRole.Roof, null));
 
-            ConstructionSet constructionSet_2017 = new(ConstructionFlavour.Regulation, BuildingType.SingleFamily, null, dateTimeOffset_2017, null, "Dz.U. 2013 poz. 926, 2017 stage");
+            ConstructionSet constructionSet_2017 = new(ConstructionFlavour.Regulation, BuildingType.SingleFamily, null, dateTimeOffset_2017, null, "Dz.U. 2013 poz. 926, 2017 stage", null);
             Assert.True(constructionSet_2017.SetConstruction(ConstructionRole.ExternalWall, wallConstruction_2017));
 
-            ConstructionSet constructionSet_ZoneV = new(ConstructionFlavour.Regulation, BuildingType.SingleFamily, ClimateZone.V, dateTimeOffset_2014, dateTimeOffset_2017, "Zone V variant");
+            ConstructionSet constructionSet_ZoneV = new(ConstructionFlavour.Regulation, BuildingType.SingleFamily, ClimateZone.V, dateTimeOffset_2014, dateTimeOffset_2017, "Zone V variant", null);
             Assert.True(constructionSet_ZoneV.SetConstruction(ConstructionRole.ExternalWall, wallConstruction_ZoneV));
 
             Assert.True(constructionLibrary.Add(constructionSet_2014));
