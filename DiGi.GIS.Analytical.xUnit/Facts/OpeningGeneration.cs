@@ -27,9 +27,9 @@ namespace DiGi.GIS.Analytical.xUnit
             return (buildingModel, building2D);
         }
 
-        private static OpeningGenerationInput OpeningGeneration_Input(short? yearBuilt, Point2D? addressPoint = null)
+        private static OpeningGenerationInput OpeningGeneration_Input(short? yearBuilt, Point2D? addressPoint = null, IEnumerable<Polyline2D>? roads = null)
         {
-            return new OpeningGenerationInput(yearBuilt, YearBuiltSource.User, addressPoint, Regulation.Enums.ClimateZone.Undefined, null, null);
+            return new OpeningGenerationInput(yearBuilt, YearBuiltSource.User, addressPoint, Regulation.Enums.ClimateZone.Undefined, null, null, roads);
         }
 
         private static string? OpeningGeneration_Value(IOpening opening, OpeningParameter openingParameter)
@@ -62,21 +62,48 @@ namespace DiGi.GIS.Analytical.xUnit
             OpeningGenerationOptions openingGenerationOptions = Create.OpeningGenerationOptions(Regulation.Enums.BuildingRegulation.PL_WT2009);
             openingGenerationOptions.ConstructionFlavour = Regulation.Enums.ConstructionFlavour.Regulation;
             openingGenerationOptions.StaircaseSpacing = 12.5;
+            openingGenerationOptions.FireSeparationDistances![FireClass.IN] = 9;
+            openingGenerationOptions.FireSeparationHeatRelease = 2200;
+            openingGenerationOptions.ObstructionInnerCityFactor = 0.5;
+            openingGenerationOptions.RoadFrontageDistance = 6.0;
             OpeningGenerationOptions openingGenerationOptions_Copy = new(openingGenerationOptions);
             Assert.Equal(Core.Convert.ToSystem_String(openingGenerationOptions), Core.Convert.ToSystem_String(openingGenerationOptions_Copy));
             Assert.Equal(12.5, openingGenerationOptions_Copy.StaircaseSpacing);
+            Assert.Equal(6.0, openingGenerationOptions_Copy.RoadFrontageDistance);
+            Assert.Equal(9, openingGenerationOptions_Copy.FireSeparationDistances![FireClass.IN]);
+            Assert.Equal(2200, openingGenerationOptions_Copy.FireSeparationHeatRelease);
+            Assert.Equal(0.5, openingGenerationOptions_Copy.ObstructionInnerCityFactor);
             Assert.Equal(0.25, openingGenerationOptions_Copy.RoomMixes![Regulation.Enums.BuildingType.SingleFamily][Regulation.Enums.RoomUse.Kitchen]);
             Core.xUnit.Query.SerializationCheck(openingGenerationOptions);
 
-            OpeningGenerationInput openingGenerationInput = new(1975, YearBuiltSource.Prediction, new Point2D(5, -3), Regulation.Enums.ClimateZone.IV, "OWT-67", openingGenerationOptions);
+            OpeningGenerationOptions openingGenerationOptions_WT2002 = Create.OpeningGenerationOptions(Regulation.Enums.BuildingRegulation.PL_WT2002);
+            Assert.Equal(8, openingGenerationOptions_WT2002.FireSeparationDistances![FireClass.ZL]);
+            Assert.Equal(15, openingGenerationOptions_WT2002.FireSeparationDistancePMMid);
+            Assert.Equal(20, openingGenerationOptions_WT2002.FireSeparationDistancePMHigh);
+            Assert.Null(openingGenerationOptions_WT2002.FireSeparationHeatRelease);
+            Assert.Equal(60, openingGenerationOptions_WT2002.FireSeparationHalfStripAngle);
+            Assert.Equal(120, openingGenerationOptions_WT2002.FireSeparationNoApplyAngle);
+            Assert.Equal(60, openingGenerationOptions_WT2002.ObstructionSectorAngle);
+            Assert.Equal(35, openingGenerationOptions_WT2002.ObstructionMaxDistance);
+            Assert.Equal(10, openingGenerationOptions_WT2002.ObstructionSlenderDistance);
+            Assert.Null(openingGenerationOptions_WT2002.ObstructionInnerCityFactor);
+            Assert.Equal(4.0, openingGenerationOptions_WT2002.RoadFrontageDistance);
+            Assert.Equal(1.0, openingGenerationOptions_WT2002.FrontageLineSetbackTolerance);
+            Assert.Equal(3, openingGenerationOptions_WT2002.FrontageLineMinimumFronts);
+
+            OpeningGenerationInput openingGenerationInput = new(1975, YearBuiltSource.Prediction, new Point2D(5, -3), Regulation.Enums.ClimateZone.IV, "OWT-67", openingGenerationOptions, [new Polyline2D([new Point2D(0, 0), new Point2D(5, 5)])]);
             Assert.Equal((short)1975, openingGenerationInput.YearBuilt);
             Assert.Equal(YearBuiltSource.Prediction, openingGenerationInput.YearBuiltSource);
             Assert.Equal(-3, openingGenerationInput.AddressPoint!.Y);
             Assert.Equal(Regulation.Enums.ClimateZone.IV, openingGenerationInput.ClimateZone);
             Assert.Equal("OWT-67", openingGenerationInput.PanelSystem);
             Assert.Equal(12.5, openingGenerationInput.OpeningGenerationOptions!.StaircaseSpacing);
+            Assert.NotNull(openingGenerationInput.Roads);
+            Assert.Single(openingGenerationInput.Roads!);
+            Assert.Equal(5, openingGenerationInput.Roads![0].GetPoints()![1].Y);
             Assert.Equal(Core.Convert.ToSystem_String(openingGenerationInput), Core.Convert.ToSystem_String(new OpeningGenerationInput(openingGenerationInput)));
             Core.xUnit.Query.SerializationCheck(openingGenerationInput);
+            Assert.NotNull(new OpeningGenerationInput(openingGenerationInput).Roads);
 
             Guid guid = Guid.NewGuid();
             OpeningGenerationResult openingGenerationResult = new(
@@ -96,14 +123,35 @@ namespace DiGi.GIS.Analytical.xUnit
                 new Dictionary<Guid, WallOpeningRestriction>() { [guid] = WallOpeningRestriction.None, [Guid.NewGuid()] = WallOpeningRestriction.PartyWall },
                 2,
                 1,
-                3);
+                3,
+                new Dictionary<Guid, string>() { [guid] = "FrontageLine.0.1.0.0" });
             Assert.Equal(2.0, openingGenerationResult.Storeys![0].Shortfall);
             Assert.Equal(guid, openingGenerationResult.FrontWall);
             Assert.Equal(2, openingGenerationResult.WallOpeningRestrictions!.Count);
+            Assert.Equal("FrontageLine.0.1.0.0", openingGenerationResult.FrontageLines![guid]);
             OpeningGenerationResult openingGenerationResult_Copy = new(openingGenerationResult);
             Assert.Equal(Core.Convert.ToSystem_String(openingGenerationResult), Core.Convert.ToSystem_String(openingGenerationResult_Copy));
+            Assert.Equal("FrontageLine.0.1.0.0", openingGenerationResult_Copy.FrontageLines![guid]);
             Assert.Equal(3, openingGenerationResult_Copy.DroppedOpeningCount);
             Core.xUnit.Query.SerializationCheck(openingGenerationResult);
+
+            Guid guid_Wall = Guid.NewGuid();
+            WallOpeningResult wallOpeningResult = new(new GuidReference(null, guid_Wall), WallOpeningRestriction.FireSeparation, 7.9, 8, 11.9, 12);
+            Assert.Equal(guid_Wall, wallOpeningResult.Wall!.Guid);
+            Assert.Equal(WallOpeningRestriction.FireSeparation, wallOpeningResult.Restriction);
+            Assert.Equal(7.9, wallOpeningResult.FireSeparationDistance!.Value);
+            Assert.Equal(8, wallOpeningResult.FireSeparationRequired!.Value);
+            Assert.Equal(11.9, wallOpeningResult.ObstructionDistance!.Value);
+            Assert.Equal(12, wallOpeningResult.ObstructionRequired!.Value);
+            WallOpeningResult wallOpeningResult_Copy = new(wallOpeningResult);
+            Assert.Equal(Core.Convert.ToSystem_String(wallOpeningResult), Core.Convert.ToSystem_String(wallOpeningResult_Copy));
+            Assert.Equal(guid_Wall, wallOpeningResult_Copy.Wall!.Guid);
+            Core.xUnit.Query.SerializationCheck(wallOpeningResult);
+
+            WallOpeningResult wallOpeningResult_Empty = new(null, WallOpeningRestriction.None, null, null, null, null);
+            Assert.Null(wallOpeningResult_Empty.Wall);
+            Assert.Equal(WallOpeningRestriction.None, wallOpeningResult_Empty.Restriction);
+            Core.xUnit.Query.SerializationCheck(wallOpeningResult_Empty);
         }
 
         /// <summary>
@@ -393,6 +441,47 @@ namespace DiGi.GIS.Analytical.xUnit
             OpeningGenerationStorey openingGenerationStorey = openingGenerationResult.Storeys!.Single();
             Assert.True(openingGenerationStorey.Shortfall > 0, $"target {openingGenerationStorey.TargetGlazedArea}, achieved {openingGenerationStorey.AchievedGlazedArea}");
             Assert.True(openingGenerationStorey.WindowCount > 0);
+        }
+
+        /// <summary>
+        /// Tests <see cref="Modify.GenerateOpenings"/> against neighbours (DiGi-Organization/DiGi.GIS.Analytical#9): a wall 7.9 m from a facing neighbour carries no opening at all and reports <see cref="WallOpeningRestriction.FireSeparation"/> while the other walls and the entrance are generated, and a wall with a 12 m neighbour at 9 m keeps its entrance door but gets no window of a room for people, reporting <see cref="WallOpeningRestriction.Obstruction"/>.
+        /// </summary>
+        [Fact]
+        public void Modify_GenerateOpenings_Neighbours()
+        {
+            // § 271: the east wall faces a neighbour 7.9 m away and stays blank.
+            (BuildingModel buildingModel, Building2D building2D) = OpeningGeneration_Box(10, 10, 3, BuildingSpecificFunction.single_family_building);
+            IWall wall_East = WallOpeningResults_Wall(buildingModel, x: 10);
+            List<BuildingModel> buildingModels = [WallOpeningResults_Neighbour(1, true, new Point2D(12.9, 5), new Point2D(17.9, 0), new Point2D(27.9, 0), new Point2D(27.9, 10), new Point2D(17.9, 10))];
+
+            OpeningGenerationResult? openingGenerationResult = buildingModel.GenerateOpenings(building2D, OpeningGeneration_Input(2015), buildingModels);
+            Assert.NotNull(openingGenerationResult);
+            Assert.Equal(WallOpeningRestriction.FireSeparation, openingGenerationResult!.WallOpeningRestrictions![wall_East.Guid]);
+            Assert.NotEmpty(buildingModel.GetOpenings<IWindow>() ?? []);
+            Assert.Equal(1, openingGenerationResult.DoorCount);
+            foreach (IOpening opening in buildingModel.GetOpenings<IOpening>() ?? [])
+            {
+                Assert.False(buildingModel.GetComponent<IWall>(opening)?.Guid == wall_East.Guid, "an opening on the fire-separated wall");
+            }
+
+            // § 13: the north wall has a 12 m neighbour at 9 m; it keeps the entrance door but gets no room windows.
+            (buildingModel, building2D) = OpeningGeneration_Box(10, 10, 3, BuildingSpecificFunction.single_family_building);
+            IWall wall_North = WallOpeningResults_Wall(buildingModel, y: 10);
+            buildingModels = [PartyWalls_BuildingModel(4, new Point2D(0, 19), new Point2D(10, 19), new Point2D(10, 29), new Point2D(0, 29))];
+
+            openingGenerationResult = buildingModel.GenerateOpenings(building2D, OpeningGeneration_Input(2015, new Point2D(5, 15)), buildingModels);
+            Assert.NotNull(openingGenerationResult);
+            Assert.Equal(WallOpeningRestriction.Obstruction, openingGenerationResult!.WallOpeningRestrictions![wall_North.Guid]);
+
+            foreach (IWindow window in buildingModel.GetOpenings<IWindow>() ?? [])
+            {
+                Assert.False(buildingModel.GetComponent<IWall>(window)?.Guid == wall_North.Guid, "a window on the obstructed wall");
+            }
+
+            Assert.NotEmpty(buildingModel.GetOpenings<IWindow>() ?? []);
+            List<IDoor> doors = buildingModel.GetOpenings<IDoor>() ?? [];
+            Assert.Single(doors);
+            Assert.Equal(wall_North.Guid, buildingModel.GetComponent<IWall>(doors[0])!.Guid);
         }
     }
 }
