@@ -66,8 +66,10 @@ namespace DiGi.GIS.Analytical.xUnit
             openingGenerationOptions.FireSeparationHeatRelease = 2200;
             openingGenerationOptions.ObstructionInnerCityFactor = 0.5;
             openingGenerationOptions.RoadFrontageDistance = 6.0;
+            openingGenerationOptions.AssignEnvelopeConstructions = false;
             OpeningGenerationOptions openingGenerationOptions_Copy = new(openingGenerationOptions);
             Assert.Equal(Core.Convert.ToSystem_String(openingGenerationOptions), Core.Convert.ToSystem_String(openingGenerationOptions_Copy));
+            Assert.False(openingGenerationOptions_Copy.AssignEnvelopeConstructions);
             Assert.Equal(12.5, openingGenerationOptions_Copy.StaircaseSpacing);
             Assert.Equal(6.0, openingGenerationOptions_Copy.RoadFrontageDistance);
             Assert.Equal(9, openingGenerationOptions_Copy.FireSeparationDistances![FireClass.IN]);
@@ -124,14 +126,17 @@ namespace DiGi.GIS.Analytical.xUnit
                 2,
                 1,
                 3,
-                new Dictionary<Guid, string>() { [guid] = "FrontageLine.0.1.0.0" });
+                new Dictionary<Guid, string>() { [guid] = "FrontageLine.0.1.0.0" },
+                new Dictionary<Guid, Regulation.Enums.ConstructionRole>() { [guid] = Regulation.Enums.ConstructionRole.PartyWall });
             Assert.Equal(2.0, openingGenerationResult.Storeys![0].Shortfall);
             Assert.Equal(guid, openingGenerationResult.FrontWall);
             Assert.Equal(2, openingGenerationResult.WallOpeningRestrictions!.Count);
             Assert.Equal("FrontageLine.0.1.0.0", openingGenerationResult.FrontageLines![guid]);
+            Assert.Equal(Regulation.Enums.ConstructionRole.PartyWall, openingGenerationResult.MissingConstructionRoles![guid]);
             OpeningGenerationResult openingGenerationResult_Copy = new(openingGenerationResult);
             Assert.Equal(Core.Convert.ToSystem_String(openingGenerationResult), Core.Convert.ToSystem_String(openingGenerationResult_Copy));
             Assert.Equal("FrontageLine.0.1.0.0", openingGenerationResult_Copy.FrontageLines![guid]);
+            Assert.Equal(Regulation.Enums.ConstructionRole.PartyWall, openingGenerationResult_Copy.MissingConstructionRoles![guid]);
             Assert.Equal(3, openingGenerationResult_Copy.DroppedOpeningCount);
             Core.xUnit.Query.SerializationCheck(openingGenerationResult);
 
