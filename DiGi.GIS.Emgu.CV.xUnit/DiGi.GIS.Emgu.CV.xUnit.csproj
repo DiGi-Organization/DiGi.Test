@@ -22,6 +22,7 @@
     <PackageReference Include="Emgu.CV" Version="4.12.0.5764" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.12.0.5764" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageReference Include="NetTopologySuite" Version="2.6.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
@@ -45,6 +46,9 @@
     </Reference>
     <Reference Include="DiGi.GIS.Emgu.CV">
       <HintPath>..\..\DiGi.GIS.Emgu.CV\bin\DiGi.GIS.Emgu.CV.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Typology">
+      <HintPath>..\..\DiGi.Typology\bin\DiGi.Typology.dll</HintPath>
     </Reference>
   </ItemGroup>
 
