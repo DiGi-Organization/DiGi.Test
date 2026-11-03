@@ -44,7 +44,7 @@ namespace DiGi.GIS.xUnit
             Assert.Equal("https://opendata.geoportal.gov.pl/ortofotomapa/37/37_62336_N-33-117-D-a-3-4.tif", ortoSheet_2005.DownloadUrl);
             Assert.Equal(new DateTimeOffset(2006, 1, 18, 0, 0, 0, TimeSpan.Zero), ortoSheet_2005.RegisterDate);
             Assert.Equal(9, ortoSheet_2005.FileSize);
-            Assert.Equal(OrtoType.Undefined, ortoSheet_2005.OrtoType);
+            Assert.Equal(OrtoType.Standard, ortoSheet_2005.OrtoType);
             Assert.Equal(probeDate, ortoSheet_2005.ProbeDate);
 
             // The feature envelope reads "546092.83 316564.96" / "548488.17 318759.55": northing first. Easting must land in X.
