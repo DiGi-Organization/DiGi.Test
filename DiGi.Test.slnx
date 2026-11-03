@@ -194,6 +194,18 @@
       <BuildDependency Project="../DiGi.GIS/DiGi.GIS/DiGi.GIS.csproj" />
       <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
     </Project>
+    <Project Path="../DiGi.GIS.Emgu.CV/DiGi.GIS.Emgu.CV/DiGi.GIS.Emgu.CV.csproj">
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.GIS/DiGi.GIS/DiGi.GIS.csproj" />
+    </Project>
+    <Project Path="DiGi.GIS.Emgu.CV.xUnit/DiGi.GIS.Emgu.CV.xUnit.csproj">
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.GIS.Emgu.CV/DiGi.GIS.Emgu.CV/DiGi.GIS.Emgu.CV.csproj" />
+      <BuildDependency Project="../DiGi.GIS/DiGi.GIS/DiGi.GIS.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
     <Project Path="DiGi.GIS.IO.xUnit/DiGi.GIS.IO.xUnit.csproj">
       <BuildDependency Project="../DiGi.Core/DiGi.Core.IO/DiGi.Core.IO.csproj" />
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
