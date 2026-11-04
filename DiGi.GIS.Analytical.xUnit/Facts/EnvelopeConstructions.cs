@@ -17,7 +17,7 @@ namespace DiGi.GIS.Analytical.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Tests <see cref="Modify.GenerateOpenings"/> envelope constructions on a 4-storey multi-family box of 1975: every wall gets the TABULA wall <c>PL.Wall.ReEx.03.03</c> (U = 1.3), the flat roof gets the set's flat-roof construction (U = 0.6), the lowest floor gets the cellar floor of the record (U = 1.3), the upper floors have no construction until DiGi-Organization/DiGi.Analytical#18 lands and are reported, and the result carries the set's source (DiGi-Organization/DiGi.GIS.Analytical#11).
+        /// Tests <see cref="Modify.GenerateOpenings"/> envelope constructions on a 4-storey multi-family box of 1975: every wall gets the TABULA wall <c>PL.Wall.ReEx.03.03</c> (U = 1.3), the flat roof gets the set's flat-roof construction (U = 0.6), the lowest floor gets the cellar floor of the record (U = 1.3), the upper floors get the layered DEFAULT IntermediateFloor of DiGi-Organization/DiGi.Analytical#18 with its layers and no declared U, no role is reported missing, and the result carries the set's source (DiGi-Organization/DiGi.GIS.Analytical#11).
         /// </summary>
         [Fact]
         public void Modify_GenerateOpenings_Envelope_1975()
@@ -63,14 +63,16 @@ namespace DiGi.GIS.Analytical.xUnit
                 }
                 else
                 {
-                    // IntermediateFloor arrives with DiGi-Organization/DiGi.Analytical#18: untouched and reported.
-                    Assert.Null(floorConstruction);
+                    // The DEFAULT IntermediateFloor of DiGi-Organization/DiGi.Analytical#18 arrives with its layers; it has no declared U.
+                    Assert.NotNull(floorConstruction);
+                    Assert.Contains("DEFAULT", floorConstruction!.Description);
+                    Assert.NotEmpty(buildingModel.GetStructureLayers(floorConstruction) ?? []);
+                    Assert.False(floorConstruction.TryGetValue(new EnumParameterDefinition(PhysicalComponentConstructionParameter.ThermalTransmittance), out double _));
                 }
             }
 
             Assert.NotNull(openingGenerationResult.MissingConstructionRoles);
-            Assert.Equal(floors.Count - 1, openingGenerationResult.MissingConstructionRoles!.Count);
-            Assert.All(openingGenerationResult.MissingConstructionRoles.Values, x => Assert.Equal(Regulation.Enums.ConstructionRole.IntermediateFloor, x));
+            Assert.Empty(openingGenerationResult.MissingConstructionRoles!);
         }
 
         /// <summary>
@@ -109,9 +111,9 @@ namespace DiGi.GIS.Analytical.xUnit
                 Assert.Equal(0.15, buildingModel.ThermalTransmittance(roofConstruction, HeatFlowDirection.Horizontal), 6);
             }
 
-            // The 2009-onward single-family record borders soil, so the lowest floor takes GroundFloor; the
-            // IntermediateFloor of the upper floors arrives with DiGi-Organization/DiGi.Analytical#18, so it is
-            // absent from both sets of the run and their components stay untouched.
+            // The 2009-onward single-family record borders soil, so the lowest floor takes GroundFloor; a Regulation
+            // set has no IntermediateFloor, so the upper floors fall back to the DEFAULT one of the TypicalAsBuilt set
+            // (DiGi-Organization/DiGi.Analytical#18).
             List<IFloor> floors = buildingModel.GetComponents<IFloor>() ?? [];
             Assert.Equal(3, floors.Count);
             IFloor? floor_Lowest = floors.OrderBy(x => x.GetBoundingBox()!.Min!.Z).FirstOrDefault();
@@ -126,13 +128,13 @@ namespace DiGi.GIS.Analytical.xUnit
                 }
                 else
                 {
-                    Assert.Null(floorConstruction);
+                    Assert.NotNull(floorConstruction);
+                    Assert.Contains("DEFAULT", floorConstruction!.Description);
                 }
             }
 
             Assert.NotNull(openingGenerationResult.MissingConstructionRoles);
-            Assert.Equal(floors.Count - 1, openingGenerationResult.MissingConstructionRoles!.Count);
-            Assert.All(openingGenerationResult.MissingConstructionRoles.Values, x => Assert.Equal(Regulation.Enums.ConstructionRole.IntermediateFloor, x));
+            Assert.Empty(openingGenerationResult.MissingConstructionRoles!);
 
             List<IWindow> windows = buildingModel.GetOpenings<IWindow>() ?? [];
             Assert.NotEmpty(windows);
@@ -177,7 +179,7 @@ namespace DiGi.GIS.Analytical.xUnit
         }
 
         /// <summary>
-        /// Tests that a wall carrying <see cref="ComponentParameter.PartyWall"/> takes <see cref="Regulation.Enums.ConstructionRole.PartyWall"/>, keeps no construction and is reported in <see cref="OpeningGenerationResult.MissingConstructionRoles"/> until DiGi-Organization/DiGi.Analytical#18 lands, while the other external walls of the same model are filled from the same set (DiGi-Organization/DiGi.GIS.Analytical#11).
+        /// Tests that a wall carrying <see cref="ComponentParameter.PartyWall"/> takes <see cref="Regulation.Enums.ConstructionRole.PartyWall"/>: since DiGi-Organization/DiGi.Analytical#18 the set's DEFAULT layered party wall, not the external wall construction, and no role is reported missing, while the other external walls of the same model take the set's external wall (DiGi-Organization/DiGi.GIS.Analytical#11).
         /// </summary>
         [Fact]
         public void Modify_GenerateOpenings_Envelope_PartyWalls()
@@ -194,6 +196,14 @@ namespace DiGi.GIS.Analytical.xUnit
             Assert.NotNull(openingGenerationResult);
             Assert.NotNull(openingGenerationResult!.MissingConstructionRoles);
 
+            Regulation.Classes.ConstructionLibrary? constructionLibrary = Regulation.Query.EmbeddedConstructionLibrary_PL();
+            Assert.NotNull(constructionLibrary);
+            Regulation.Classes.ConstructionSet? constructionSet = constructionLibrary.GetConstructionSet(new DateTimeOffset(2015, 1, 1, 0, 0, 0, TimeSpan.Zero), Regulation.Enums.BuildingType.SingleFamily, Regulation.Enums.ClimateZone.III, Regulation.Enums.ConstructionFlavour.TypicalAsBuilt);
+            Guid guid_PartyWall = constructionLibrary.GetConstruction(constructionSet, Regulation.Enums.ConstructionRole.PartyWall)?.Guid ?? Guid.Empty;
+            Guid guid_ExternalWall = constructionLibrary.GetConstruction(constructionSet, Regulation.Enums.ConstructionRole.ExternalWall)?.Guid ?? Guid.Empty;
+            Assert.NotEqual(Guid.Empty, guid_PartyWall);
+            Assert.NotEqual(guid_ExternalWall, guid_PartyWall);
+
             int count_PartyWall = 0;
             foreach (IWall wall in buildingModel_B.GetComponents<IWall>() ?? [])
             {
@@ -202,17 +212,17 @@ namespace DiGi.GIS.Analytical.xUnit
                 if (partyWall)
                 {
                     count_PartyWall++;
-                    Assert.Null(wallConstruction);
-                    Assert.Equal(Regulation.Enums.ConstructionRole.PartyWall, openingGenerationResult.MissingConstructionRoles!.GetValueOrDefault(wall.Guid, Regulation.Enums.ConstructionRole.Undefined));
+                    Assert.Equal(guid_PartyWall, wallConstruction?.Guid);
+                    Assert.NotEmpty(buildingModel_B.GetStructureLayers(wallConstruction) ?? []);
                 }
                 else
                 {
-                    Assert.NotNull(wallConstruction);
+                    Assert.Equal(guid_ExternalWall, wallConstruction?.Guid);
                 }
             }
 
             Assert.True(count_PartyWall > 0);
-            Assert.Contains(Regulation.Enums.ConstructionRole.PartyWall, openingGenerationResult.MissingConstructionRoles!.Values);
+            Assert.Empty(openingGenerationResult.MissingConstructionRoles!);
         }
     }
 }
