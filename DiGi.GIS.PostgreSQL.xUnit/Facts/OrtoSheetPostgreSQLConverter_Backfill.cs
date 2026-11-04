@@ -29,7 +29,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
         /// <summary>
         /// Verifies, on the throwaway storage test database, the orthophoto sheet table and the acquisition-date backfill of <c>orto_datas</c> into <c>orto_data_acquisition</c> (DiGi.GIS.PostgreSQL#122, #123).
-        /// <para>Sheets: the upsert, the box lookup (inside, touching, outside), and a file listed in two index years keeping its earlier listing whichever order the years arrive in. Series: a stored, reduced series 2001 / 2006 / 2011 fetched to 2012 at the centre of the scratch sheets, dated 2001-05-13, the sheet filed under 2007 at year precision, and 2011-04-21 (RGB) - the dates of the DiGi.GIS <c>OrtoDatas_Redate</c> fact; a second series outside every sheet gets undated rows; a re-run writes nothing. <c>orto_datas.object</c> is byte-for-byte unchanged, and with page size 1 the walk reads each row exactly once. The physical-order walk is driven page by page and ends with an empty position, and an empty part walks to an empty position at once.</para>
+        /// <para>Sheets: the upsert, the box lookup (inside, touching, outside), and a file listed in two index years keeping its earlier listing whichever order the years arrive in. Series: a stored, reduced series 2001 / 2006 / 2011 fetched to 2012 at the centre of the scratch sheets, dated 2001-05-13, the sheet filed under 2007 at year precision, and 2011-04-21 (RGB) - the dates of the DiGi.GIS <c>OrtoDatas_Redate</c> fact; a second series outside every sheet gets undated rows; a re-run writes nothing. The part's box spans both series and ignores a row stored with a NaN box, and an empty part has none. <c>orto_datas.object</c> is byte-for-byte unchanged, and with page size 1 the walk reads each row exactly once. The physical-order walk is driven page by page and ends with an empty position, and an empty part walks to an empty position at once.</para>
         /// <para>Side table: a re-fetched series (<c>OrtoDatasPostgreSQLConverter.UpdateAsync</c>) drops its acquisition rows and the next backfill restores them; a building moved to another county part (<c>OrtoDatasPostgreSQLConverter.RefreshCountyIdsAsync</c>) takes its rows along; the row type round-trips and copies.</para>
         /// <para>Everything sits around (50500, 50500), outside Poland's extent, so no real sheet of the table can reach the assertions. The fact removes its sheets and drops its partitions before and in <c>finally</c>. Medium test (a live database server).</para>
         /// </summary>
@@ -97,6 +97,19 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.True(await npgsqlConnection.TableAsync_OrtoDatas_Partition(countyId_OrtoSheet_B));
                 long id_Covered = await InsertAsync(ortoDatas_Covered);
                 long id_Uncovered = await InsertAsync(ortoDatas_Uncovered);
+
+                // The part's box spans both series. A row stored with a NaN box (a series with no readable image) is left out: PostgreSQL sorts
+                // NaN above every number, and before it was excluded the box collapsed to its minimum corner, so the backfill of county part
+                // 55417 read 13 sheets and dated nothing. The row is removed again before the walk.
+                BoundingBox2D boundingBox2D_Covered = ortoDatas_Covered.First().GetBoundingBox(GeometryContext.Global)!;
+                BoundingBox2D boundingBox2D_Uncovered = ortoDatas_Uncovered.First().GetBoundingBox(GeometryContext.Global)!;
+                await ScalarAsync(npgsqlConnection, $"INSERT INTO {Constants.TableName.OrtoDatas} (county_id, reference, min_x, min_y, max_x, max_y, object) VALUES ({countyId_OrtoSheet_A}, 'XUNIT-ORTO-NAN', 'NaN', 'NaN', 'NaN', 'NaN', '{{}}'::jsonb);");
+                BoundingBox2D? boundingBox2D_Part = await OrtoDatasPostgreSQLConverter.GetBoundingBox2DAsync(npgsqlConnection, countyId_OrtoSheet_A);
+                Assert.NotNull(boundingBox2D_Part);
+                Assert.Equal(boundingBox2D_Covered.Min, boundingBox2D_Part.Min);
+                Assert.Equal(boundingBox2D_Uncovered.Max, boundingBox2D_Part.Max);
+                await ScalarAsync(npgsqlConnection, $"DELETE FROM {Constants.TableName.OrtoDatas} WHERE county_id = {countyId_OrtoSheet_A} AND reference = 'XUNIT-ORTO-NAN';");
+                Assert.Null(await OrtoDatasPostgreSQLConverter.GetBoundingBox2DAsync(npgsqlConnection, countyId_OrtoSheet_B));
 
                 // The walk, page by page.
                 (Dictionary<long, GIS.Classes.OrtoDatas>? ortoDatas_Page_1, string? position_1) = await OrtoDatasPostgreSQLConverter.PullByPhysicalOrderAsync(npgsqlConnection, countyId_OrtoSheet_A, null, 1);
