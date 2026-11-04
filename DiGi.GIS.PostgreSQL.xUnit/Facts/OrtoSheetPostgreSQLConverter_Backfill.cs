@@ -28,8 +28,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         private const int countyId_OrtoSheet_B = 990602;
 
         /// <summary>
-        /// Verifies, on the throwaway storage test database, the orthophoto sheet table and the acquisition-date backfill of <c>orto_datas</c> (DiGi.GIS.PostgreSQL#122).
-        /// <para>Sheets: the upsert, the box lookup (inside, touching, outside), and a file listed in two index years keeping its earlier listing whichever order the years arrive in. Series: a stored, reduced series 2001 / 2006 / 2011 fetched to 2012 at the centre of the scratch sheets, re-dated to 2001-05-13, the sheet filed under 2007 at year precision, and 2011-04-21 (RGB) - the dates of the DiGi.GIS <c>OrtoDatas_Redate</c> fact; a second series outside every sheet is written back undated; a re-run writes nothing. The physical-order walk is driven page by page (page size 1) and ends with an empty position, and an empty part walks to an empty position at once.</para>
+        /// Verifies, on the throwaway storage test database, the orthophoto sheet table and the acquisition-date backfill of <c>orto_datas</c> into <c>orto_data_acquisition</c> (DiGi.GIS.PostgreSQL#122, #123).
+        /// <para>Sheets: the upsert, the box lookup (inside, touching, outside), and a file listed in two index years keeping its earlier listing whichever order the years arrive in. Series: a stored, reduced series 2001 / 2006 / 2011 fetched to 2012 at the centre of the scratch sheets, dated 2001-05-13, the sheet filed under 2007 at year precision, and 2011-04-21 (RGB) - the dates of the DiGi.GIS <c>OrtoDatas_Redate</c> fact; a second series outside every sheet gets undated rows; a re-run writes nothing. <c>orto_datas.object</c> is byte-for-byte unchanged, and with page size 1 the walk reads each row exactly once. The physical-order walk is driven page by page and ends with an empty position, and an empty part walks to an empty position at once.</para>
+        /// <para>Side table: a re-fetched series (<c>OrtoDatasPostgreSQLConverter.UpdateAsync</c>) drops its acquisition rows and the next backfill restores them; a building moved to another county part (<c>OrtoDatasPostgreSQLConverter.RefreshCountyIdsAsync</c>) takes its rows along; the row type round-trips and copies.</para>
         /// <para>Everything sits around (50500, 50500), outside Poland's extent, so no real sheet of the table can reach the assertions. The fact removes its sheets and drops its partitions before and in <c>finally</c>. Medium test (a live database server).</para>
         /// </summary>
         [MediumSkippableFact]
@@ -112,7 +113,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Empty(ortoDatas_Empty!);
                 Assert.Equal(string.Empty, position_Empty);
 
-                // The backfill.
+                // The backfill. orto_datas is only read: the stored text is the same afterwards.
+                string objects_Before = await ObjectsAsync();
                 OrtoDatasAcquisitionUpdateResult? ortoDatasAcquisitionUpdateResult = await ortoDatasPostgreSQLConverter.UpdateOrtoDatasAcquisitionAsync(ortoSheetPostgreSQLConverter, [countyId_OrtoSheet_A, countyId_OrtoSheet_B], 2012, pageSize: 1);
                 Assert.NotNull(ortoDatasAcquisitionUpdateResult);
                 Assert.Equal(2, ortoDatasAcquisitionUpdateResult.Rows);
@@ -122,21 +124,63 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.True(ortoDatasAcquisitionUpdateResult.Sheets >= 5);
                 Core.xUnit.Query.SerializationCheck(ortoDatasAcquisitionUpdateResult);
 
-                List<OrtoData> ortoDatas_Covered_Stored = [.. await ReadAsync(id_Covered)];
-                Assert.Equal(3, ortoDatas_Covered_Stored.Count);
-                Assert.Equal(ortoSheet_2001.Date, ortoDatas_Covered_Stored[0].AcquisitionDate);
-                Assert.Equal(ortoSheet_2007.Date, ortoDatas_Covered_Stored[1].AcquisitionDate);
-                Assert.Equal(OrtoDatePrecision.Year, ortoDatas_Covered_Stored[1].AcquisitionDatePrecision);
-                Assert.Equal("XUNIT-A-1", ortoDatas_Covered_Stored[1].SheetId);
-                Assert.Equal(ortoSheet_2011_RGB.Date, ortoDatas_Covered_Stored[2].AcquisitionDate);
-                Assert.All(ortoDatas_Covered_Stored, x => Assert.NotNull(x.ContentHash));
+                Assert.Equal(objects_Before, await ObjectsAsync());
+                Assert.All(await ReadAsync(id_Covered), x => Assert.Equal(OrtoDatePrecision.Undefined, x.AcquisitionDatePrecision));
 
-                Assert.All(await ReadAsync(id_Uncovered), x => Assert.Equal(OrtoDatePrecision.Undefined, x.AcquisitionDatePrecision));
+                List<OrtoDataAcquisition>? ortoDataAcquisitions_Covered = await ortoDatasPostgreSQLConverter.GetOrtoDataAcquisitionsByReferencesAsync([ortoDatas_Covered.Reference!], countyId_OrtoSheet_A);
+                Assert.NotNull(ortoDataAcquisitions_Covered);
+                Assert.Equal([2001, 2006, 2011], ortoDataAcquisitions_Covered.Select(x => x.Year));
+                Assert.Equal(ortoSheet_2001.Date, ortoDataAcquisitions_Covered[0].AcquisitionDate);
+                Assert.Equal(ortoSheet_2007.Date, ortoDataAcquisitions_Covered[1].AcquisitionDate);
+                Assert.Equal(OrtoDatePrecision.Year, ortoDataAcquisitions_Covered[1].AcquisitionDatePrecision);
+                Assert.Equal("XUNIT-A-1", ortoDataAcquisitions_Covered[1].SheetId);
+                Assert.Equal(ortoSheet_2011_RGB.Date, ortoDataAcquisitions_Covered[2].AcquisitionDate);
+                Assert.Equal([GIS.Query.ContentHash(Variant(1)), GIS.Query.ContentHash(Variant(2)), GIS.Query.ContentHash(Variant(3))], ortoDataAcquisitions_Covered.Select(x => x.ContentHash));
+                Assert.All(ortoDataAcquisitions_Covered, x => Assert.Equal(countyId_OrtoSheet_A, x.CountyId));
+
+                List<OrtoDataAcquisition>? ortoDataAcquisitions_Uncovered = await ortoDatasPostgreSQLConverter.GetOrtoDataAcquisitionsByReferencesAsync([ortoDatas_Uncovered.Reference!, "XUNIT-ORTO-NONE"], null);
+                Assert.Equal(3, ortoDataAcquisitions_Uncovered!.Count);
+                Assert.All(ortoDataAcquisitions_Uncovered, x => Assert.Equal(OrtoDatePrecision.Undefined, x.AcquisitionDatePrecision));
+                Assert.All(ortoDataAcquisitions_Uncovered, x => Assert.Null(x.AcquisitionDate));
+                Assert.All(ortoDataAcquisitions_Uncovered, x => Assert.NotNull(x.ContentHash));
+                Assert.Empty((await ortoDatasPostgreSQLConverter.GetOrtoDataAcquisitionsByReferencesAsync([ortoDatas_Covered.Reference!], countyId_OrtoSheet_B))!);
 
                 // Idempotent: a re-run reads both rows and writes none.
                 OrtoDatasAcquisitionUpdateResult? ortoDatasAcquisitionUpdateResult_Again = await ortoDatasPostgreSQLConverter.UpdateOrtoDatasAcquisitionAsync(ortoSheetPostgreSQLConverter, [countyId_OrtoSheet_A], 2012);
                 Assert.Equal(2, ortoDatasAcquisitionUpdateResult_Again!.Rows);
                 Assert.Equal(0, ortoDatasAcquisitionUpdateResult_Again.Changed);
+                Assert.Equal(objects_Before, await ObjectsAsync());
+
+                // A re-fetch of the covered series drops its acquisition rows only; the next backfill dates it again.
+                PostgreSQL.Classes.OrtoDatas ortoDatas_Refetched = new() { CountyId = countyId_OrtoSheet_A, Reference = ortoDatas_Covered.Reference, BoundingBox2D = ortoDatas_Covered.First().GetBoundingBox(GeometryContext.Global) };
+                ortoDatas_Refetched.FromDiGi(ortoDatas_Covered);
+                Assert.NotNull(await ortoDatasPostgreSQLConverter.UpdateAsync([ortoDatas_Refetched]));
+                Assert.Empty((await ortoDatasPostgreSQLConverter.GetOrtoDataAcquisitionsByReferencesAsync([ortoDatas_Covered.Reference!], countyId_OrtoSheet_A))!);
+                Assert.Equal(3, (await ortoDatasPostgreSQLConverter.GetOrtoDataAcquisitionsByReferencesAsync([ortoDatas_Uncovered.Reference!], countyId_OrtoSheet_A))!.Count);
+                Assert.Equal(1, (await ortoDatasPostgreSQLConverter.UpdateOrtoDatasAcquisitionAsync(ortoSheetPostgreSQLConverter, [countyId_OrtoSheet_A], 2012))!.Changed);
+                Assert.Equal(ortoSheet_2007.Date, (await ortoDatasPostgreSQLConverter.GetOrtoDataAcquisitionsByReferencesAsync([ortoDatas_Covered.Reference!], countyId_OrtoSheet_A))![1].AcquisitionDate);
+
+                // A building moved to the other part takes its acquisition rows along.
+                HashSet<string>? references_Moved = await ortoDatasPostgreSQLConverter.RefreshCountyIdsAsync([ortoDatas_Uncovered.Reference!], countyId_OrtoSheet_B, [countyId_OrtoSheet_A]);
+                Assert.Equal([ortoDatas_Uncovered.Reference!], references_Moved!);
+                List<OrtoDataAcquisition>? ortoDataAcquisitions_Moved = await ortoDatasPostgreSQLConverter.GetOrtoDataAcquisitionsByReferencesAsync([ortoDatas_Uncovered.Reference!], null);
+                Assert.Equal(3, ortoDataAcquisitions_Moved!.Count);
+                Assert.All(ortoDataAcquisitions_Moved, x => Assert.Equal(countyId_OrtoSheet_B, x.CountyId));
+
+                // The row type.
+                OrtoDataAcquisition ortoDataAcquisition = new(countyId_OrtoSheet_A, "XUNIT-ROW", 2007, new DateTimeOffset(2007, 1, 1, 0, 0, 0, TimeSpan.Zero), OrtoDatePrecision.Year, "XUNIT-A-1", "ab");
+                Assert.Equal(2007, ortoDataAcquisition.Year);
+                Assert.Equal("ab", ortoDataAcquisition.ContentHash);
+                OrtoDataAcquisition? ortoDataAcquisition_Text = Core.Convert.ToDiGi<OrtoDataAcquisition>(Core.Convert.ToSystem_String(ortoDataAcquisition))?.FirstOrDefault();
+                Assert.Equal(ortoDataAcquisition.AcquisitionDate, ortoDataAcquisition_Text!.AcquisitionDate);
+                Assert.Equal(OrtoDatePrecision.Year, ortoDataAcquisition_Text.AcquisitionDatePrecision);
+                Assert.Equal("XUNIT-A-1", ortoDataAcquisition_Text.SheetId);
+                Core.xUnit.Query.SerializationCheck(ortoDataAcquisition);
+                Core.xUnit.Query.SerializationCheck(new OrtoDataAcquisition(countyId_OrtoSheet_B, "XUNIT-ROW", 2010, null, OrtoDatePrecision.Undefined, null, null));
+                OrtoDataAcquisition ortoDataAcquisition_Copy = new(ortoDataAcquisition);
+                Assert.Equal((countyId_OrtoSheet_A, "XUNIT-ROW", 2007, ortoDataAcquisition.AcquisitionDate, OrtoDatePrecision.Year, "XUNIT-A-1", "ab"), (ortoDataAcquisition_Copy.CountyId, ortoDataAcquisition_Copy.Reference, ortoDataAcquisition_Copy.Year, ortoDataAcquisition_Copy.AcquisitionDate, ortoDataAcquisition_Copy.AcquisitionDatePrecision, ortoDataAcquisition_Copy.SheetId, ortoDataAcquisition_Copy.ContentHash));
+                Assert.Equal(OrtoDatePrecision.Undefined, new OrtoDataAcquisition((JsonObject?)null).AcquisitionDatePrecision);
+                Assert.Null(PostgreSQL.Create.OrtoDataAcquisitions(new GIS.Classes.OrtoDatas(null, []), countyId_OrtoSheet_A));
 
                 Assert.Null(await ortoDatasPostgreSQLConverter.UpdateOrtoDatasAcquisitionAsync(null, [countyId_OrtoSheet_A], 2012));
                 Assert.Null(await ortoDatasPostgreSQLConverter.UpdateOrtoDatasAcquisitionAsync(ortoSheetPostgreSQLConverter, [], 2012));
@@ -156,6 +200,14 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 await ExecuteAsync(npgsqlConnection, $"DELETE FROM {Constants.TableName.OrtoSheet} WHERE download_url LIKE '{downloadUrlPrefix}%';");
                 await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS {Constants.TableName.OrtoDatas}_{countyId_OrtoSheet_A};");
                 await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS {Constants.TableName.OrtoDatas}_{countyId_OrtoSheet_B};");
+                await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS {Constants.TableName.OrtoDataAcquisition}_{countyId_OrtoSheet_A};");
+                await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS {Constants.TableName.OrtoDataAcquisition}_{countyId_OrtoSheet_B};");
+            }
+
+            async Task<string> ObjectsAsync()
+            {
+                object? text = await ScalarAsync(npgsqlConnection, $"SELECT string_agg(object::text, '|' ORDER BY id) FROM {Constants.TableName.OrtoDatas} WHERE county_id IN ({countyId_OrtoSheet_A}, {countyId_OrtoSheet_B});");
+                return (string)text!;
             }
 
             async Task<long> InsertAsync(GIS.Classes.OrtoDatas ortoDatas)

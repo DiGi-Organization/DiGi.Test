@@ -103,9 +103,10 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(1, ortoDatasAcquisitionUpdateResult.Dated);
 
                 object? json = await ScalarAsync(npgsqlConnection, $"SELECT object::text FROM {Constants.TableName.OrtoDatas} WHERE county_id = {countyId_OrtoTasks};");
-                OrtoData ortoData_Stored = new GIS.Classes.OrtoDatas(JsonNode.Parse((string)json!) as JsonObject).Single();
-                Assert.Equal(ortoSheet.Date, ortoData_Stored.AcquisitionDate);
-                Assert.Equal("XUNIT-TASKS", ortoData_Stored.SheetId);
+                Assert.Equal(OrtoDatePrecision.Undefined, new GIS.Classes.OrtoDatas(JsonNode.Parse((string)json!) as JsonObject).Single().AcquisitionDatePrecision);
+                OrtoDataAcquisition ortoDataAcquisition = Assert.Single((await new OrtoDatasPostgreSQLConverter(connectionData_Storage).GetOrtoDataAcquisitionsByReferencesAsync([ortoDatas.Reference!], countyId_OrtoTasks))!);
+                Assert.Equal(ortoSheet.Date, ortoDataAcquisition.AcquisitionDate);
+                Assert.Equal("XUNIT-TASKS", ortoDataAcquisition.SheetId);
 
                 // No county part selected: the task fails instead of walking anything.
                 PostgreSQLOrtoDatasAcquisitionUpdateTask postgreSQLOrtoDatasAcquisitionUpdateTask_Empty = new(gISPostgreSQLConverterManager);
@@ -129,6 +130,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             {
                 await ExecuteAsync(npgsqlConnection, $"DELETE FROM {Constants.TableName.OrtoSheet} WHERE year = 1998 OR download_url LIKE '{downloadUrlPrefix}%';");
                 await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS {Constants.TableName.OrtoDatas}_{countyId_OrtoTasks};");
+                await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS {Constants.TableName.OrtoDataAcquisition}_{countyId_OrtoTasks};");
             }
         }
 
