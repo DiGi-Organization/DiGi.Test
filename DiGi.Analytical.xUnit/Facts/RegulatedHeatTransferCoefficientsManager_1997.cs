@@ -8,7 +8,7 @@ namespace DiGi.Analytical.xUnit
     {
         /// <summary>
         /// Pins the 1997 stage of the U-value limits, the k(max) annex the 1997 amendment (Dz.U. 1997 nr 132 poz. 878) added to the 1994 technical conditions (DiGi-Organization/DiGi.Analytical#14).
-        /// <para>The stage applies from 29 April 1998, six months after its publication on 28 October 1997, until the 2002 regulation applies from 16 December 2002; before it the manager knows no limits. It holds every k(max) of the single-family and public building tables - roof windows fall under the single-family window rows, so there is no separate roof window limit - and the floor-on-ground R(min) of 1.5 (m2K)/W apart from the U values.</para>
+        /// <para>The stage applies from 29 April 1998, six months after its publication on 28 October 1997, until the 2002 regulation applies from 16 December 2002; before it the PN-91/B-02020 norm stage applies (DiGi-Organization/DiGi.Analytical#20). It holds every k(max) of the single-family and public building tables - roof windows fall under the single-family window rows, so there is no separate roof window limit - and the floor-on-ground R(min) of 1.5 (m2K)/W apart from the U values.</para>
         /// </summary>
         [Fact]
         public void RegulatedHeatTransferCoefficientsManager_1997()
@@ -16,14 +16,14 @@ namespace DiGi.Analytical.xUnit
             RegulatedHeatTransferCoefficientsManager regulatedHeatTransferCoefficientsManager = Building.HVAC.Create.RegulatedHeatTransferCoefficientsManager();
 
             // Stage boundaries.
-            Assert.Null(regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(1998, 4, 28)));
+            Assert.IsType<RegulatedHeatTransferCoefficients_1991>(regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(1998, 4, 28)));
             RegulatedHeatTransferCoefficients_1997 regulatedHeatTransferCoefficients_1997 = Assert.IsType<RegulatedHeatTransferCoefficients_1997>(regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(1998, 4, 29)));
             Assert.Same(regulatedHeatTransferCoefficients_1997, regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(2000, 1, 1)));
             Assert.Same(regulatedHeatTransferCoefficients_1997, regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(2002, 12, 15)));
             Assert.IsType<RegulatedHeatTransferCoefficients_2002>(regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(2002, 12, 16)));
 
             // The public-authority lookup has no earlier date for this act.
-            Assert.Null(regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(1998, 4, 28), true));
+            Assert.IsType<RegulatedHeatTransferCoefficients_1991>(regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(1998, 4, 28), true));
             Assert.Same(regulatedHeatTransferCoefficients_1997, regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(new DateTime(1998, 4, 29), true));
 
             RegulationAct? regulationAct = regulatedHeatTransferCoefficients_1997.RegulationAct;

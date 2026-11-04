@@ -110,7 +110,7 @@ namespace DiGi.Analytical.xUnit
 
         /// <summary>
         /// Tests the <see cref="ConstructionFlavour.Regulation"/> sets of <see cref="Building.Regulation.Create.ConstructionLibrary_PL"/> against the regulated heat transfer coefficients manager (DiGi-Organization/DiGi.Analytical#15).
-        /// <para>Every construction's declared U must equal the stage's U(max) for its role, building type and zone, and every role with a limit must have a construction; a role without one (multi-family walls 1998-2008, ground floors before 2009) must have none. Before 2014 a zone IV or V set must win for windows, and before 1998-04-29 there is no set.</para>
+        /// <para>Every construction's declared U must equal the stage's U(max) for its role, building type and zone, and every role with a limit must have a construction; a role without one (multi-family walls 1998-2008, ground floors before 2009) must have none. From 1983 to 2013 a zone IV or V set must win for windows, and before 1976 for walls; before 1955-01-01 there is no set (DiGi-Organization/DiGi.Analytical#20).</para>
         /// </summary>
         [Fact]
         public void Create_ConstructionLibrary_PL_Regulation()
@@ -168,12 +168,34 @@ namespace DiGi.Analytical.xUnit
                 }
             }
 
-            // Six stages x four building types, and zones IV and V for the three stages before 2014,
-            // except the 1997 multi-family building and apartment block, which have no limit to depend on a zone.
-            Assert.Equal((6 * 4) + (3 * 4 * 2) - (2 * 2), count);
+            // Eleven stages (five norms, six acts) x four building types, and zones IV and V for the seven zone-dependent stages
+            // (PN-53/57 and PN-64 by wall, PN-82, PN-91, 1997, 2002 and 2009 by window), except the 1997 multi-family building and
+            // apartment block, which have no limit to depend on a zone.
+            Assert.Equal((11 * 4) + (7 * 4 * 2) - (2 * 2), count);
 
-            // Before the 1997 annex came into force there is no regulation set: callers fall back to TypicalAsBuilt.
-            Assert.Null(constructionLibrary.GetConstructionSet(Date(1998, 4, 28), BuildingType.SingleFamily, ClimateZone.III, ConstructionFlavour.Regulation));
+            // Before the first norm stage there is no regulation set: callers fall back to TypicalAsBuilt.
+            Assert.Null(constructionLibrary.GetConstructionSet(Date(1954, 12, 31), BuildingType.SingleFamily, ClimateZone.III, ConstructionFlavour.Regulation));
+            Assert.Equal(1.45375, Value(Date(1955, 1, 1), BuildingType.SingleFamily, ClimateZone.III, ConstructionRole.ExternalWall));
+            Assert.Equal(1.163, Value(Date(1955, 1, 1), BuildingType.SingleFamily, ClimateZone.IV, ConstructionRole.ExternalWall));
+            Assert.Equal(1.45375, Value(Date(1955, 1, 1), BuildingType.SingleFamily, ClimateZone.Undefined, ConstructionRole.ExternalWall));
+
+            // PN-64: the zone V set wins for walls, and its source says the wall is what depends on the zone; no window limit.
+            ConstructionSet? constructionSet_1964_V = constructionLibrary.GetConstructionSet(Date(1970, 1, 1), BuildingType.MultiFamily, ClimateZone.V, ConstructionFlavour.Regulation);
+            Assert.NotNull(constructionSet_1964_V);
+            Assert.Equal(ClimateZone.V, constructionSet_1964_V.ClimateZone);
+            Assert.Contains("PN-64/B-03404", constructionSet_1964_V.Source);
+            Assert.Contains("External walls take the limit of zone V.", constructionSet_1964_V.Source);
+            Assert.Equal(1.163, Value(Date(1970, 1, 1), BuildingType.MultiFamily, ClimateZone.V, ConstructionRole.ExternalWall));
+            Assert.Equal(1.04, Value(Date(1970, 1, 1), BuildingType.MultiFamily, ClimateZone.V, ConstructionRole.Roof));
+            Assert.Equal(0.87, Value(Date(1970, 1, 1), BuildingType.MultiFamily, ClimateZone.V, ConstructionRole.FlatRoof));
+            Assert.True(double.IsNaN(Value(Date(1970, 1, 1), BuildingType.MultiFamily, ClimateZone.V, ConstructionRole.Window)));
+
+            // PN-74 dropped the zones: one set for every zone. PN-91 runs up to the 1997 annex.
+            Assert.Null(constructionLibrary.GetConstructionSet(Date(1980, 1, 1), BuildingType.SingleFamily, ClimateZone.V, ConstructionFlavour.Regulation)?.ClimateZone);
+            Assert.Equal(1.163, Value(Date(1980, 1, 1), BuildingType.SingleFamily, ClimateZone.V, ConstructionRole.ExternalWall));
+            Assert.Equal(0.55, Value(Date(1998, 4, 28), BuildingType.ApartmentBlock, ClimateZone.III, ConstructionRole.ExternalWall));
+            Assert.Equal(2.0, Value(Date(1998, 4, 28), BuildingType.ApartmentBlock, ClimateZone.IV, ConstructionRole.Window));
+            Assert.Contains("Windows take the limit of zone IV.", constructionLibrary.GetConstructionSet(Date(1998, 4, 28), BuildingType.ApartmentBlock, ClimateZone.IV, ConstructionFlavour.Regulation)?.Source);
             Assert.Equal(0.3, Value(Date(1998, 4, 29), BuildingType.SingleFamily, ClimateZone.III, ConstructionRole.ExternalWall));
 
             // The 1997 annex has no multi-family table: the set exists and is empty.

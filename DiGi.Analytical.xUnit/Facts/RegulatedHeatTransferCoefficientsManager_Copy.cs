@@ -15,7 +15,7 @@ namespace DiGi.Analytical.xUnit
             RegulatedHeatTransferCoefficientsManager regulatedHeatTransferCoefficientsManager = Building.HVAC.Create.RegulatedHeatTransferCoefficientsManager();
             RegulatedHeatTransferCoefficientsManager regulatedHeatTransferCoefficientsManager_Copy = new(regulatedHeatTransferCoefficientsManager);
 
-            DateTime[] dateTimes = [new DateTime(1998, 4, 28), new DateTime(2000, 6, 1), new DateTime(2005, 6, 1), new DateTime(2010, 6, 1), new DateTime(2015, 6, 1), new DateTime(2017, 6, 1), new DateTime(2021, 6, 1)];
+            DateTime[] dateTimes = [new DateTime(1954, 12, 31), new DateTime(1960, 6, 1), new DateTime(1970, 6, 1), new DateTime(1980, 6, 1), new DateTime(1990, 6, 1), new DateTime(1998, 4, 28), new DateTime(2000, 6, 1), new DateTime(2005, 6, 1), new DateTime(2010, 6, 1), new DateTime(2015, 6, 1), new DateTime(2017, 6, 1), new DateTime(2021, 6, 1)];
             foreach (DateTime dateTime in dateTimes)
             {
                 IRegulatedHeatTransferCoefficients? regulatedHeatTransferCoefficients = regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(dateTime);

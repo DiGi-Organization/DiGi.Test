@@ -176,7 +176,7 @@ namespace DiGi.Analytical.xUnit
 
         /// <summary>
         /// Tests <see cref="Building.Regulation.Query.RegulatedHeatTransferCoefficient(IRegulatedHeatTransferCoefficients?, ConstructionRole, BuildingType, ClimateZone, bool)"/> against the real stages of the regulated heat transfer coefficients manager, and the tolerance boundary of <see cref="Building.Regulation.Query.IsCompliant(double, double, double)"/> (DiGi-Organization/DiGi.Analytical#8).
-        /// <para>1997: single-family walls 0.50, or 0.30 when layered with insulation, windows 2.6 / 2.0 by climatic zone, nothing for a multi-family building. 2002: multi-family walls have no limit (E ≤ E0), multi-family windows do. 2009: the floor on ground 0.45, a window without a zone has no limit. 2014: a door to an unheated space 1.7. 2021: window 0.9. A garage door has no limit in any stage. Missing values are never compliant.</para>
+        /// <para>PN-64 (1970): walls 1.45375 in zones I-III and 1.163 in IV-V, ceiling under an attic 1.04 against flat roof 0.87, no window limit, for every building type. PN-91 (1995): walls 0.55, windows 2.6 / 2.0 by zone, roof windows on the window limit, no ground floor limit. 1997: single-family walls 0.50, or 0.30 when layered with insulation, windows 2.6 / 2.0 by climatic zone, nothing for a multi-family building. 2002: multi-family walls have no limit (E ≤ E0), multi-family windows do. 2009: the floor on ground 0.45, a window without a zone has no limit. 2014: a door to an unheated space 1.7. 2021: window 0.9. A garage door has no limit in any stage. Missing values are never compliant.</para>
         /// </summary>
         [Fact]
         public void Query_RegulatedHeatTransferCoefficient()
@@ -190,6 +190,30 @@ namespace DiGi.Analytical.xUnit
 
             (int Year, ConstructionRole ConstructionRole, BuildingType BuildingType, ClimateZone ClimateZone, bool InsulatedLayered, double Expected)[] cases =
             [
+                (1960, ConstructionRole.ExternalWall, BuildingType.SingleFamily, ClimateZone.I, false, 1.45375),
+                (1960, ConstructionRole.ExternalWall, BuildingType.ApartmentBlock, ClimateZone.V, false, 1.163),
+                (1960, ConstructionRole.ExternalWall, BuildingType.SingleFamily, ClimateZone.Undefined, false, double.NaN),
+                (1970, ConstructionRole.ExternalWall, BuildingType.MultiFamily, ClimateZone.III, false, 1.45375),
+                (1970, ConstructionRole.ExternalWall, BuildingType.MultiFamily, ClimateZone.IV, false, 1.163),
+                (1970, ConstructionRole.Roof, BuildingType.SingleFamily, ClimateZone.III, false, 1.04),
+                (1970, ConstructionRole.FlatRoof, BuildingType.SingleFamily, ClimateZone.III, false, 0.87),
+                (1970, ConstructionRole.FloorOverUnheated, BuildingType.Terraced, ClimateZone.III, false, 1.163),
+                (1970, ConstructionRole.Window, BuildingType.SingleFamily, ClimateZone.III, false, double.NaN),
+                (1970, ConstructionRole.ExternalDoor, BuildingType.SingleFamily, ClimateZone.III, false, double.NaN),
+                (1980, ConstructionRole.ExternalWall, BuildingType.SingleFamily, ClimateZone.V, false, 1.163),
+                (1980, ConstructionRole.ExternalWall, BuildingType.SingleFamily, ClimateZone.Undefined, false, 1.163),
+                (1980, ConstructionRole.FlatRoof, BuildingType.ApartmentBlock, ClimateZone.III, false, 0.70),
+                (1985, ConstructionRole.Roof, BuildingType.MultiFamily, ClimateZone.III, false, 0.40),
+                (1985, ConstructionRole.FlatRoof, BuildingType.MultiFamily, ClimateZone.III, false, 0.45),
+                (1985, ConstructionRole.FloorOverUnheated, BuildingType.MultiFamily, ClimateZone.III, false, 1.16),
+                (1985, ConstructionRole.Window, BuildingType.ApartmentBlock, ClimateZone.II, false, 2.6),
+                (1995, ConstructionRole.ExternalWall, BuildingType.ApartmentBlock, ClimateZone.III, true, 0.55),
+                (1995, ConstructionRole.BalconyDoor, BuildingType.MultiFamily, ClimateZone.IV, false, 2.0),
+                (1995, ConstructionRole.RoofWindow, BuildingType.SingleFamily, ClimateZone.V, false, 2.0),
+                (1995, ConstructionRole.StaircaseEntranceDoor, BuildingType.ApartmentBlock, ClimateZone.III, false, 2.6),
+                (1995, ConstructionRole.DoorToUnheatedSpace, BuildingType.SingleFamily, ClimateZone.III, false, double.NaN),
+                (1995, ConstructionRole.GroundFloor, BuildingType.SingleFamily, ClimateZone.III, false, double.NaN),
+                (1995, ConstructionRole.PartyWall, BuildingType.Terraced, ClimateZone.III, false, double.NaN),
                 (2000, ConstructionRole.ExternalWall, BuildingType.SingleFamily, ClimateZone.III, false, 0.50),
                 (2000, ConstructionRole.ExternalWall, BuildingType.Terraced, ClimateZone.III, true, 0.30),
                 (2000, ConstructionRole.Window, BuildingType.SingleFamily, ClimateZone.III, false, 2.6),
@@ -221,7 +245,8 @@ namespace DiGi.Analytical.xUnit
                 Assert.True(double.IsNaN(expected) ? double.IsNaN(value) : value == expected, $"{year} {constructionRole} {buildingType} {climateZone} layered {insulatedLayered}: {value} instead of {expected}");
             }
 
-            Assert.True(double.IsNaN(Stage(1990).RegulatedHeatTransferCoefficient(ConstructionRole.ExternalWall, BuildingType.SingleFamily, ClimateZone.III)));
+            Assert.True(double.IsNaN(Stage(1954).RegulatedHeatTransferCoefficient(ConstructionRole.ExternalWall, BuildingType.SingleFamily, ClimateZone.III)));
+            Assert.Equal(0.75, Stage(1990).RegulatedHeatTransferCoefficient(ConstructionRole.ExternalWall, BuildingType.SingleFamily, ClimateZone.III));
             Assert.True(double.IsNaN(Stage(2021).RegulatedHeatTransferCoefficient(ConstructionRole.ExternalWall, BuildingType.Undefined, ClimateZone.III)));
 
             // U ≤ U(max) within the tolerance, both sides of the boundary; a missing value never passes.
