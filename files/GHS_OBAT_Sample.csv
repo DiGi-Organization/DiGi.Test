@@ -1,0 +1,5 @@
+id,lon,lat,country,adm1,height,shapefactor,use,epoch,area,perimeter
+08f17a2c9b3e4d5f,14.40,50.08,CZE,"Praha, hlavni mesto",12.5,0.85,residential,2020,120.5,45.2
+8877665544332211,14.41,50.081,CZE,Praha,9.75,0.91,residential,2015,88.3,36.1
+0123456789abcdef,14.42,50.082,CZE,Stredocesky,15.2,0.78,industrial,2020,210.4,60.7
+0899aabbccddeeff,20.00,50.50,POL,Mazowieckie,11.0,0.88,residential,2010,95.0,40.0

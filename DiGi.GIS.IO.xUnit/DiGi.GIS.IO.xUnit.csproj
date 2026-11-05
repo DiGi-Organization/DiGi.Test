@@ -25,6 +25,17 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- Re-declared on this host: DiGi.GIS.IO streams GeoPackage/GeoParquet/GeoJSONSeq (DiGi.GIS.IO#17). -->
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5" />
+    <PackageReference Include="NetTopologySuite" Version="2.6.0" />
+    <PackageReference Include="NetTopologySuite.IO.GeoPackage" Version="2.0.0" />
+    <PackageReference Include="Parquet.Net" Version="5.5.0" />
+    <!-- Pin Snappier above the version Parquet.Net 5.5.0 resolves to: 1.3.0 carries GHSA-pggp-6c3x-2xmx (NU1903). -->
+    <PackageReference Include="Snappier" Version="1.3.1" />
+    <!-- Pin above the version Microsoft.Data.Sqlite 10.0.5 resolves to: SQLitePCLRaw.lib.e_sqlite3 2.1.11 carries GHSA-2m69-gcr7-jv3q (NU1903). -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.14" />
+    <!-- DiGi.GIS.IO's streaming readers return IAsyncEnumerable<T>, compiled against this package for netstandard2.0; every consumer of the signature re-declares it. -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.9" />
   </ItemGroup>
 
   <ItemGroup>
