@@ -21,6 +21,8 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 Confidence = 0.25,
                 CountOnly = true,
                 CountyIds = [73485, 73482],
+                ExclusionBoundingBoxes = [new Classes.YOLOExclusionBoundingBox(1000, 2000, 1100, 2100)],
+                ExclusionBuffer = 42.5,
                 HoldoutDenominator = 7,
                 LabelCheckOverlayCount = 5,
                 LabelCheckSampleSize = 50,
@@ -48,6 +50,13 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 Assert.Equal(yOLOTrainingDatasetOptions.Confidence, yOLOTrainingDatasetOptions_Actual!.Confidence);
                 Assert.Equal(yOLOTrainingDatasetOptions.CountOnly, yOLOTrainingDatasetOptions_Actual.CountOnly);
                 Assert.Equal(yOLOTrainingDatasetOptions.CountyIds!.OrderBy(x => x), yOLOTrainingDatasetOptions_Actual.CountyIds!.OrderBy(x => x));
+                Assert.NotNull(yOLOTrainingDatasetOptions_Actual.ExclusionBoundingBoxes);
+                Assert.Equal(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes!.Count, yOLOTrainingDatasetOptions_Actual.ExclusionBoundingBoxes!.Count);
+                Assert.Equal(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes![0].MinX, yOLOTrainingDatasetOptions_Actual.ExclusionBoundingBoxes![0].MinX);
+                Assert.Equal(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes![0].MinY, yOLOTrainingDatasetOptions_Actual.ExclusionBoundingBoxes![0].MinY);
+                Assert.Equal(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes![0].MaxX, yOLOTrainingDatasetOptions_Actual.ExclusionBoundingBoxes![0].MaxX);
+                Assert.Equal(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes![0].MaxY, yOLOTrainingDatasetOptions_Actual.ExclusionBoundingBoxes![0].MaxY);
+                Assert.Equal(yOLOTrainingDatasetOptions.ExclusionBuffer, yOLOTrainingDatasetOptions_Actual.ExclusionBuffer);
                 Assert.Equal(yOLOTrainingDatasetOptions.HoldoutDenominator, yOLOTrainingDatasetOptions_Actual.HoldoutDenominator);
                 Assert.Equal(yOLOTrainingDatasetOptions.LabelCheckOverlayCount, yOLOTrainingDatasetOptions_Actual.LabelCheckOverlayCount);
                 Assert.Equal(yOLOTrainingDatasetOptions.LabelCheckSampleSize, yOLOTrainingDatasetOptions_Actual.LabelCheckSampleSize);
@@ -83,8 +92,10 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             // The copy owns its collections.
             yOLOTrainingDatasetOptions_Copy.WeightsPaths!.Add("x");
             yOLOTrainingDatasetOptions_Copy.CountyIds!.Add(1);
+            yOLOTrainingDatasetOptions_Copy.ExclusionBoundingBoxes!.Add(new Classes.YOLOExclusionBoundingBox(0, 0, 1, 1));
             Assert.Equal(2, yOLOTrainingDatasetOptions.WeightsPaths!.Count);
             Assert.Equal(2, yOLOTrainingDatasetOptions.CountyIds!.Count);
+            Assert.Single(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes!);
 
             Core.xUnit.Query.SerializationCheck(yOLOTrainingDatasetOptions);
 
@@ -97,6 +108,11 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.Equal(new DateTimeOffset(2025, 5, 23, 0, 0, 0, TimeSpan.Zero), yOLOTrainingDatasetOptions_Default.LegacyCutoff);
             Assert.Equal(1, yOLOTrainingDatasetOptions_Default.Offset);
             Assert.Equal(0.1, yOLOTrainingDatasetOptions_Default.Confidence);
+
+            // The exclusion defaults: an empty list keeps today's behaviour, and the buffer is the neighbourhood.
+            Assert.NotNull(yOLOTrainingDatasetOptions_Default.ExclusionBoundingBoxes);
+            Assert.Empty(yOLOTrainingDatasetOptions_Default.ExclusionBoundingBoxes!);
+            Assert.Equal(100, yOLOTrainingDatasetOptions_Default.ExclusionBuffer);
         }
 
         /// <summary>
@@ -145,6 +161,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.True(yOLOTrainingDatasetOptions.CountOnly);
             Assert.Equal(new DateTimeOffset(2025, 5, 23, 0, 0, 0, TimeSpan.Zero), yOLOTrainingDatasetOptions.LegacyCutoff);
             Assert.Equal(5, yOLOTrainingDatasetOptions.HoldoutDenominator);
+            Assert.NotNull(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes);
+            Assert.Empty(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes!);
+            Assert.Equal(100, yOLOTrainingDatasetOptions.ExclusionBuffer);
         }
     }
 }
