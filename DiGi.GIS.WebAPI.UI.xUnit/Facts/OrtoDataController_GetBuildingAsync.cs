@@ -1,104 +1,14 @@
-using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using DiGi.GIS.PostgreSQL.Classes;
 using DiGi.GIS.WebAPI.UI.Classes;
 using DiGi.GIS.WebAPI.UI.Controllers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DiGi.GIS.WebAPI.UI.xUnit
 {
     public partial class Facts
     {
-        // The status-preserving stand-in for the Orto Data direct-mode read: it answers per request path, so the
-        // reference read, the years read and the year-built read can each be configured independently, and it can
-        // refuse (throw the way an unreachable service does) for a single path rather than all of them.
-        private sealed class RouteStubWebApi : HttpMessageHandler
-        {
-            private sealed class RouteAnswer
-            {
-                public RouteAnswer(HttpStatusCode statusCode, string? body, bool refuse)
-                {
-                    StatusCode = statusCode;
-                    Body = body;
-                    Refuse = refuse;
-                }
-
-                public HttpStatusCode StatusCode { get; }
-
-                public string? Body { get; }
-
-                public bool Refuse { get; }
-            }
-
-            private readonly Dictionary<string, RouteAnswer> answers = [];
-
-            public HttpRequestMessage? LastRequest { get; private set; }
-
-            public RouteStubWebApi Answer(string pathFragment, HttpStatusCode statusCode, string body)
-            {
-                answers[pathFragment] = new RouteAnswer(statusCode, body, false);
-                return this;
-            }
-
-            public RouteStubWebApi Refuse(string pathFragment)
-            {
-                answers[pathFragment] = new RouteAnswer(HttpStatusCode.OK, null, true);
-                return this;
-            }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                LastRequest = request;
-
-                string path = request.RequestUri?.AbsolutePath ?? string.Empty;
-                foreach (KeyValuePair<string, RouteAnswer> answer in answers)
-                {
-                    if (path.Contains(answer.Key))
-                    {
-                        if (answer.Value.Refuse)
-                        {
-                            throw new HttpRequestException("The service is unreachable.");
-                        }
-
-                        return Task.FromResult(new HttpResponseMessage(answer.Value.StatusCode) { Content = new StringContent(answer.Value.Body ?? string.Empty) });
-                    }
-                }
-
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent(string.Empty) });
-            }
-        }
-
-        private sealed class HandlerHttpClientFactory : IHttpClientFactory
-        {
-            private readonly HttpMessageHandler httpMessageHandler;
-
-            public HandlerHttpClientFactory(HttpMessageHandler httpMessageHandler)
-            {
-                this.httpMessageHandler = httpMessageHandler;
-            }
-
-            public HttpClient CreateClient(string name)
-            {
-                return new HttpClient(this.httpMessageHandler);
-            }
-        }
-
-        private static OrtoDataController CreateOrtoDataController(RouteStubWebApi routeStubWebApi)
-        {
-            OrtoDataController controller = new(new HandlerHttpClientFactory(routeStubWebApi));
-
-            DefaultHttpContext httpContext = new();
-            httpContext.Request.Headers["Cookie"] = $"{DiGi.GIS.WebAPI.UI.Constants.Default.UserTokenCookieName}=test-token";
-
-            controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
-
-            return controller;
-        }
-
         /// <summary>
         /// Tests the status contract of the Orto Data direct-mode building read (#48): an unknown reference stays the 404 the page reads as "Building not found.", a service that answered nothing at all is a 503, and an answered fault is the status the service answered with.
         /// <para>Before the fix every one of those collapsed through <c>Building2DReferenceAsync</c> into a 404, so an outage was reported to the reviewer as a building that does not exist.</para>
