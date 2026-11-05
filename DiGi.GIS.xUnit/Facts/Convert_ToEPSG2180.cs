@@ -69,7 +69,7 @@ namespace DiGi.GIS.xUnit
         }
 
         /// <summary>
-        /// Verifies <see cref="Convert.ToEPSG2180(Point3D?)"/> against the Warsaw pair the rest of the workspace relies on, and its refusals: a null point, a non-finite ordinate and a point outside the Polish domain all give <see langword="null"/> instead of a plausible coordinate, and the PL-1992 result returns to the source position through <see cref="Convert.ToEPSG4326(Point2D?)"/>.
+        /// Verifies <see cref="Convert.ToEPSG2180(Point3D?)"/> against the Warsaw pair the rest of the workspace relies on, that the PL-1992 result returns to the source position through <see cref="Convert.ToEPSG4326(Point2D?)"/>, and its refusals: a null point and a non-finite ordinate give <see langword="null"/>. A point outside the Polish domain still converts, because the callers of this overload - the EPW weather station import and the GIS.ToEPSG2180 Grasshopper component - handle coordinates outside Poland and answer a null by dropping the station or emptying the output.
         /// <para>Reference: DiGi.GIS#21 (EPSG:3035 and polygon footprints to EPSG:2180).</para>
         /// </summary>
         [Fact]
@@ -87,7 +87,11 @@ namespace DiGi.GIS.xUnit
             Assert.Equal(WarsawLongitude, point3D_Warsaw_Back.X, 6);
             Assert.Equal(WarsawLatitude, point3D_Warsaw_Back.Y, 6);
 
-            Assert.Null(new Point3D(ViennaLongitude, ViennaLatitude, 0.0).ToEPSG2180());
+            Point2D? point2D_Vienna = new Point3D(ViennaLongitude, ViennaLatitude, 0.0).ToEPSG2180();
+            Assert.NotNull(point2D_Vienna);
+            Assert.Equal(304948.989709486, point2D_Vienna.X, 3);
+            Assert.Equal(41170.07353180833, point2D_Vienna.Y, 3);
+
             Assert.Null(new Point3D(double.NaN, WarsawLatitude, 0.0).ToEPSG2180());
             Assert.Null(new Point3D(WarsawLongitude, double.PositiveInfinity, 0.0).ToEPSG2180());
         }
