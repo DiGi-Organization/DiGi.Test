@@ -118,6 +118,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
         /// <summary>
         /// Verifies that the committed YOLOTrainingDatasetOptions template names exactly the members the options class declares, reads back, names no county, and counts before it builds.
         /// <para>A key the class does not declare is dropped in silence, so a misspelt template member reads as the default. The template counts by default because a first run should report what a build would cost before it spends it.</para>
+        /// <para>The template also pins the shipped T30 pilot exclusion - 18 bounding boxes and a 250 m buffer (DiGi.GIS.WebAPI.UI#83) - while the class default stays empty.</para>
         /// </summary>
         [Fact]
         public void YOLOTrainingDatasetOptions_Template()
@@ -162,8 +163,11 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.Equal(new DateTimeOffset(2025, 5, 23, 0, 0, 0, TimeSpan.Zero), yOLOTrainingDatasetOptions.LegacyCutoff);
             Assert.Equal(5, yOLOTrainingDatasetOptions.HoldoutDenominator);
             Assert.NotNull(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes);
-            Assert.Empty(yOLOTrainingDatasetOptions.ExclusionBoundingBoxes!);
-            Assert.Equal(100, yOLOTrainingDatasetOptions.ExclusionBuffer);
+            // The template ships the T30 pilot exclusion (DiGi.GIS.WebAPI.UI#83): all 18 test-area boxes with a
+            // 250 m neighbourhood buffer, so no run can forget to exclude them. The CLASS default stays empty/100 -
+            // only the committed template carries the pilot values.
+            Assert.Equal(18, yOLOTrainingDatasetOptions.ExclusionBoundingBoxes.Count);
+            Assert.Equal(250, yOLOTrainingDatasetOptions.ExclusionBuffer);
         }
     }
 }
