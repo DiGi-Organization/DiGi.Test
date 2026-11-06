@@ -391,6 +391,20 @@
       <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
     </Project>
   </Folder>
+  <Folder Name="/OSM/">
+    <Project Path="../DiGi.OSM/DiGi.OSM/DiGi.OSM.csproj">
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.GIS.IO/DiGi.GIS.IO/DiGi.GIS.IO.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+    </Project>
+    <Project Path="DiGi.OSM.xUnit/DiGi.OSM.xUnit.csproj">
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.GIS.IO/DiGi.GIS.IO/DiGi.GIS.IO.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.OSM/DiGi.OSM/DiGi.OSM.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
+  </Folder>
   <Folder Name="/PostgreSQL/">
     <Project Path="../DiGi.PostgreSQL/DiGi.PostgreSQL.PartitionReference/DiGi.PostgreSQL.PartitionReference.csproj">
       <BuildDependency Project="../DiGi.Core/DiGi.Core.IO/DiGi.Core.IO.csproj" />
