@@ -22,6 +22,10 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <!-- DiGi.Geometry is referenced by HintPath, so its NuGet dependencies do not flow to the test host. -->
     <PackageReference Include="NetTopologySuite" Version="2.6.0" />
+    <!-- ProjNET4GeoAPI is a NuGet dependency of DiGi.GIS. The reprojection facts build one
+         GeoAPI.CoordinateSystems.Transformations.ICoordinateTransformation per fact and name that type, so this
+         project re-declares the package at the same version as DiGi.GIS.PostgreSQL (DiGi.GIS.PostgreSQL#125). -->
+    <PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
