@@ -323,20 +323,23 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         }
 
         /// <summary>
-        /// Removes everything a fact wrote: the scratch county's partition, the fact's register rows and the scratch county part itself.
+        /// Removes everything a fact wrote: the scratch county's partition of the dataset's table, the fact's register rows and the scratch county part itself.
         /// </summary>
         /// <param name="npgsqlConnection">The open connection to the throwaway main test database.</param>
         /// <param name="references">The guid-based references of the scratch county parts to remove.</param>
         /// <param name="versions">The versions of the register rows to remove.</param>
         /// <param name="countyId">The identifier of the scratch county part, when one was inserted; its partition is dropped with it.</param>
+        /// <param name="datasetKey">The dataset key whose table holds the partition and whose register rows are removed; defaults to EUBUCCO.</param>
         /// <returns>A task that completes when the cleanup has run.</returns>
-        private static async Task OpenBuilding_CleanupAsync(NpgsqlConnection npgsqlConnection, string[] references, string[] versions, int? countyId)
+        private static async Task OpenBuilding_CleanupAsync(NpgsqlConnection npgsqlConnection, string[] references, string[] versions, int? countyId, string datasetKey = "eubucco")
         {
             List<string> commandTexts = [];
 
-            if (countyId is int countyId_Temp)
+            string? tableName = Query.OpenBuildingTableName(datasetKey);
+
+            if (countyId is int countyId_Temp && tableName is not null && !string.Equals(tableName, Constants.TableName.GHS_OBAT_Building, StringComparison.Ordinal))
             {
-                commandTexts.Add($"DROP TABLE IF EXISTS {Constants.TableName.EUBUCCO_Building2D}_{countyId_Temp};");
+                commandTexts.Add($"DROP TABLE IF EXISTS {tableName}_{countyId_Temp};");
             }
 
             // The register and the administrative rows are only removed when they exist: a cleanup that ran
@@ -345,7 +348,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             {
                 foreach (string version in versions)
                 {
-                    commandTexts.Add($"DELETE FROM {Constants.TableName.BuildingDataset} WHERE dataset_key = 'eubucco' AND version = '{version}';");
+                    commandTexts.Add($"DELETE FROM {Constants.TableName.BuildingDataset} WHERE dataset_key = '{datasetKey}' AND version = '{version}';");
                 }
             }
 
