@@ -16,7 +16,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
     {
         /// <summary>
         /// Verifies, on the throwaway main test database, the import task itself end to end, once scoped by county list and once by bounding box (DiGi.GIS.PostgreSQL#125).
-        /// <para>The fact writes a crafted Microsoft line-delimited GeoJSON chunk with two features inside the scratch county square, so the task runs its real path: option validation, the reader it dispatches for the dataset, the sibling widening of a named county, the SQL bounding-box prefilter that resolves a pilot box to its counties, the reprojection with the run's transformation, filing, binary COPY and the register - both runs storing two rows with <c>primary_source = 'microsoft'</c>, the second run replacing the first's snapshot in the same partition, and each run keeping its own register row. The manager is built from the test configuration file, so the fact writes the throwaway database and never the host's. The scratch county, both partitions, both register rows and the crafted file are removed in <c>finally</c>. Medium test (a live database server).</para>
+        /// <para>The fact writes a crafted Microsoft line-delimited GeoJSON chunk with two features inside the scratch county square, so the task runs its real path: option validation, the reader it dispatches for the dataset, the sibling widening of a named county, the SQL bounding-box prefilter that resolves a pilot box to its counties, the reprojection with the run's transformation, filing, binary COPY and the register - both runs storing two rows with <c>primary_source = 'microsoft'</c>, the second run replacing the first's snapshot in the same partition, and each run keeping its own register row whose id the task surfaces as <see cref="PostgreSQLOpenBuildingImportTask.DatasetId"/> (DiGi.GIS.PostgreSQL#131). The manager is built from the test configuration file, so the fact writes the throwaway database and never the host's. The scratch county, both partitions, both register rows and the crafted file are removed in <c>finally</c>. Medium test (a live database server).</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task PostgreSQLOpenBuildingImportTask_BothScopes()
@@ -90,12 +90,20 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                     }
                 };
 
+                // No run has completed on the task, so the register row id is still absent.
+                Assert.Null(postgreSQLOpenBuildingImportTask_County.DatasetId);
+
                 await RunAsync(postgreSQLOpenBuildingImportTask_County);
 
                 Assert.Equal(2L, postgreSQLOpenBuildingImportTask_County.RowCount);
                 Assert.Equal(0L, postgreSQLOpenBuildingImportTask_County.FilteredCount);
                 Assert.Equal(0L, postgreSQLOpenBuildingImportTask_County.RejectionCount);
                 Assert.Equal(2L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection, "microsoft", [countyId.Value]));
+
+                // The result carries the register row id (DiGi.GIS.PostgreSQL#131): null before the run,
+                // and after it equal to the row the register holds for this release.
+                Assert.NotNull(postgreSQLOpenBuildingImportTask_County.DatasetId);
+                Assert.Equal(await RegisterIdAsync(version_County), (long?)postgreSQLOpenBuildingImportTask_County.DatasetId);
 
                 // Run 2: bounding-box scope over the same square. The SQL prefilter resolves the pilot box to
                 // the same county, and the replacement of the snapshot leaves exactly this run's two rows.
@@ -121,6 +129,11 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(0L, postgreSQLOpenBuildingImportTask_Box.RejectionCount);
                 Assert.Equal(2L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection, "microsoft", [countyId.Value]));
 
+                // The second run registers its own release and answers its own row id (DiGi.GIS.PostgreSQL#131).
+                Assert.NotNull(postgreSQLOpenBuildingImportTask_Box.DatasetId);
+                Assert.NotEqual(postgreSQLOpenBuildingImportTask_County.DatasetId, postgreSQLOpenBuildingImportTask_Box.DatasetId);
+                Assert.Equal(await RegisterIdAsync(version_Box), (long?)postgreSQLOpenBuildingImportTask_Box.DatasetId);
+
                 // The rows carry the normalised primary source of the chunk's provenance, and both releases
                 // keep their own register row.
                 string commandText = $@"SELECT count(*) FROM {Constants.TableName.Microsoft_Building2D}
@@ -142,6 +155,15 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 {
                     File.Delete(sourcePath);
                 }
+            }
+
+            // Reads one release's register row id back from the database - the figure the task's DatasetId
+            // property has to match (DiGi.GIS.PostgreSQL#131). The fact only ever asks for releases it
+            // created with a unique version, so the key resolves to their row.
+            async Task<long?> RegisterIdAsync(string version)
+            {
+                object? result = await ScalarAsync(npgsqlConnection, $"SELECT id FROM {Constants.TableName.BuildingDataset} WHERE dataset_key = 'microsoft' AND version = '{version}' AND download_date = DATE '{DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}';");
+                return result is null || result is DBNull ? null : System.Convert.ToInt64(result);
             }
         }
 
