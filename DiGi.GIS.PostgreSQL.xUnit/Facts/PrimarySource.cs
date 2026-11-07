@@ -84,6 +84,50 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             // An empty object behaves like no provenance.
             Assert.Equal(Constants.PrimarySource.Other, Query.PrimarySource(new JsonObject()));
+
+            // The vocabularies of the real releases (DiGi.GIS.PostgreSQL#133), as read from the files downloaded
+            // for #126. Overture 2026-10-21.0 names OpenStreetMap in full and Microsoft as "Microsoft ML Buildings".
+            JsonObject provenance_Overture_OpenStreetMap = [];
+            provenance_Overture_OpenStreetMap["sources"] = new JsonArray(new JsonObject { ["dataset"] = "OpenStreetMap" });
+            Assert.Equal(Constants.PrimarySource.Osm, Query.PrimarySource(provenance_Overture_OpenStreetMap));
+
+            JsonObject provenance_Overture_MicrosoftMl = [];
+            provenance_Overture_MicrosoftMl["sources"] = new JsonArray(new JsonObject { ["dataset"] = "Microsoft ML Buildings" });
+            Assert.Equal(Constants.PrimarySource.Microsoft, Query.PrimarySource(provenance_Overture_MicrosoftMl));
+
+            // EUBUCCO v0.2: gov-poland, msft and osm; geometry_source decides alone, even when an attribute column
+            // carries stronger evidence.
+            JsonObject provenance_Eubucco_Msft = [];
+            provenance_Eubucco_Msft["geometry_source"] = "msft";
+            provenance_Eubucco_Msft["type_source"] = "gov-poland";
+            provenance_Eubucco_Msft["height_source"] = "estimated";
+            Assert.Equal(Constants.PrimarySource.Microsoft, Query.PrimarySource(provenance_Eubucco_Msft));
+
+            JsonObject provenance_Eubucco_Osm = [];
+            provenance_Eubucco_Osm["geometry_source"] = "osm";
+            provenance_Eubucco_Osm["type_source"] = "osm";
+            provenance_Eubucco_Osm["height_source"] = "estimated";
+            Assert.Equal(Constants.PrimarySource.Osm, Query.PrimarySource(provenance_Eubucco_Osm));
+
+            // An unclassifiable geometry_source falls back to weighing the other columns.
+            JsonObject provenance_Eubucco_Unknown = [];
+            provenance_Eubucco_Unknown["geometry_source"] = "nan";
+            provenance_Eubucco_Unknown["height_source"] = "osm";
+            Assert.Equal(Constants.PrimarySource.Osm, Query.PrimarySource(provenance_Eubucco_Unknown));
+
+            // DBSM R2025: eub (EUBUCCO v0.1's authoritative part), msb (Microsoft Buildings), osm.
+            JsonObject provenance_Dbsm_Eub = [];
+            provenance_Dbsm_Eub["source"] = "eub";
+            Assert.Equal(Constants.PrimarySource.Register, Query.PrimarySource(provenance_Dbsm_Eub));
+
+            JsonObject provenance_Dbsm_Msb = [];
+            provenance_Dbsm_Msb["source"] = "msb";
+            Assert.Equal(Constants.PrimarySource.Microsoft, Query.PrimarySource(provenance_Dbsm_Msb));
+
+            // The short codes match exactly, never as substrings.
+            JsonObject provenance_Substring = [];
+            provenance_Substring["source"] = "eubmsbx";
+            Assert.Equal(Constants.PrimarySource.Other, Query.PrimarySource(provenance_Substring));
         }
     }
 }

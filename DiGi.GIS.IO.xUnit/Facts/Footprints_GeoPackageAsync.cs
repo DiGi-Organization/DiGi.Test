@@ -125,6 +125,32 @@ namespace DiGi.GIS.IO.xUnit
         }
 
         /// <summary>
+        /// Streams three real DBSM R2025 rows (one per <c>source</c> value: <c>osm</c>, <c>eub</c>, <c>msb</c>) cut from <c>dbsm-poland-R2025.gpkg</c> and pins what the release looks like (DiGi-Organization/DiGi.GIS.PostgreSQL#133): EPSG:3035 multipolygons, the source identifier from <c>unique_id</c> rather than the file's <c>fid</c>, and provenance carrying <c>source</c> plus the <c>eub_data</c> / <c>osm_data</c> / <c>msb_data</c> links.
+        /// </summary>
+        [Fact]
+        public async Task Footprints_GeoPackageAsync_DbsmR2025()
+        {
+            string path = FixturePath("DBSM_R2025_Sample.gpkg");
+
+            List<Footprint> footprints = await CollectAsync(Query.Footprints_GeoPackageAsync(path, BuildingDataset.Dbsm));
+            Assert.Equal(3, footprints.Count);
+            Assert.All(footprints, x => Assert.Equal(3035, x.SourceSrid));
+
+            Assert.Equal("PL517_N34E478_Y987.9112_X649.3339", footprints[0].SourceId);
+            Assert.Equal("PL517_N34E478_Y1105.6454_X531.0632", footprints[1].SourceId);
+            Assert.Equal("PL517_N34E478_Y1325.7293_X295.9786", footprints[2].SourceId);
+
+            Assert.Equal("osm", footprints[0].Provenance?["source"]?.GetValue<string>());
+            Assert.Equal("eub", footprints[1].Provenance?["source"]?.GetValue<string>());
+            Assert.Equal("msb", footprints[2].Provenance?["source"]?.GetValue<string>());
+
+            Assert.Equal("height: 3.68, age: , type:", footprints[1].Provenance?["eub_data"]?.GetValue<string>());
+            Assert.Equal("building: yes, levels: , roof-shape: , height: , date:", footprints[0].Provenance?["osm_data"]?.GetValue<string>());
+            Assert.Equal("height:", footprints[2].Provenance?["msb_data"]?.GetValue<string>());
+            Assert.False(footprints[0].Provenance?.ContainsKey("eub_json"));
+        }
+
+        /// <summary>
         /// Streams the GHS-OBAT GeoPackage centroids as points in EPSG:4326, exposes the provenance link under the single key <c>overture_id</c> even though the source column is named <c>id</c>, and filters to the three rows inside the bounding box.
         /// </summary>
         [Fact]
