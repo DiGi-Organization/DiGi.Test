@@ -23,15 +23,15 @@ namespace DiGi.GIS.YOLO.UI.xUnit
         [Fact]
         public async Task ExportPredictionImages_Validation()
         {
-            GISWebAPIManager gisWebAPIManager = new(null);
+            GISWebAPIManager gISWebAPIManager = new(null);
 
             bool result_NullManager = await Modify.ExportPredictionImagesAsync(null, 1, "test");
             Assert.False(result_NullManager);
 
-            bool result_InvalidCounty = await gisWebAPIManager.ExportPredictionImagesAsync(0, "test");
+            bool result_InvalidCounty = await gISWebAPIManager.ExportPredictionImagesAsync(0, "test");
             Assert.False(result_InvalidCounty);
 
-            bool result_InvalidDir = await gisWebAPIManager.ExportPredictionImagesAsync(1, "   ");
+            bool result_InvalidDir = await gISWebAPIManager.ExportPredictionImagesAsync(1, "   ");
             Assert.False(result_InvalidDir);
         }
 
@@ -90,8 +90,8 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 };
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
-            bool result_YOLO = await gisWebAPIManager.ExportPredictionImagesAsync(1, directory_YoloExport, resume: false);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
+            bool result_YOLO = await gISWebAPIManager.ExportPredictionImagesAsync(1, directory_YoloExport, resume: false);
             Assert.True(result_YOLO);
 
             // 3. Compare exported JPEG files byte-for-byte across both pipelines

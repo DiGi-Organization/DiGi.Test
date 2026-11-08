@@ -122,7 +122,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 };
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             Classes.YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
             {
@@ -136,7 +136,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 UpdateYearBuiltData = false
             };
 
-            return await gisWebAPIManager.RunYearBuiltPredictionsAsync(yearBuiltPredictorStub, yearBuiltPredictionPipelineOptions);
+            return await gISWebAPIManager.RunYearBuiltPredictionsAsync(yearBuiltPredictorStub, yearBuiltPredictionPipelineOptions);
         }
 
         /// <summary>

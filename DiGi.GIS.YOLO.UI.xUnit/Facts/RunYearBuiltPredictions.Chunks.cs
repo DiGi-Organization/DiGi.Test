@@ -27,7 +27,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             async Task<(YearBuiltPredictionResult?, List<Table>)> RunAsync(string directory_Scratch)
             {
                 List<Table> tables = [];
-                GISWebAPIManager gisWebAPIManager = new(CreateStubFactory(tables));
+                GISWebAPIManager gISWebAPIManager = new(CreateStubFactory(tables));
 
                 YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
                 {
@@ -43,7 +43,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                     UpdateYearBuiltData = false
                 };
 
-                YearBuiltPredictionResult? yearBuiltPredictionResult = await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+                YearBuiltPredictionResult? yearBuiltPredictionResult = await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
 
                 return (yearBuiltPredictionResult, tables);
             }
@@ -143,7 +143,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.True(new Classes.YearBuiltPredictionChunk(0, ["0207", "0208"], ["0207", "0208"], 2, new string('a', 64), 0.1, DateTimeOffset.Now).WriteYearBuiltPredictionChunk(Path.Combine(directory_Chunks, "000000" + Constants.FileName.PredictionChunkExtension)));
 
             List<Table> tables = [];
-            GISWebAPIManager gisWebAPIManager = new(CreateStubFactory(tables));
+            GISWebAPIManager gISWebAPIManager = new(CreateStubFactory(tables));
 
             YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
             {
@@ -159,7 +159,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 UpdateYearBuiltData = false
             };
 
-            YearBuiltPredictionResult? yearBuiltPredictionResult = await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+            YearBuiltPredictionResult? yearBuiltPredictionResult = await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
 
             Assert.NotNull(yearBuiltPredictionResult);
             Assert.Contains(nameof(DiGi.YOLO.Create.BoundingBoxResultFile), yearBuiltPredictionResult!.FailedStepNames);
@@ -230,7 +230,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             string directory_County = Path.Combine(directory_Scratch, countyId.ToString(System.Globalization.CultureInfo.InvariantCulture));
             string directory_Chunks = Path.Combine(directory_County, Constants.DirectoryName.PredictionChunks);
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             async Task<YearBuiltPredictionResult?> RunAsync(int chunkSize)
             {
@@ -250,7 +250,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                     UpdateYearBuiltData = false
                 };
 
-                return await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+                return await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
             }
 
             List<string> ChunkReferences(int index)
@@ -304,7 +304,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                     return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound);
                 });
 
-                GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+                GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
                 YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
                 {
@@ -315,7 +315,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                     Score = false
                 };
 
-                YearBuiltPredictionResult? yearBuiltPredictionResult = await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+                YearBuiltPredictionResult? yearBuiltPredictionResult = await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
 
                 Assert.NotNull(yearBuiltPredictionResult);
                 Assert.Contains(nameof(Classes.YearBuiltPredictionPipelineOptions.ChunkSize), yearBuiltPredictionResult!.FailedStepNames);

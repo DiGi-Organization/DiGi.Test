@@ -7,7 +7,7 @@ namespace DiGi.GIS.WebAPI.xUnit
     {
         /// <summary>
         /// Asserts the route templates of the county-keyed write endpoints.
-        /// <para>These routes are resolved by reflection at runtime through <c>GISWebAPIManager.CreateHttpClient</c>. A renamed or mistyped template does not throw - the manager hands back a null path and the upload returns <see langword="false"/> with nothing logged - so the templates are pinned here rather than discovered in production.</para>
+        /// <para>These routes are resolved by reflection at runtime through <c>gISWebAPIManager.CreateHttpClient</c>. A renamed or mistyped template does not throw - the manager hands back a null path and the upload returns <see langword="false"/> with nothing logged - so the templates are pinned here rather than discovered in production.</para>
         /// <para>The <c>bycountyids</c> routes are the ones that take the parts themselves: a county code maps to one row per polygon part of a multi-part county, so it only names the candidates.</para>
         /// </summary>
         [Fact]

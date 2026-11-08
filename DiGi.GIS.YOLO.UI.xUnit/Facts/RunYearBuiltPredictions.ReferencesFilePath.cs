@@ -34,7 +34,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound);
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             string directory = Path.Combine(Path.GetTempPath(), $"{nameof(RunYearBuiltPredictions_ReferencesFilePath_Refused)}_{Guid.NewGuid():N}");
             Directory.CreateDirectory(directory);
@@ -61,7 +61,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                         UpdateDetections = true
                     };
 
-                    YearBuiltPredictionResult? yearBuiltPredictionResult = await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+                    YearBuiltPredictionResult? yearBuiltPredictionResult = await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
 
                     Assert.NotNull(yearBuiltPredictionResult);
                     Assert.Contains(nameof(Classes.YearBuiltPredictionPipelineOptions.ReferencesFilePath), yearBuiltPredictionResult!.FailedStepNames);
@@ -143,7 +143,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
             {
@@ -160,7 +160,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 UpdateYearBuiltData = false
             };
 
-            YearBuiltPredictionResult? yearBuiltPredictionResult = await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+            YearBuiltPredictionResult? yearBuiltPredictionResult = await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
 
             Assert.NotNull(yearBuiltPredictionResult);
             Assert.DoesNotContain(nameof(Classes.YearBuiltPredictionPipelineOptions.ReferencesFilePath), yearBuiltPredictionResult!.FailedStepNames);
@@ -235,12 +235,12 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 };
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             string directory = Path.Combine(Path.GetTempPath(), $"{nameof(ExportPredictionImages_References)}_{Guid.NewGuid():N}");
             try
             {
-                bool exported = await gisWebAPIManager.ExportPredictionImagesAsync(1, directory, resume: false, references: ["R_B", "R_X"]);
+                bool exported = await gISWebAPIManager.ExportPredictionImagesAsync(1, directory, resume: false, references: ["R_B", "R_X"]);
                 Assert.True(exported);
 
                 string requestUri_Item = Assert.Single(requestUris_Item);

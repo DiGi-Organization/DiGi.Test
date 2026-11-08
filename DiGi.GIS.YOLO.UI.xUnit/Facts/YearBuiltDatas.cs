@@ -36,9 +36,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 return new HttpResponseMessage(HttpStatusCode.NoContent);
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
-            List<YearBuiltData> result = await Query.YearBuiltDatasAsync(gisWebAPIManager, countyId, years, runTimestamp, modelId_Regressor_Test, true, referenceBatchSize, null, default);
+            List<YearBuiltData> result = await Query.YearBuiltDatasAsync(gISWebAPIManager, countyId, years, runTimestamp, modelId_Regressor_Test, true, referenceBatchSize, null, default);
 
             List<HttpRequestMessage> bulkReads = requests.Where(request => request.RequestUri?.AbsolutePath == "/gis/yearbuiltdata/itemsbyreferences").ToList();
             List<HttpRequestMessage> singularReads = requests.Where(request => request.RequestUri?.AbsolutePath == "/gis/yearbuiltdata/itemsbyreference").ToList();
@@ -105,9 +105,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 return new HttpResponseMessage(HttpStatusCode.NoContent);
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
-            List<YearBuiltData> result = await Query.YearBuiltDatasAsync(gisWebAPIManager, countyId, years, runTimestamp, modelId_Regressor_Test, true, referenceBatchSize, null, default);
+            List<YearBuiltData> result = await Query.YearBuiltDatasAsync(gISWebAPIManager, countyId, years, runTimestamp, modelId_Regressor_Test, true, referenceBatchSize, null, default);
 
             Assert.Equal(20, result.Count);
 
@@ -171,9 +171,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 };
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
-            List<YearBuiltData> result = await Query.YearBuiltDatasAsync(gisWebAPIManager, countyId, years, runTimestamp, modelId_Regressor_Test, true, referenceBatchSize, null, default);
+            List<YearBuiltData> result = await Query.YearBuiltDatasAsync(gISWebAPIManager, countyId, years, runTimestamp, modelId_Regressor_Test, true, referenceBatchSize, null, default);
 
             // Page one is read: its ten references carry the run&apos;s prediction.
             // Page two is not: none of its ten references may appear, fresh or otherwise.
@@ -275,13 +275,13 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 return new HttpResponseMessage(HttpStatusCode.NoContent);
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
-            List<YearBuiltData> result = await Query.YearBuiltDatasAsync(gisWebAPIManager, 1, years, runTimestamp, modelId_Regressor_Test, false);
+            List<YearBuiltData> result = await Query.YearBuiltDatasAsync(gISWebAPIManager, 1, years, runTimestamp, modelId_Regressor_Test, false);
             Assert.Equal(3, result.Count);
             Assert.All(result, x => AssertPrediction(x, runTimestamp));
 
-            List<YearBuiltData> result_NoModelId = await Query.YearBuiltDatasAsync(gisWebAPIManager, 1, years, runTimestamp, null, false);
+            List<YearBuiltData> result_NoModelId = await Query.YearBuiltDatasAsync(gISWebAPIManager, 1, years, runTimestamp, null, false);
             Assert.Equal(3, result_NoModelId.Count);
             Assert.All(result_NoModelId, x => Assert.Null(x.GetLatestPredictedYearBuilt()?.ModelId));
 
@@ -388,7 +388,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 return new HttpResponseMessage(HttpStatusCode.NoContent);
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             Classes.YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
             {
@@ -402,7 +402,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 UpdateYearBuiltData = true
             };
 
-            return await gisWebAPIManager.RunYearBuiltPredictionsAsync(yearBuiltPredictorStub, yearBuiltPredictionPipelineOptions);
+            return await gISWebAPIManager.RunYearBuiltPredictionsAsync(yearBuiltPredictorStub, yearBuiltPredictionPipelineOptions);
         }
     }
 }

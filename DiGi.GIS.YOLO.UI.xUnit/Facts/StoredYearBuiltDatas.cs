@@ -52,10 +52,10 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 };
             });
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             List<string> references_Failed = [];
-            Dictionary<string, List<YearBuiltData>>? yearBuiltDatas_ByReference = await Query.StoredYearBuiltDatasAsync(gisWebAPIManager, 1, years.Keys, 10, references_Failed, null, default);
+            Dictionary<string, List<YearBuiltData>>? yearBuiltDatas_ByReference = await Query.StoredYearBuiltDatasAsync(gISWebAPIManager, 1, years.Keys, 10, references_Failed, null, default);
 
             Assert.NotNull(yearBuiltDatas_ByReference);
             Assert.Single(yearBuiltDatas_ByReference!);

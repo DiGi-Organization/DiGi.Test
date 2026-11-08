@@ -40,7 +40,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             Assert.NotNull(visualBackgroundTasks_Server);
             Assert.NotEmpty(visualBackgroundTasks_Server);
 
-            // OrtoDatasTask requires GISWebAPIManager and must be excluded when it is null
+            // OrtoDatasTask requires gISWebAPIManager and must be excluded when it is null
             Assert.DoesNotContain(visualBackgroundTasks_Server, x => x.TypeName == typeof(OrtoDatasTask).Name);
 
             // Client mode with null WebAPI manager should return empty list

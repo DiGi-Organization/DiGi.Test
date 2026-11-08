@@ -15,9 +15,9 @@ namespace DiGi.GIS.WebAPI.xUnit
             /// <summary>
             /// Initializes a new instance of the <see cref="OrtoDatasFromDatabasePostTaskProbe"/> class.
             /// </summary>
-            /// <param name="GISWebAPIManager">The manager that creates the HTTP clients the task uses.</param>
-            public OrtoDatasFromDatabasePostTaskProbe(GISWebAPIManager GISWebAPIManager)
-                : base(GISWebAPIManager)
+            /// <param name="gISWebAPIManager">The manager that creates the HTTP clients the task uses.</param>
+            public OrtoDatasFromDatabasePostTaskProbe(GISWebAPIManager gISWebAPIManager)
+                : base(gISWebAPIManager)
             {
             }
 

@@ -38,7 +38,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             string directory = TrainingDatasetDirectory(nameof(AppendYOLOTrainingDataset_Exclusion));
             string path_Legacy = LegacyReferencesFile(directory, [reference_A]);
 
-            GISWebAPIManager gisWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
+            GISWebAPIManager gISWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
 
             BoundingBox2D boundingBox2D_Envelope = FixtureFootprintEnvelope();
             double minX = boundingBox2D_Envelope.Min.X;
@@ -66,7 +66,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 trainingDatasetStub.OrtoDatasReferences.Clear();
                 int footprintRequests = trainingDatasetStub.Building2DRequestCount;
 
-                Classes.YOLOTrainingDatasetResult? result = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+                Classes.YOLOTrainingDatasetResult? result = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
                 Assert.NotNull(result);
                 Assert.Empty(result!.FailedStepNames);
 
@@ -191,9 +191,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 ExclusionBoundingBoxes = [new Classes.YOLOExclusionBoundingBox(boundingBox2D_Envelope.Min.X - 10, boundingBox2D_Envelope.Min.Y - 10, boundingBox2D_Envelope.Max.X + 10, boundingBox2D_Envelope.Max.Y + 10)]
             };
 
-            GISWebAPIManager gisWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
+            GISWebAPIManager gISWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
 
-            Classes.YOLOTrainingDatasetResult? result = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+            Classes.YOLOTrainingDatasetResult? result = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
             Assert.NotNull(result);
             Assert.Empty(result!.FailedStepNames);
             Assert.True(result.CountOnly);

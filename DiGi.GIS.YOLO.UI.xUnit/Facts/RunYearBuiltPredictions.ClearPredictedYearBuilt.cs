@@ -54,7 +54,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             List<Table> tables = [];
             StubHttpClientFactory stubHttpClientFactory = CreateStubFactory(tables);
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
             {
@@ -70,7 +70,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 UpdateYearBuiltData = false
             };
 
-            YearBuiltPredictionResult? yearBuiltPredictionResult = await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+            YearBuiltPredictionResult? yearBuiltPredictionResult = await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
 
             Assert.NotNull(yearBuiltPredictionResult);
             Assert.DoesNotContain(nameof(Modify.UpdateBuildingDataYearBuiltPredictionsAsync), yearBuiltPredictionResult!.FailedStepNames);
@@ -129,7 +129,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 List<Table> tables = [];
                 StubHttpClientFactory stubHttpClientFactory = CreateStubFactory(tables);
 
-                GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+                GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
                 YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
                 {
@@ -145,7 +145,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                     UpdateYearBuiltData = false
                 };
 
-                YearBuiltPredictionResult? yearBuiltPredictionResult = await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+                YearBuiltPredictionResult? yearBuiltPredictionResult = await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
                 Assert.NotNull(yearBuiltPredictionResult);
 
                 //No table carrying the predicted year column is posted, so the never-detected building's stored year is untouched
@@ -192,7 +192,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             List<Table> tables = [];
             StubHttpClientFactory stubHttpClientFactory = CreateStubFactory(tables);
 
-            GISWebAPIManager gisWebAPIManager = new(stubHttpClientFactory);
+            GISWebAPIManager gISWebAPIManager = new(stubHttpClientFactory);
 
             YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
             {
@@ -209,7 +209,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 UpdateYearBuiltData = false
             };
 
-            YearBuiltPredictionResult? yearBuiltPredictionResult = await gisWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
+            YearBuiltPredictionResult? yearBuiltPredictionResult = await gISWebAPIManager.RunYearBuiltPredictionsAsync(null, yearBuiltPredictionPipelineOptions);
 
             Assert.NotNull(yearBuiltPredictionResult);
             Assert.DoesNotContain(nameof(Classes.YearBuiltPredictionPipelineOptions.ReferencesFilePath), yearBuiltPredictionResult!.FailedStepNames);

@@ -120,7 +120,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Directory.CreateDirectory(Path.Combine(directory_County, Constants.DirectoryName.PredictionImages));
             File.Copy(path_Fixture!, Path.Combine(directory_County, Constants.FileName.PredictionResults), true);
 
-            GISWebAPIManager gisWebAPIManager = new(null);
+            GISWebAPIManager gISWebAPIManager = new(null);
 
             Classes.YearBuiltPredictionPipelineOptions yearBuiltPredictionPipelineOptions = new()
             {
@@ -136,7 +136,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 Radiuses = radiuses
             };
 
-            return await gisWebAPIManager.RunYearBuiltPredictionsAsync(yearBuiltPredictorStub, yearBuiltPredictionPipelineOptions);
+            return await gISWebAPIManager.RunYearBuiltPredictionsAsync(yearBuiltPredictorStub, yearBuiltPredictionPipelineOptions);
         }
     }
 }

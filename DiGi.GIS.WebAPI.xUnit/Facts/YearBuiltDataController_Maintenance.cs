@@ -272,12 +272,12 @@ namespace DiGi.GIS.WebAPI.xUnit
             Assert.Null(await gisWebAPIManager_Null.UpdateBuildingDataYearBuiltAsync([1]));
             Assert.Null(await gisWebAPIManager_Null.PredictedYearBuiltRunsAsync([1]));
 
-            GISWebAPIManager gisWebAPIManager = new(null);
-            Assert.Null(await gisWebAPIManager.RemoveYearBuiltDatasAsync([]));
-            Assert.Null(await gisWebAPIManager.RemovePredictedYearBuiltsAsync(null, 1));
-            Assert.Null(await gisWebAPIManager.RemoveUserYearBuiltsAsync([1], []));
-            Assert.Null(await gisWebAPIManager.UpdateBuildingDataYearBuiltAsync([]));
-            Assert.Null(await gisWebAPIManager.PredictedYearBuiltRunsAsync([]));
+            GISWebAPIManager gISWebAPIManager = new(null);
+            Assert.Null(await gISWebAPIManager.RemoveYearBuiltDatasAsync([]));
+            Assert.Null(await gISWebAPIManager.RemovePredictedYearBuiltsAsync(null, 1));
+            Assert.Null(await gISWebAPIManager.RemoveUserYearBuiltsAsync([1], []));
+            Assert.Null(await gISWebAPIManager.UpdateBuildingDataYearBuiltAsync([]));
+            Assert.Null(await gISWebAPIManager.PredictedYearBuiltRunsAsync([]));
         }
 
         /// <summary>

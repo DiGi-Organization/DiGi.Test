@@ -54,9 +54,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 MaxConcurrentRequests = 2
             };
 
-            GISWebAPIManager gisWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
+            GISWebAPIManager gISWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
 
-            Classes.YOLOTrainingDatasetResult? result = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+            Classes.YOLOTrainingDatasetResult? result = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
             Assert.NotNull(result);
             Assert.Empty(result!.FailedStepNames);
             Assert.False(result.CountOnly);
@@ -130,7 +130,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
 
             trainingDatasetStub.OrtoDatasReferences.Clear();
 
-            Classes.YOLOTrainingDatasetResult? result_Resume = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+            Classes.YOLOTrainingDatasetResult? result_Resume = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
             Assert.NotNull(result_Resume);
             Assert.Empty(result_Resume!.FailedStepNames);
             Assert.Equal(3, result_Resume.Total!.ResumedCount);
@@ -146,7 +146,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
 
             // With Resume off, an existing dataset is refused.
             yOLOTrainingDatasetOptions.Resume = false;
-            Classes.YOLOTrainingDatasetResult? result_NoResume = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+            Classes.YOLOTrainingDatasetResult? result_NoResume = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
             Assert.Contains(nameof(Classes.YOLOTrainingDatasetOptions.Resume), result_NoResume!.FailedStepNames);
             yOLOTrainingDatasetOptions.Resume = true;
 
@@ -155,14 +155,14 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Directory.CreateDirectory(directory_Foreign);
             File.WriteAllText(Path.Combine(directory_Foreign, "notes.txt"), "x");
             Classes.YOLOTrainingDatasetOptions yOLOTrainingDatasetOptions_Foreign = new(yOLOTrainingDatasetOptions) { OutputDirectory = directory_Foreign };
-            Classes.YOLOTrainingDatasetResult? result_Foreign = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions_Foreign);
+            Classes.YOLOTrainingDatasetResult? result_Foreign = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions_Foreign);
             Assert.Contains(nameof(Classes.YOLOTrainingDatasetOptions.OutputDirectory), result_Foreign!.FailedStepNames);
             Assert.False(Directory.Exists(Path.Combine(directory_Foreign, DiGi.YOLO.Constants.DirectoryName.Images)));
 
             // The same labels and seed give the same split in a fresh dataset.
             string directory_Again = Path.Combine(directory, "dataset_again");
             Classes.YOLOTrainingDatasetOptions yOLOTrainingDatasetOptions_Again = new(yOLOTrainingDatasetOptions) { OutputDirectory = directory_Again };
-            Assert.NotNull(await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions_Again));
+            Assert.NotNull(await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions_Again));
 
             List<Classes.DatasetReference> datasetReferences_Again = Query.DatasetReferences(Path.Combine(directory_Again, Constants.FileName.DatasetReferences))!;
             foreach (Classes.DatasetReference datasetReference in datasetReferences)
@@ -171,7 +171,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             }
 
             // Relative output is refused before anything is read.
-            Assert.Null(await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(new Classes.YOLOTrainingDatasetOptions(yOLOTrainingDatasetOptions) { OutputDirectory = "relative" }));
+            Assert.Null(await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(new Classes.YOLOTrainingDatasetOptions(yOLOTrainingDatasetOptions) { OutputDirectory = "relative" }));
         }
 
         /// <summary>
@@ -212,9 +212,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 LegacyReferencesFilePath = LegacyReferencesFile(directory, [])
             };
 
-            GISWebAPIManager gisWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
+            GISWebAPIManager gISWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
 
-            Classes.YOLOTrainingDatasetResult? result = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+            Classes.YOLOTrainingDatasetResult? result = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
             Assert.NotNull(result);
             Assert.Empty(result!.FailedStepNames);
 
@@ -272,9 +272,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 CountOnly = true
             };
 
-            GISWebAPIManager gisWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
+            GISWebAPIManager gISWebAPIManager = new(new StubHttpClientFactory(trainingDatasetStub.Answer));
 
-            Classes.YOLOTrainingDatasetResult? result = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+            Classes.YOLOTrainingDatasetResult? result = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
             Assert.NotNull(result);
             Assert.Empty(result!.FailedStepNames);
             Assert.True(result.CountOnly);
@@ -300,7 +300,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             // The history cannot be read: the county part's Test buildings are unknown, never clean, and the step says so.
             trainingDatasetStub.YearBuiltDataStatusCode = HttpStatusCode.InternalServerError;
 
-            Classes.YOLOTrainingDatasetResult? result_Failed = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+            Classes.YOLOTrainingDatasetResult? result_Failed = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
             Assert.NotNull(result_Failed);
             Assert.Contains(nameof(Query.StoredYearBuiltDatasAsync), result_Failed!.FailedStepNames);
             Assert.Equal(2, result_Failed.Total!.LegacyUnknownCount);
@@ -310,13 +310,13 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             trainingDatasetStub.YearBuiltDataStatusCode = null;
             trainingDatasetStub.LabelStatusCode = HttpStatusCode.InternalServerError;
 
-            Classes.YOLOTrainingDatasetResult? result_Labels = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
+            Classes.YOLOTrainingDatasetResult? result_Labels = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(yOLOTrainingDatasetOptions);
             Assert.Contains(nameof(Query.UserYearBuiltsAsync), result_Labels!.FailedStepNames);
             Assert.Equal(0, result_Labels.Total!.BuildingCount);
 
             // No legacy list: refused, never read as an empty one.
             trainingDatasetStub.LabelStatusCode = null;
-            Classes.YOLOTrainingDatasetResult? result_NoList = await gisWebAPIManager.AppendYOLOTrainingDatasetAsync(new Classes.YOLOTrainingDatasetOptions(yOLOTrainingDatasetOptions) { LegacyReferencesFilePath = Path.Combine(directory, "missing.tsv") });
+            Classes.YOLOTrainingDatasetResult? result_NoList = await gISWebAPIManager.AppendYOLOTrainingDatasetAsync(new Classes.YOLOTrainingDatasetOptions(yOLOTrainingDatasetOptions) { LegacyReferencesFilePath = Path.Combine(directory, "missing.tsv") });
             Assert.Contains(nameof(Query.LegacyReferences), result_NoList!.FailedStepNames);
         }
 
