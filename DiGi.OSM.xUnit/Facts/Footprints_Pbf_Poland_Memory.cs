@@ -35,7 +35,7 @@ namespace DiGi.OSM.xUnit
             foreach (string line in File.ReadAllLines(confPath))
             {
                 string line_Temp = line.Trim();
-                if (line_Temp.Length == 0 || line_Temp.StartsWith("#", StringComparison.Ordinal))
+                if (line_Temp.Length == 0 || line_Temp.StartsWith('#'))
                 {
                     continue;
                 }

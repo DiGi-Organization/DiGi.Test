@@ -6,6 +6,7 @@ using DiGi.Geometry.Spatial.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace DiGi.Geometry.xUnit
 {
@@ -1345,7 +1346,7 @@ namespace DiGi.Geometry.xUnit
                 double microseconds_Component = Best(() => IsClosed_ComponentMatching(polyhedron, false, tolerance), repeats);
                 double microseconds_Shipped = Best(() => polyhedron.IsClosed(tolerance), repeats);
 
-                stringBuilder.AppendLine($"| {name} | {count_HalfEdges} | {microseconds_VertexWeld:F1} | {microseconds_Greedy:F1} | {microseconds_Component:F1} | {microseconds_Shipped:F1} | {microseconds_Shipped / microseconds_VertexWeld:F2} |");
+                stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| {name} | {count_HalfEdges} | {microseconds_VertexWeld:F1} | {microseconds_Greedy:F1} | {microseconds_Component:F1} | {microseconds_Shipped:F1} | {microseconds_Shipped / microseconds_VertexWeld:F2} |");
             }
 
             // 1. Extrusion of a 500-gon - a clean solid where every half-edge has an exact partner.
@@ -1426,7 +1427,7 @@ namespace DiGi.Geometry.xUnit
                     stringBuilder_Shipped.Append(polyhedron.IsClosed(Polyhedron_IsClosed_Tolerances[i]) ? "T" : ".");
                 }
 
-                stringBuilder.AppendLine($"| {name} | `{stringBuilder_Weld}` | `{stringBuilder_Shipped}` |");
+                stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| {name} | `{stringBuilder_Weld}` | `{stringBuilder_Shipped}` |");
             }
 
             Sweep("500-gon extrusion", polyhedron_Extrusion);
@@ -1447,18 +1448,18 @@ namespace DiGi.Geometry.xUnit
             Sweep("Box, top lifted 0.05", polyhedron_Lifted);
 
             stringBuilder.AppendLine();
-            stringBuilder.AppendLine($"Ladder: {string.Join(", ", Polyhedron_IsClosed_Tolerances)}");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"Ladder: {string.Join(", ", Polyhedron_IsClosed_Tolerances)}");
 
             stringBuilder.AppendLine();
             stringBuilder.AppendLine("Verdicts where the implementations disagree:");
             stringBuilder.AppendLine();
             stringBuilder.AppendLine("| Scenario | Criterion | Vertex weld (previous) | Shipped |");
             stringBuilder.AppendLine("| :--- | :--- | :--- | :--- |");
-            stringBuilder.AppendLine($"| 0.03 m step, tolerance 0.05 | default | {IsClosed_VertexWeld(polyhedron_Step, false, 0.05)} | {polyhedron_Step.IsClosed(0.05)} |");
-            stringBuilder.AppendLine($"| 0.03 m step, tolerance 0.05 | manifold | {IsClosed_VertexWeld(polyhedron_Step, true, 0.05)} | {polyhedron_Step.IsClosed(true, 0.05)} |");
-            stringBuilder.AppendLine($"| 0.1 m slot, tolerance 0.15 | default | {IsClosed_VertexWeld(polyhedron_Slot, false, 0.15)} | {polyhedron_Slot.IsClosed(0.15)} |");
-            stringBuilder.AppendLine($"| Two thin slabs, tolerance 0.05 | default | {IsClosed_VertexWeld(polyhedron_Slabs, false, 0.05)} | {polyhedron_Slabs.IsClosed(0.05)} |");
-            stringBuilder.AppendLine($"| Two thin slabs, tolerance 0.05 | manifold | {IsClosed_VertexWeld(polyhedron_Slabs, true, 0.05)} | {polyhedron_Slabs.IsClosed(true, 0.05)} |");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| 0.03 m step, tolerance 0.05 | default | {IsClosed_VertexWeld(polyhedron_Step, false, 0.05)} | {polyhedron_Step.IsClosed(0.05)} |");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| 0.03 m step, tolerance 0.05 | manifold | {IsClosed_VertexWeld(polyhedron_Step, true, 0.05)} | {polyhedron_Step.IsClosed(true, 0.05)} |");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| 0.1 m slot, tolerance 0.15 | default | {IsClosed_VertexWeld(polyhedron_Slot, false, 0.15)} | {polyhedron_Slot.IsClosed(0.15)} |");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| Two thin slabs, tolerance 0.05 | default | {IsClosed_VertexWeld(polyhedron_Slabs, false, 0.05)} | {polyhedron_Slabs.IsClosed(0.05)} |");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| Two thin slabs, tolerance 0.05 | manifold | {IsClosed_VertexWeld(polyhedron_Slabs, true, 0.05)} | {polyhedron_Slabs.IsClosed(true, 0.05)} |");
 
             string? directory_Reports = DiGi.Core.xUnit.Query.ReportsDirectory(System.Reflection.Assembly.GetExecutingAssembly());
             Assert.NotNull(directory_Reports);

@@ -1,6 +1,7 @@
 using DiGi.PostgreSQL.Classes;
 using DiGi.PostgreSQL.Table.xUnit.Classes;
 using Npgsql;
+using System.Globalization;
 
 namespace DiGi.PostgreSQL.Table.xUnit
 {
@@ -71,7 +72,7 @@ namespace DiGi.PostgreSQL.Table.xUnit
             List<DiGi.PostgreSQL.Table.Classes.AggregateMeasure> measures = [];
             for (int i = 0; i <= maxCount; i++)
             {
-                measures.Add(new DiGi.PostgreSQL.Table.Classes.AggregateMeasure("column_" + i.ToString(), DiGi.PostgreSQL.Table.Enums.SinglevalueAggregateFunction.Count));
+                measures.Add(new DiGi.PostgreSQL.Table.Classes.AggregateMeasure("column_" + i.ToString(CultureInfo.CurrentCulture), DiGi.PostgreSQL.Table.Enums.SinglevalueAggregateFunction.Count));
             }
 
             ArgumentOutOfRangeException exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => testConverter.GetAggregateSummariesAsync(npgsqlConnection, measures));

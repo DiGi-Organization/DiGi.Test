@@ -2,6 +2,7 @@ using DiGi.GIS.Classes;
 using DiGi.GIS.WebAPI.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -62,7 +63,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.Equal(25, result.Count);
             for (int i = 0; i < 25; i++)
             {
-                Assert.Equal(string.Format("REF_{0:D2}", i), result[i].Reference);
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture, "REF_{0:D2}", i), result[i].Reference);
                 AssertPrediction(result[i], runTimestamp);
             }
         }
@@ -182,12 +183,12 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             List<string> references = result.Select(x => x.Reference!).ToList();
             for (int i = 0; i < 10; i++)
             {
-                Assert.Contains(string.Format("REF_{0:D2}", i), references);
+                Assert.Contains(string.Format(CultureInfo.CurrentCulture, "REF_{0:D2}", i), references);
             }
 
             for (int i = 10; i < 20; i++)
             {
-                Assert.DoesNotContain(string.Format("REF_{0:D2}", i), references);
+                Assert.DoesNotContain(string.Format(CultureInfo.CurrentCulture, "REF_{0:D2}", i), references);
             }
         }
 
@@ -231,7 +232,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Dictionary<string, short> years = [];
             for (int i = 0; i < count; i++)
             {
-                years[string.Format("REF_{0:D2}", i)] = 1975;
+                years[string.Format(CultureInfo.CurrentCulture, "REF_{0:D2}", i)] = 1975;
             }
 
             return years;
@@ -303,7 +304,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.Equal(count, page!.Count);
             for (int i = 0; i < count; i++)
             {
-                Assert.Equal(string.Format("REF_{0:D2}", offset + i), page[i]!.ToString());
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture, "REF_{0:D2}", offset + i), page[i]!.ToString());
             }
         }
 
@@ -353,7 +354,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.False(string.IsNullOrWhiteSpace(directory_Reports));
 
             string directory_Scratch = Path.Combine(directory_Reports!, name);
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
             Directory.CreateDirectory(Path.Combine(directory_County, Constants.DirectoryName.PredictionImages));
             File.Copy(path_Fixture!, Path.Combine(directory_County, Constants.FileName.PredictionResults), true);
 
@@ -364,7 +365,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 string path = httpRequestMessage.RequestUri?.AbsolutePath ?? string.Empty;
 
                 // Only the feature read is answered with content, so the run reaches the year built leg.
-                if (path.IndexOf("buildingdata", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (path.Contains("buildingdata", StringComparison.OrdinalIgnoreCase))
                 {
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
@@ -373,13 +374,13 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 }
 
                 // The write leg is answered with no content - a success - so the count it reports is the read's.
-                if (path.IndexOf("updateitems", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (path.Contains("updateitems", StringComparison.OrdinalIgnoreCase))
                 {
                     return new HttpResponseMessage(HttpStatusCode.NoContent);
                 }
 
                 // The year built read is the leg under test, answered as the caller states.
-                if (path.IndexOf("itemsbyreference", StringComparison.OrdinalIgnoreCase) >= 0)
+                if (path.Contains("itemsbyreference", StringComparison.OrdinalIgnoreCase))
                 {
                     return new HttpResponseMessage(yearBuiltReadStatus);
                 }

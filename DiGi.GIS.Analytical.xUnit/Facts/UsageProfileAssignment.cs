@@ -58,7 +58,7 @@ namespace DiGi.GIS.Analytical.xUnit
 
             // Every specific function maps to one usage type at most, whatever the general function.
             Dictionary<UsageType, int> counts = [];
-            foreach (BuildingSpecificFunction buildingSpecificFunction in System.Enum.GetValues(typeof(BuildingSpecificFunction)).Cast<BuildingSpecificFunction>())
+            foreach (BuildingSpecificFunction buildingSpecificFunction in Enum.GetValues<BuildingSpecificFunction>().Cast<BuildingSpecificFunction>())
             {
                 UsageType usageType = Query.UsageType(Building2D_Rectangle(10, 10, 1, BuildingGeneralFunction.other_non_residential_buildings, buildingSpecificFunction));
                 counts[usageType] = counts.TryGetValue(usageType, out int count) ? count + 1 : 1;

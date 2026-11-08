@@ -263,17 +263,17 @@ namespace DiGi.Geometry.xUnit
         {
             double tolerance = 0.01;
 
-            Polygon2D externalEdge = new Polygon2D([new Point2D(0, 0), new Point2D(10, 0), new Point2D(10, 10), new Point2D(0, 10)]);
-            Polygon2D internalEdge = new Polygon2D([new Point2D(4, 4), new Point2D(6, 4), new Point2D(6, 6), new Point2D(4, 6)]);
+            Polygon2D externalEdge = new([new Point2D(0, 0), new Point2D(10, 0), new Point2D(10, 10), new Point2D(0, 10)]);
+            Polygon2D internalEdge = new([new Point2D(4, 4), new Point2D(6, 4), new Point2D(6, 6), new Point2D(4, 6)]);
 
             PolygonalFace2D? polygonalFace2D_Hole = Create.PolygonalFace2D(externalEdge, [internalEdge]);
             PolygonalFace2D? polygonalFace2D_Solid = Create.PolygonalFace2D(externalEdge);
             Assert.NotNull(polygonalFace2D_Hole);
             Assert.NotNull(polygonalFace2D_Solid);
 
-            Point2D point2D_OnOutline = new Point2D(5, 0.005);
-            Point2D point2D_OnRim = new Point2D(4.005, 5);
-            Point2D point2D_InHole = new Point2D(5, 5);
+            Point2D point2D_OnOutline = new(5, 0.005);
+            Point2D point2D_OnRim = new(4.005, 5);
+            Point2D point2D_InHole = new(5, 5);
 
             Assert.True(polygonalFace2D_Solid.InRange(point2D_OnOutline, tolerance));
             Assert.True(polygonalFace2D_Hole.InRange(point2D_OnOutline, tolerance));

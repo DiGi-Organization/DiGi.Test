@@ -90,7 +90,7 @@ namespace DiGi.GIS.xUnit
             {
                 CultureInfo.CurrentCulture = new CultureInfo("pl-PL");
 
-                Assert.NotEqual("1234.5", 1234.5.ToString());
+                Assert.NotEqual("1234.5", 1234.5.ToString(CultureInfo.CurrentCulture));
                 Assert.Equal("1234.5_6.25", Query.OrtoLocationKey(boundingBox2D_Fraction));
                 Assert.Equal(lines, Convert.ToSystem_Strings(ortoAvailabilityMatrix)!);
                 Assert.Contains("\t0.5\t", Convert.ToSystem_Strings(ortoSheets)![1]);

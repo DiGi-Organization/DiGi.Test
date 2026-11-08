@@ -2,6 +2,7 @@ using DiGi.Core.Classes;
 using DiGi.Core.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DiGi.Core.xUnit
 {
@@ -71,7 +72,7 @@ namespace DiGi.Core.xUnit
             HashSet<string> strings = [];
             foreach (IReference reference in references)
             {
-                Assert.True(strings.Add(reference.ToString()!), string.Format("Collision on {0}", reference.GetType().Name));
+                Assert.True(strings.Add(reference.ToString()!), string.Format(CultureInfo.CurrentCulture, "Collision on {0}", reference.GetType().Name));
             }
 
             Assert.Equal(references.Count, strings.Count);

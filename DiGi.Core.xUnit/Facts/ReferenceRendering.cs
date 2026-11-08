@@ -2,6 +2,7 @@ using DiGi.Core.Classes;
 using DiGi.Core.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Text.Json.Nodes;
 
@@ -133,10 +134,10 @@ namespace DiGi.Core.xUnit
             foreach (Type type in types)
             {
                 MethodInfo? methodInfo_ToString = type.GetMethod(nameof(ToString), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly, null, Type.EmptyTypes, null);
-                Assert.True(methodInfo_ToString == null, string.Format("{0} declares its own ToString; declare Segments instead.", type.Name));
+                Assert.True(methodInfo_ToString == null, string.Format(CultureInfo.CurrentCulture, "{0} declares its own ToString; declare Segments instead.", type.Name));
 
                 PropertyInfo? propertyInfo_Segments = type.GetProperty("Segments", BindingFlags.NonPublic | BindingFlags.Instance);
-                Assert.True(propertyInfo_Segments != null, string.Format("{0} does not declare Segments.", type.Name));
+                Assert.True(propertyInfo_Segments != null, string.Format(CultureInfo.CurrentCulture, "{0} does not declare Segments.", type.Name));
             }
         }
     }

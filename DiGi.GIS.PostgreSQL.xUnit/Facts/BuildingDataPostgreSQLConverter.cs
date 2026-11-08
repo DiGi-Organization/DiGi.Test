@@ -5,6 +5,7 @@ using DiGi.PostgreSQL.Classes;
 using DiGi.PostgreSQL.Table.Enums;
 using Npgsql;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -208,7 +209,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 await using NpgsqlCommand npgsqlCommand = new($"SELECT COUNT(*) FROM \"{converter.TableName}\" WHERE \"county_id\" = {countyId}", npgsqlConnection);
                 object? resultValue = await npgsqlCommand.ExecuteScalarAsync();
                 Assert.NotNull(resultValue);
-                Assert.Equal(System.Convert.ToInt64(resultValue), count_NoFilter!.Value);
+                Assert.Equal(System.Convert.ToInt64(resultValue, CultureInfo.CurrentCulture), count_NoFilter!.Value);
             }
             finally
             {

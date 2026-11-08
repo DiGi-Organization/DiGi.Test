@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
@@ -28,7 +29,7 @@ namespace DiGi.YOLO.xUnit
                 Enums.Category[] categories = [Enums.Category.Train, Enums.Category.Train, Enums.Category.Validate, Enums.Category.Test];
                 for (int i = 0; i < categories.Length; i++)
                 {
-                    string path_Image = Path.Combine(directory_Source, string.Format("image{0}.jpeg", i));
+                    string path_Image = Path.Combine(directory_Source, string.Format(CultureInfo.CurrentCulture, "image{0}.jpeg", i));
                     File.WriteAllBytes(path_Image, [0xFF, 0xD8, 0xFF, 0xD9]);
 
                     Assert.True(yOLOModel.Add(path_Image, categories[i]));

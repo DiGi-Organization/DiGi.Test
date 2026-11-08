@@ -112,10 +112,10 @@ namespace DiGi.Core.xUnit
         [Fact]
         public void Range_Equals_And_GetHashCode_NullSafety()
         {
-            Range<int?> range_Nulls_1 = new Range<int?>(null, null);
-            Range<int?> range_Nulls_2 = new Range<int?>(null, null);
-            Range<int?> range_Mixed_1 = new Range<int?>(null, 10);
-            Range<int?> range_Mixed_2 = new Range<int?>(null, 10);
+            Range<int?> range_Nulls_1 = new(null, null);
+            Range<int?> range_Nulls_2 = new(null, null);
+            Range<int?> range_Mixed_1 = new(null, 10);
+            Range<int?> range_Mixed_2 = new(null, 10);
 
             // Null-safe Equals
             Assert.True(range_Nulls_1.Equals(range_Nulls_2));

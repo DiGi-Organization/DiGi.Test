@@ -23,7 +23,7 @@ namespace DiGi.YOLO.xUnit
                 WorkingDirectory = workingDirectory
             };
 
-            string arguments_Default = string.Format("\"{0}\" --model \"C:\\YOLO\\models\\model.pt\" --source \"C:\\YOLO\\input\" --output \"C:\\YOLO\\output\\results.bbrf\" --conf 0.1 --batch 32 --workers 2", Path.Combine(workingDirectory, "predict.py"));
+            string arguments_Default = string.Format(CultureInfo.CurrentCulture, "\"{0}\" --model \"C:\\YOLO\\models\\model.pt\" --source \"C:\\YOLO\\input\" --output \"C:\\YOLO\\output\\results.bbrf\" --conf 0.1 --batch 32 --workers 2", Path.Combine(workingDirectory, "predict.py"));
             Assert.Equal(arguments_Default, Query.PredictArguments(yOLOPredictionOptions));
 
             CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;

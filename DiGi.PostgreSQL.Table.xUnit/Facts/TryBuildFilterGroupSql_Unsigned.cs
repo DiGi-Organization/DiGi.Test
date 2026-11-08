@@ -1,5 +1,6 @@
 using DiGi.PostgreSQL.Table.Classes;
 using Npgsql;
+using System.Globalization;
 using Column = DiGi.Core.IO.Table.Classes.Column;
 
 namespace DiGi.PostgreSQL.Table.xUnit
@@ -29,7 +30,7 @@ namespace DiGi.PostgreSQL.Table.xUnit
 
                     NpgsqlParameter parameter = Assert.Single(parameters);
                     Assert.IsType(expectedType, parameter.Value);
-                    Assert.Equal(2008m, System.Convert.ToDecimal(parameter.Value));
+                    Assert.Equal(2008m, System.Convert.ToDecimal(parameter.Value, CultureInfo.CurrentCulture));
                 }
 
                 foreach (int filterOperator in new int[] { 6, 7 })

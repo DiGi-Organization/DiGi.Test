@@ -41,7 +41,9 @@ namespace DiGi.Laya.xUnit
                 Assert.Contains(layaEnvironmentResult.Packages!, x => x.Name == "torch" && x.Version != null);
                 Assert.Equal(layaPredictionOptions.ModelPath, layaEnvironmentResult.ModelPath);
                 Assert.Equal(Python.Query.DirectorySHA256(layaPredictionOptions.ModelPath), layaEnvironmentResult.ModelSHA256);
+#pragma warning disable CA1861 // a one-off assertion; hoisting the array buys nothing
                 Assert.Contains(layaEnvironmentResult.OptionLayout, new string[] { "sequential", "parallel" });
+#pragma warning restore CA1861
                 Assert.True(layaEnvironmentResult.MaxLength > 0);
                 Assert.True(layaEnvironmentResult.HeadMaxLength > 0);
                 Assert.True(File.Exists(Path.Combine(directory, "check.py")));

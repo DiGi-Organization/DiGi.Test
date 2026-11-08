@@ -1,6 +1,7 @@
 using DiGi.PostgreSQL.Classes;
 using DiGi.PostgreSQL.Table.xUnit.Classes;
 using Npgsql;
+using System.Globalization;
 
 namespace DiGi.PostgreSQL.Table.xUnit
 {
@@ -38,7 +39,7 @@ namespace DiGi.PostgreSQL.Table.xUnit
                 object? resultValue_RowCount = await npgsqlCommand_RowCount.ExecuteScalarAsync();
                 Assert.NotNull(resultValue_RowCount);
 
-                long rowCount = System.Convert.ToInt64(resultValue_RowCount);
+                long rowCount = System.Convert.ToInt64(resultValue_RowCount, CultureInfo.CurrentCulture);
 
                 System.Text.Json.Nodes.JsonNode? jsonNode_Count = await testConverter.GetAggregateSummaryAsync<Core.IO.Table.Classes.Column>(npgsqlConnection, "value", PostgreSQL.Table.Enums.SinglevalueAggregateFunction.Count);
 

@@ -3,6 +3,7 @@ using DiGi.Core.IO.Table.Classes;
 using DiGi.Typology.Classes;
 using DiGi.Typology.Visual.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 
 namespace DiGi.Typology.Visual.xUnit
@@ -183,7 +184,7 @@ namespace DiGi.Typology.Visual.xUnit
 
                 string appearance_Node = visualTypology_Node.TypologyItem?.Appearance is null ? "no appearance" : "appearance";
 
-                lines_Report.Add(string.Format("  [{0}]{1}{2} -> {3} ({4})", typologyPath, new string(' ', typologyPath.Count * 2), visualTypology_Node.Name, string.Join(", ", references_Node), appearance_Node));
+                lines_Report.Add(string.Format(CultureInfo.CurrentCulture, "  [{0}]{1}{2} -> {3} ({4})", typologyPath, new string(' ', typologyPath.Count * 2), visualTypology_Node.Name, string.Join(", ", references_Node), appearance_Node));
             }
 
             lines_Report.Add(string.Empty);

@@ -31,8 +31,8 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Union_Disjoint()
         {
-            var p1 = new Polygon2D([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
-            var p2 = new Polygon2D([new Point2D(5, 5), new Point2D(7, 5), new Point2D(7, 7), new Point2D(5, 7)]);
+            Polygon2D p1 = new([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
+            Polygon2D p2 = new([new Point2D(5, 5), new Point2D(7, 5), new Point2D(7, 7), new Point2D(5, 7)]);
 
             // Test 1: Polygon2D Union
             var result = Query.Union(p1, p2);
@@ -56,14 +56,14 @@ namespace DiGi.Geometry.xUnit
         public void Union_InvalidPolygons()
         {
             // Create a self-intersecting polygon (invalid)
-            var invalidPoly = new Polygon2D([
+            Polygon2D invalidPoly = new([
                 new Point2D(0, 0),
                 new Point2D(2, 0),
                 new Point2D(0, 2),
                 new Point2D(2, 2)
             ]);
 
-            var poly2 = new Polygon2D([
+            Polygon2D poly2 = new([
                 new Point2D(1, 0),
                 new Point2D(3, 0),
                 new Point2D(3, 2),
@@ -87,7 +87,7 @@ namespace DiGi.Geometry.xUnit
             Assert.NotNull(resultEmpty);
             Assert.Empty(resultEmpty);
 
-            var poly = new Polygon2D([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
+            Polygon2D poly = new([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
             var resultSingle = Query.Union([poly]);
             Assert.NotNull(resultSingle);
             Assert.Single(resultSingle);
@@ -100,10 +100,10 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Union_CascadedOverlap()
         {
-            var p1 = new Polygon2D([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
-            var p2 = new Polygon2D([new Point2D(1, 0), new Point2D(3, 0), new Point2D(3, 2), new Point2D(1, 2)]);
-            var p3 = new Polygon2D([new Point2D(2, 0), new Point2D(4, 0), new Point2D(4, 2), new Point2D(2, 2)]);
-            var p4 = new Polygon2D([new Point2D(3, 0), new Point2D(5, 0), new Point2D(5, 2), new Point2D(3, 2)]);
+            Polygon2D p1 = new([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
+            Polygon2D p2 = new([new Point2D(1, 0), new Point2D(3, 0), new Point2D(3, 2), new Point2D(1, 2)]);
+            Polygon2D p3 = new([new Point2D(2, 0), new Point2D(4, 0), new Point2D(4, 2), new Point2D(2, 2)]);
+            Polygon2D p4 = new([new Point2D(3, 0), new Point2D(5, 0), new Point2D(5, 2), new Point2D(3, 2)]);
 
             var result = Query.Union([p1, p2, p3, p4]);
             Assert.NotNull(result);
@@ -117,8 +117,8 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Union_TopologicallyEqual()
         {
-            var p1 = new Polygon2D([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
-            var p2 = new Polygon2D([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
+            Polygon2D p1 = new([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
+            Polygon2D p2 = new([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
 
             var result = Query.Union(p1, p2);
             Assert.NotNull(result);

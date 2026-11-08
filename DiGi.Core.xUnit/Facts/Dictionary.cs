@@ -18,7 +18,9 @@ namespace DiGi.Core.xUnit
                 { "BBB", 2 }
             };
 
+#pragma warning disable CA1869 // the fact serializes once, with options of its own
             JsonSerializerOptions jsonSerializerOptions = new() { WriteIndented = true };
+#pragma warning restore CA1869
 
             string json = JsonSerializer.Serialize(dictionary, jsonSerializerOptions);
 

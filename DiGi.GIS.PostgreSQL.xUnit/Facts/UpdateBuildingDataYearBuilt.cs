@@ -5,6 +5,7 @@ using DiGi.PostgreSQL.Classes;
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace DiGi.GIS.PostgreSQL.xUnit
@@ -122,9 +123,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             {
                 result[npgsqlDataReader.GetString(0)] = new Tuple<int, int?, int?, int?>(
                     npgsqlDataReader.GetInt32(1),
-                    npgsqlDataReader.IsDBNull(2) ? null : System.Convert.ToInt32(npgsqlDataReader.GetValue(2)),
-                    npgsqlDataReader.IsDBNull(3) ? null : System.Convert.ToInt32(npgsqlDataReader.GetValue(3)),
-                    npgsqlDataReader.IsDBNull(4) ? null : System.Convert.ToInt32(npgsqlDataReader.GetValue(4)));
+                    npgsqlDataReader.IsDBNull(2) ? null : System.Convert.ToInt32(npgsqlDataReader.GetValue(2), CultureInfo.CurrentCulture),
+                    npgsqlDataReader.IsDBNull(3) ? null : System.Convert.ToInt32(npgsqlDataReader.GetValue(3), CultureInfo.CurrentCulture),
+                    npgsqlDataReader.IsDBNull(4) ? null : System.Convert.ToInt32(npgsqlDataReader.GetValue(4), CultureInfo.CurrentCulture));
             }
 
             return result;

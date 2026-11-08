@@ -2,6 +2,7 @@ using DiGi.Core.IO.Table.Interfaces;
 using DiGi.PostgreSQL.Table.Classes;
 using DiGi.PostgreSQL.Table.Enums;
 using Npgsql;
+using System.Globalization;
 using System.Text;
 using Column = DiGi.Core.IO.Table.Classes.Column;
 
@@ -102,7 +103,7 @@ namespace DiGi.PostgreSQL.Table.xUnit
 
             Assert.Contains("\"subdivision_id\" = @filterParam_0", sqlBuilder.ToString());
             NpgsqlParameter parameter = Assert.Single(parameters);
-            Assert.Equal(5L, System.Convert.ToInt64(parameter.Value));
+            Assert.Equal(5L, System.Convert.ToInt64(parameter.Value, CultureInfo.CurrentCulture));
         }
     }
 }

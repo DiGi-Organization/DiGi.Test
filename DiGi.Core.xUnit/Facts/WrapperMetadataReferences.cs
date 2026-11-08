@@ -1,5 +1,6 @@
 using DiGi.Core.Classes;
 using System;
+using System.Globalization;
 
 namespace DiGi.Core.xUnit
 {
@@ -51,7 +52,7 @@ namespace DiGi.Core.xUnit
 
             Assert.True(
                 value_Encoded.Length < 512,
-                string.Format("Encoded entry name is {0} characters: {1}", value_Encoded.Length, value_Encoded));
+                string.Format(CultureInfo.CurrentCulture, "Encoded entry name is {0} characters: {1}", value_Encoded.Length, value_Encoded));
         }
     }
 }

@@ -19,7 +19,7 @@ namespace DiGi.PostgreSQL.PartitionUniqueReference.xUnit
                 return;
             }
 
-            TestPartitionUniqueReferencePostgreSQLConverter testPartitionUniqueReferencePostgreSQLConverter = new TestPartitionUniqueReferencePostgreSQLConverter(connectionData);
+            TestPartitionUniqueReferencePostgreSQLConverter testPartitionUniqueReferencePostgreSQLConverter = new(connectionData);
 
             Address address_1 = new("123 Main St", "Anytown", "CA", Core.Enums.CountryCode.Undefined);
 

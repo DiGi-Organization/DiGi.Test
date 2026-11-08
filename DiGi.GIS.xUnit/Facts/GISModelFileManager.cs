@@ -2,6 +2,7 @@ using DiGi.Core.Classes;
 using DiGi.GIS.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DiGi.GIS.xUnit
 {
@@ -11,13 +12,13 @@ namespace DiGi.GIS.xUnit
         [Fact]
         public void GISModelFileManager_RemoveAll()
         {
-            string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), string.Format("DiGi.GIS.xUnit_{0}", Guid.NewGuid().ToString("N")));
+            string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), string.Format(CultureInfo.CurrentCulture, "DiGi.GIS.xUnit_{0}", Guid.NewGuid().ToString("N")));
             System.IO.Directory.CreateDirectory(directory);
 
             try
             {
-                string path_1 = System.IO.Path.Combine(directory, string.Format("model_1.{0}", Constants.FileExtension.GISModelFile));
-                string path_2 = System.IO.Path.Combine(directory, string.Format("model_2.{0}", Constants.FileExtension.GISModelFile));
+                string path_1 = System.IO.Path.Combine(directory, string.Format(CultureInfo.CurrentCulture, "model_1.{0}", Constants.FileExtension.GISModelFile));
+                string path_2 = System.IO.Path.Combine(directory, string.Format(CultureInfo.CurrentCulture, "model_2.{0}", Constants.FileExtension.GISModelFile));
 
                 CreateGISModelFile(path_1);
                 CreateGISModelFile(path_2);

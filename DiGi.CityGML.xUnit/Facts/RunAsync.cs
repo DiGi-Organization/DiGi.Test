@@ -1,5 +1,6 @@
 using DiGi.CityGML.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -182,7 +183,7 @@ namespace DiGi.CityGML.xUnit
         [Fact]
         public async Task RunAsync_StableOrdering()
         {
-            string directory = Path.Combine(Path.GetTempPath(), string.Format("DiGi_CityGML_Order_{0}", System.Guid.NewGuid()));
+            string directory = Path.Combine(Path.GetTempPath(), string.Format(CultureInfo.CurrentCulture, "DiGi_CityGML_Order_{0}", System.Guid.NewGuid()));
 
             Directory.CreateDirectory(directory);
 
@@ -192,7 +193,7 @@ namespace DiGi.CityGML.xUnit
                 foreach (string name in new string[] { "c", "a", "b" })
                 {
                     string path_Zip = ZipWithEntries(1);
-                    File.Move(path_Zip, Path.Combine(directory, string.Format("{0}.zip", name)));
+                    File.Move(path_Zip, Path.Combine(directory, string.Format(CultureInfo.CurrentCulture, "{0}.zip", name)));
                 }
 
                 List<string> paths_1 = await Paths(directory);
@@ -218,7 +219,7 @@ namespace DiGi.CityGML.xUnit
         [Fact]
         public async Task RunAsync_ResumeFromRecordedPath()
         {
-            string directory = Path.Combine(Path.GetTempPath(), string.Format("DiGi_CityGML_Resume_{0}", System.Guid.NewGuid()));
+            string directory = Path.Combine(Path.GetTempPath(), string.Format(CultureInfo.CurrentCulture, "DiGi_CityGML_Resume_{0}", System.Guid.NewGuid()));
 
             Directory.CreateDirectory(directory);
 
@@ -227,7 +228,7 @@ namespace DiGi.CityGML.xUnit
                 foreach (string name in new string[] { "a", "b", "c" })
                 {
                     string path_Zip = ZipWithEntries(2);
-                    File.Move(path_Zip, Path.Combine(directory, string.Format("{0}.zip", name)));
+                    File.Move(path_Zip, Path.Combine(directory, string.Format(CultureInfo.CurrentCulture, "{0}.zip", name)));
                 }
 
                 List<string> paths_All = await Paths(directory);
@@ -295,14 +296,14 @@ namespace DiGi.CityGML.xUnit
 
             Assert.True(File.Exists(path_Gml));
 
-            string result = Path.Combine(Path.GetTempPath(), string.Format("DiGi_CityGML_RunAsync_{0}.zip", System.Guid.NewGuid()));
+            string result = Path.Combine(Path.GetTempPath(), string.Format(CultureInfo.CurrentCulture, "DiGi_CityGML_RunAsync_{0}.zip", System.Guid.NewGuid()));
 
             using FileStream fileStream = new(result, FileMode.Create);
             using ZipArchive zipArchive = new(fileStream, ZipArchiveMode.Create);
 
             for (int i = 0; i < count; i++)
             {
-                ZipArchiveEntry zipArchiveEntry = zipArchive.CreateEntry(string.Format("2862_N-34-77-D-b-1-{0}.gml", i));
+                ZipArchiveEntry zipArchiveEntry = zipArchive.CreateEntry(string.Format(CultureInfo.CurrentCulture, "2862_N-34-77-D-b-1-{0}.gml", i));
 
                 using Stream stream = zipArchiveEntry.Open();
                 using FileStream fileStream_Gml = new(path_Gml!, FileMode.Open, FileAccess.Read);

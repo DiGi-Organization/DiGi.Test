@@ -1,4 +1,5 @@
 using DiGi.Core.Classes;
+using System.Globalization;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
@@ -51,7 +52,7 @@ namespace DiGi.Core.xUnit
         {
             get
             {
-                return string.Format("TestUniqueIdObject_{0}", name);
+                return string.Format(CultureInfo.CurrentCulture, "TestUniqueIdObject_{0}", name);
             }
         }
     }

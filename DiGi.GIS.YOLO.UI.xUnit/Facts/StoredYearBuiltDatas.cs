@@ -2,6 +2,7 @@ using DiGi.GIS.Classes;
 using DiGi.GIS.WebAPI.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -64,7 +65,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.Equal(10, references_Failed.Count);
             for (int i = 10; i < 20; i++)
             {
-                Assert.Contains(string.Format("REF_{0:D2}", i), references_Failed);
+                Assert.Contains(string.Format(CultureInfo.CurrentCulture, "REF_{0:D2}", i), references_Failed);
             }
 
             Assert.Equal(2, queries.Count);

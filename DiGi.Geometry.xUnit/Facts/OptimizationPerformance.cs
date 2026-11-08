@@ -3,6 +3,7 @@ using DiGi.Geometry.Spatial.Classes;
 using DiGi.Geometry.Spatial.Interfaces;
 using DiGi.Math.Classes;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace DiGi.Geometry.xUnit
 {
@@ -359,7 +360,7 @@ namespace DiGi.Geometry.xUnit
                 double centroid_PerCallMicroseconds = stopwatch_Centroid.Elapsed.TotalMilliseconds * 1000.0 / repeats;
                 double ratio = centroid_PerCallMicroseconds / System.Math.Max(average_PerCallMicroseconds, 1e-6);
 
-                stringBuilder_Summary.AppendLine($"{count,11} | {average_PerCallMicroseconds,18:F3} | {centroid_PerCallMicroseconds,19:F3} | {ratio,24:F2}x");
+                stringBuilder_Summary.AppendLine(CultureInfo.CurrentCulture, $"{count,11} | {average_PerCallMicroseconds,18:F3} | {centroid_PerCallMicroseconds,19:F3} | {ratio,24:F2}x");
 
                 // Assert Performance (both are O(n) single-pass, so the whole repeated run per scale must stay fast)
                 Assert.True(stopwatch_Average.ElapsedMilliseconds < 2000, $"At {count} points, Average benchmark failed! Took {stopwatch_Average.ElapsedMilliseconds} ms for {repeats} repeats.");
@@ -435,10 +436,10 @@ namespace DiGi.Geometry.xUnit
             // Create a lazy sequence representing a non-collinear 3D polygon (a unit square)
             IEnumerable<Point3D> point3Ds_Lazy = new List<Point3D>
             {
-                new Point3D(0, 0, 0),
-                new Point3D(1, 0, 0),
-                new Point3D(1, 1, 0),
-                new Point3D(0, 1, 0)
+                new(0, 0, 0),
+                new(1, 0, 0),
+                new(1, 1, 0),
+                new(0, 1, 0)
             }.Select(x => x);
             Spatial.Classes.Vector3D vector3D_Normal = Spatial.Constants.Vector3D.WorldZ;
 
@@ -521,10 +522,10 @@ namespace DiGi.Geometry.xUnit
             // Create a lazy sequence representing a closed snap-round square (4 segments)
             IEnumerable<Segment2D> segment2Ds_Lazy = new List<Segment2D>
             {
-                new Segment2D(new Point2D(0, 0), new Point2D(10, 0)),
-                new Segment2D(new Point2D(10, 0), new Point2D(10, 10)),
-                new Segment2D(new Point2D(10, 10), new Point2D(0, 10)),
-                new Segment2D(new Point2D(0, 10), new Point2D(0, 0))
+                new(new Point2D(0, 0), new Point2D(10, 0)),
+                new(new Point2D(10, 0), new Point2D(10, 10)),
+                new(new Point2D(10, 10), new Point2D(0, 10)),
+                new(new Point2D(0, 10), new Point2D(0, 0))
             }.Select(x => x);
 
             // Warm up / JIT compile
@@ -890,9 +891,9 @@ namespace DiGi.Geometry.xUnit
             Plane plane = new(new Point3D(0, 0, 0), Spatial.Constants.Vector3D.WorldZ);
             IEnumerable<Point2D> point2Ds_Lazy = new List<Point2D>
             {
-                new Point2D(0, 0),
-                new Point2D(1, 0),
-                new Point2D(0, 1)
+                new(0, 0),
+                new(1, 0),
+                new(0, 1)
             }.Select(x => x);
             _ = Spatial.Query.Orientation(plane, point2Ds_Lazy.Take(2));
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -1750,10 +1751,10 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void SpatialClosestPoint_PerformanceAndCorrectness()
         {
-            Point3D point3D_Start = new Point3D(0.0, 0.0, 0.0);
-            Point3D point3D_End = new Point3D(10.0, 0.0, 0.0);
-            Segment3D segment3D = new Segment3D(point3D_Start, point3D_End);
-            Point3D point3D_Target = new Point3D(5.0, 5.0, 0.0);
+            Point3D point3D_Start = new(0.0, 0.0, 0.0);
+            Point3D point3D_End = new(10.0, 0.0, 0.0);
+            Segment3D segment3D = new(point3D_Start, point3D_End);
+            Point3D point3D_Target = new(5.0, 5.0, 0.0);
 
             Point3D? point3D_ClosestSeg = segment3D.ClosestPoint(point3D_Target);
             Assert.NotNull(point3D_ClosestSeg);
@@ -1761,27 +1762,27 @@ namespace DiGi.Geometry.xUnit
             Assert.Equal(0.0, point3D_ClosestSeg.Y, 1e-5);
             Assert.Equal(0.0, point3D_ClosestSeg.Z, 1e-5);
 
-            Point2D point2D_Start = new Point2D(0.0, 0.0);
-            Point2D point2D_End = new Point2D(10.0, 0.0);
-            Segment2D segment2D = new Segment2D(point2D_Start, point2D_End);
-            Point2D point2D_Target = new Point2D(5.0, 5.0);
+            Point2D point2D_Start = new(0.0, 0.0);
+            Point2D point2D_End = new(10.0, 0.0);
+            Segment2D segment2D = new(point2D_Start, point2D_End);
+            Point2D point2D_Target = new(5.0, 5.0);
 
             Point2D? point2D_ClosestSeg = segment2D.ClosestPoint(point2D_Target);
             Assert.NotNull(point2D_ClosestSeg);
             Assert.Equal(5.0, point2D_ClosestSeg.X, 1e-5);
             Assert.Equal(0.0, point2D_ClosestSeg.Y, 1e-5);
 
-            Plane plane = new Plane(new Point3D(0.0, 0.0, 0.0), Spatial.Constants.Vector3D.WorldZ);
-            Polygon2D polygon2D = new Polygon2D(new List<Point2D>
+            Plane plane = new(new Point3D(0.0, 0.0, 0.0), Spatial.Constants.Vector3D.WorldZ);
+            Polygon2D polygon2D = new(new List<Point2D>
             {
-                new Point2D(0.0, 0.0),
-                new Point2D(10.0, 0.0),
-                new Point2D(10.0, 10.0),
-                new Point2D(0.0, 10.0)
+                new(0.0, 0.0),
+                new(10.0, 0.0),
+                new(10.0, 10.0),
+                new(0.0, 10.0)
             });
-            Polygon3D polygon3D = new Polygon3D(plane, polygon2D);
-            PolygonalFace3D polygonalFace3D = new PolygonalFace3D(polygon3D);
-            List<PolygonalFace3D> polygonalFace3Ds = new List<PolygonalFace3D> { polygonalFace3D };
+            Polygon3D polygon3D = new(plane, polygon2D);
+            PolygonalFace3D polygonalFace3D = new(polygon3D);
+            List<PolygonalFace3D> polygonalFace3Ds = new() { polygonalFace3D };
 
             Point3D? point3D_ClosestFace = Spatial.Query.ClosestPoint(point3D_Target, polygonalFace3Ds, out PolygonalFace3D? closestFace, out double double_DistFace);
             Assert.NotNull(point3D_ClosestFace);
@@ -1820,27 +1821,27 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void SpatialConvert_PerformanceAndCorrectness()
         {
-            Plane plane = new Plane(new Point3D(0.0, 0.0, 0.0), Spatial.Constants.Vector3D.WorldZ);
+            Plane plane = new(new Point3D(0.0, 0.0, 0.0), Spatial.Constants.Vector3D.WorldZ);
 
-            Point2D point2D = new Point2D(5.0, 10.0);
+            Point2D point2D = new(5.0, 10.0);
             Point3D? point3D_Converted = Spatial.Query.Convert(plane, point2D);
             Assert.NotNull(point3D_Converted);
             Assert.Equal(5.0, point3D_Converted.X, 1e-5);
             Assert.Equal(10.0, point3D_Converted.Y, 1e-5);
             Assert.Equal(0.0, point3D_Converted.Z, 1e-5);
 
-            Point3D point3D = new Point3D(5.0, 10.0, 0.0);
+            Point3D point3D = new(5.0, 10.0, 0.0);
             Point2D? point2D_Converted = Spatial.Query.Convert(plane, point3D);
             Assert.NotNull(point2D_Converted);
             Assert.Equal(5.0, point2D_Converted.X, 1e-5);
             Assert.Equal(10.0, point2D_Converted.Y, 1e-5);
 
-            List<Point2D> point2Ds_Poly = new List<Point2D>();
+            List<Point2D> point2Ds_Poly = new();
             for (int int_I = 0; int_I < 100; int_I++)
             {
                 point2Ds_Poly.Add(new Point2D(int_I, int_I));
             }
-            Polyline2D polyline2D = new Polyline2D(point2Ds_Poly);
+            Polyline2D polyline2D = new(point2Ds_Poly);
 
             Polyline3D? polyline3D_Converted = Spatial.Query.Convert(plane, polyline2D);
             Assert.NotNull(polyline3D_Converted);
@@ -1875,32 +1876,32 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void BoundingBox_PerformanceAndCorrectness()
         {
-            Point2D point2D_1 = new Point2D(0.0, 0.0);
-            Point2D point2D_2 = new Point2D(10.0, 10.0);
-            BoundingBox2D boundingBox2D = new BoundingBox2D(point2D_1, point2D_2);
+            Point2D point2D_1 = new(0.0, 0.0);
+            Point2D point2D_2 = new(10.0, 10.0);
+            BoundingBox2D boundingBox2D = new(point2D_1, point2D_2);
 
             Assert.Equal(0.0, boundingBox2D.Min.X);
             Assert.Equal(0.0, boundingBox2D.Min.Y);
             Assert.Equal(10.0, boundingBox2D.Max.X);
             Assert.Equal(10.0, boundingBox2D.Max.Y);
 
-            Point2D point2D_Target = new Point2D(-5.0, 15.0);
+            Point2D point2D_Target = new(-5.0, 15.0);
             boundingBox2D.Add(point2D_Target);
             Assert.Equal(-5.0, boundingBox2D.Min.X);
             Assert.Equal(15.0, boundingBox2D.Max.Y);
 
-            Point3D point3D_1 = new Point3D(0.0, 0.0, 0.0);
-            Point3D point3D_2 = new Point3D(10.0, 10.0, 10.0);
-            BoundingBox3D boundingBox3D = new BoundingBox3D(point3D_1, point3D_2);
+            Point3D point3D_1 = new(0.0, 0.0, 0.0);
+            Point3D point3D_2 = new(10.0, 10.0, 10.0);
+            BoundingBox3D boundingBox3D = new(point3D_1, point3D_2);
 
-            Point3D point3D_Target = new Point3D(-5.0, 15.0, -2.0);
+            Point3D point3D_Target = new(-5.0, 15.0, -2.0);
             boundingBox3D.Add(point3D_Target);
             Assert.Equal(-5.0, boundingBox3D.Min.X);
             Assert.Equal(15.0, boundingBox3D.Max.Y);
             Assert.Equal(-2.0, boundingBox3D.Min.Z);
 
             // Benchmark 2D bounding box expansion
-            BoundingBox2D boundingBox2D_Bench = new BoundingBox2D(point2D_1, point2D_2);
+            BoundingBox2D boundingBox2D_Bench = new(point2D_1, point2D_2);
             Stopwatch stopwatch = Stopwatch.StartNew();
             for (int int_I = 0; int_I < 1000000; int_I++)
             {
@@ -1910,7 +1911,7 @@ namespace DiGi.Geometry.xUnit
             long long_Ms2D = stopwatch.ElapsedMilliseconds;
 
             // Benchmark 3D bounding box expansion
-            BoundingBox3D boundingBox3D_Bench = new BoundingBox3D(point3D_1, point3D_2);
+            BoundingBox3D boundingBox3D_Bench = new(point3D_1, point3D_2);
             stopwatch.Restart();
             for (int int_I = 0; int_I < 1000000; int_I++)
             {
@@ -1929,34 +1930,34 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void PolyhedronBoundingBox_PerformanceAndCorrectness()
         {
-            List<IPolygonalFace3D> cubeFaces = new List<IPolygonalFace3D>();
+            List<IPolygonalFace3D> cubeFaces = new();
 
-            List<Point3D> facePoints1 = new List<Point3D>() { new Point3D(0.0, 0.0, 0.0), new Point3D(1.0, 0.0, 0.0), new Point3D(1.0, 1.0, 0.0), new Point3D(0.0, 1.0, 0.0) };
+            List<Point3D> facePoints1 = new() { new Point3D(0.0, 0.0, 0.0), new Point3D(1.0, 0.0, 0.0), new Point3D(1.0, 1.0, 0.0), new Point3D(0.0, 1.0, 0.0) };
             Polygon3D? facePolygon1 = Spatial.Create.Polygon3D(facePoints1);
             Assert.NotNull(facePolygon1);
             cubeFaces.Add(new PolygonalFace3D(facePolygon1));
 
-            List<Point3D> facePoints2 = new List<Point3D>() { new Point3D(0.0, 0.0, 1.0), new Point3D(1.0, 0.0, 1.0), new Point3D(1.0, 1.0, 1.0), new Point3D(0.0, 1.0, 1.0) };
+            List<Point3D> facePoints2 = new() { new Point3D(0.0, 0.0, 1.0), new Point3D(1.0, 0.0, 1.0), new Point3D(1.0, 1.0, 1.0), new Point3D(0.0, 1.0, 1.0) };
             Polygon3D? facePolygon2 = Spatial.Create.Polygon3D(facePoints2);
             Assert.NotNull(facePolygon2);
             cubeFaces.Add(new PolygonalFace3D(facePolygon2));
 
-            List<Point3D> facePoints3 = new List<Point3D>() { new Point3D(0.0, 0.0, 0.0), new Point3D(0.0, 1.0, 0.0), new Point3D(0.0, 1.0, 1.0), new Point3D(0.0, 0.0, 1.0) };
+            List<Point3D> facePoints3 = new() { new Point3D(0.0, 0.0, 0.0), new Point3D(0.0, 1.0, 0.0), new Point3D(0.0, 1.0, 1.0), new Point3D(0.0, 0.0, 1.0) };
             Polygon3D? facePolygon3 = Spatial.Create.Polygon3D(facePoints3);
             Assert.NotNull(facePolygon3);
             cubeFaces.Add(new PolygonalFace3D(facePolygon3));
 
-            List<Point3D> facePoints4 = new List<Point3D>() { new Point3D(1.0, 0.0, 0.0), new Point3D(1.0, 1.0, 0.0), new Point3D(1.0, 1.0, 1.0), new Point3D(1.0, 0.0, 1.0) };
+            List<Point3D> facePoints4 = new() { new Point3D(1.0, 0.0, 0.0), new Point3D(1.0, 1.0, 0.0), new Point3D(1.0, 1.0, 1.0), new Point3D(1.0, 0.0, 1.0) };
             Polygon3D? facePolygon4 = Spatial.Create.Polygon3D(facePoints4);
             Assert.NotNull(facePolygon4);
             cubeFaces.Add(new PolygonalFace3D(facePolygon4));
 
-            List<Point3D> facePoints5 = new List<Point3D>() { new Point3D(0.0, 0.0, 0.0), new Point3D(1.0, 0.0, 0.0), new Point3D(1.0, 0.0, 1.0), new Point3D(0.0, 0.0, 1.0) };
+            List<Point3D> facePoints5 = new() { new Point3D(0.0, 0.0, 0.0), new Point3D(1.0, 0.0, 0.0), new Point3D(1.0, 0.0, 1.0), new Point3D(0.0, 0.0, 1.0) };
             Polygon3D? facePolygon5 = Spatial.Create.Polygon3D(facePoints5);
             Assert.NotNull(facePolygon5);
             cubeFaces.Add(new PolygonalFace3D(facePolygon5));
 
-            List<Point3D> facePoints6 = new List<Point3D>() { new Point3D(0.0, 1.0, 0.0), new Point3D(1.0, 1.0, 0.0), new Point3D(1.0, 1.0, 1.0), new Point3D(0.0, 1.0, 1.0) };
+            List<Point3D> facePoints6 = new() { new Point3D(0.0, 1.0, 0.0), new Point3D(1.0, 1.0, 0.0), new Point3D(1.0, 1.0, 1.0), new Point3D(0.0, 1.0, 1.0) };
             Polygon3D? facePolygon6 = Spatial.Create.Polygon3D(facePoints6);
             Assert.NotNull(facePolygon6);
             cubeFaces.Add(new PolygonalFace3D(facePolygon6));
@@ -1997,11 +1998,11 @@ namespace DiGi.Geometry.xUnit
         public void Line_PerformanceAndCorrectness()
         {
             // 2D Line Setup
-            Point2D origin2D = new Point2D(0.0, 0.0);
-            Vector2D direction2D = new Vector2D(1.0, 0.0);
-            Line2D line2D = new Line2D(origin2D, direction2D);
+            Point2D origin2D = new(0.0, 0.0);
+            Vector2D direction2D = new(1.0, 0.0);
+            Line2D line2D = new(origin2D, direction2D);
 
-            Point2D targetPoint2D = new Point2D(5.0, 10.0);
+            Point2D targetPoint2D = new(5.0, 10.0);
             Point2D? projectedPoint2D = line2D.Project(targetPoint2D);
 
             // Assert 2D Correctness
@@ -2013,25 +2014,25 @@ namespace DiGi.Geometry.xUnit
             Assert.False(line2D.On(targetPoint2D, 1e-5));
 
             // Line-Line Intersection Correctness
-            Line2D otherLine = new Line2D(new Point2D(5.0, 5.0), new Vector2D(0.0, 1.0));
+            Line2D otherLine = new(new Point2D(5.0, 5.0), new Vector2D(0.0, 1.0));
             Point2D? lineIntersection = line2D.IntersectionPoint(otherLine);
             Assert.NotNull(lineIntersection);
             Assert.Equal(5.0, lineIntersection.X, 1e-5);
             Assert.Equal(0.0, lineIntersection.Y, 1e-5);
 
             // Line-Segment Intersection Correctness
-            Segment2D intersectingSegment = new Segment2D(new Point2D(5.0, -5.0), new Point2D(5.0, 5.0));
+            Segment2D intersectingSegment = new(new Point2D(5.0, -5.0), new Point2D(5.0, 5.0));
             Point2D? segmentIntersection = line2D.IntersectionPoint(intersectingSegment);
             Assert.NotNull(segmentIntersection);
             Assert.Equal(5.0, segmentIntersection.X, 1e-5);
             Assert.Equal(0.0, segmentIntersection.Y, 1e-5);
 
             // 3D Line Setup
-            Point3D origin3D = new Point3D(0.0, 0.0, 0.0);
-            Spatial.Classes.Vector3D direction3D = new Spatial.Classes.Vector3D(1.0, 0.0, 0.0);
-            Line3D line3D = new Line3D(origin3D, direction3D);
+            Point3D origin3D = new(0.0, 0.0, 0.0);
+            Spatial.Classes.Vector3D direction3D = new(1.0, 0.0, 0.0);
+            Line3D line3D = new(origin3D, direction3D);
 
-            Point3D targetPoint3D = new Point3D(5.0, 10.0, 15.0);
+            Point3D targetPoint3D = new(5.0, 10.0, 15.0);
             Point3D? projectedPoint3D = line3D.Project(targetPoint3D);
 
             // Assert 3D Correctness
@@ -2079,12 +2080,12 @@ namespace DiGi.Geometry.xUnit
         public void Ray_PerformanceAndCorrectness()
         {
             // 2D Ray Setup
-            Point2D point2D_Origin = new Point2D(0.0, 0.0);
-            Vector2D vector2D_Direction = new Vector2D(1.0, 0.0);
-            Ray2D ray2D_Test = new Ray2D(point2D_Origin, vector2D_Direction);
+            Point2D point2D_Origin = new(0.0, 0.0);
+            Vector2D vector2D_Direction = new(1.0, 0.0);
+            Ray2D ray2D_Test = new(point2D_Origin, vector2D_Direction);
 
-            Point2D point2D_TargetFront = new Point2D(5.0, 10.0);
-            Point2D point2D_TargetBehind = new Point2D(-5.0, 10.0);
+            Point2D point2D_TargetFront = new(5.0, 10.0);
+            Point2D point2D_TargetBehind = new(-5.0, 10.0);
 
             Point2D? point2D_ProjFront = ray2D_Test.Project(point2D_TargetFront);
             Point2D? point2D_ProjBehind = ray2D_Test.Project(point2D_TargetBehind);
@@ -2106,26 +2107,26 @@ namespace DiGi.Geometry.xUnit
             Assert.False(ray2D_Test.On(new Point2D(-7.5, 0.0), 1e-5));
 
             // Ray-Ray Intersection Correctness
-            Ray2D ray2D_Other = new Ray2D(new Point2D(5.0, 5.0), new Vector2D(0.0, -1.0));
+            Ray2D ray2D_Other = new(new Point2D(5.0, 5.0), new Vector2D(0.0, -1.0));
             Point2D? point2D_RayIntersection = ray2D_Test.IntersectionPoint(ray2D_Other);
             Assert.NotNull(point2D_RayIntersection);
             Assert.Equal(5.0, point2D_RayIntersection.X, 1e-5);
             Assert.Equal(0.0, point2D_RayIntersection.Y, 1e-5);
 
             // Ray-Segment Intersection Correctness
-            Segment2D segment2D_Intersecting = new Segment2D(new Point2D(5.0, -5.0), new Point2D(5.0, 5.0));
+            Segment2D segment2D_Intersecting = new(new Point2D(5.0, -5.0), new Point2D(5.0, 5.0));
             Point2D? point2D_SegIntersection = ray2D_Test.IntersectionPoint(segment2D_Intersecting);
             Assert.NotNull(point2D_SegIntersection);
             Assert.Equal(5.0, point2D_SegIntersection.X, 1e-5);
             Assert.Equal(0.0, point2D_SegIntersection.Y, 1e-5);
 
             // 3D Ray Setup
-            Point3D point3D_Origin = new Point3D(0.0, 0.0, 0.0);
-            Spatial.Classes.Vector3D vector3D_Direction = new Spatial.Classes.Vector3D(1.0, 0.0, 0.0);
-            Ray3D ray3D_Test = new Ray3D(point3D_Origin, vector3D_Direction);
+            Point3D point3D_Origin = new(0.0, 0.0, 0.0);
+            Spatial.Classes.Vector3D vector3D_Direction = new(1.0, 0.0, 0.0);
+            Ray3D ray3D_Test = new(point3D_Origin, vector3D_Direction);
 
-            Point3D point3D_TargetFront = new Point3D(5.0, 10.0, 15.0);
-            Point3D point3D_TargetBehind = new Point3D(-5.0, 10.0, 15.0);
+            Point3D point3D_TargetFront = new(5.0, 10.0, 15.0);
+            Point3D point3D_TargetBehind = new(-5.0, 10.0, 15.0);
 
             Point3D? point3D_ProjFront = ray3D_Test.Project(point3D_TargetFront);
             Point3D? point3D_ProjBehind = ray3D_Test.Project(point3D_TargetBehind);
@@ -2184,11 +2185,11 @@ namespace DiGi.Geometry.xUnit
         public void PlaneAndCircle_PerformanceAndCorrectness()
         {
             // 3D Plane Setup
-            Point3D point3D_Origin = new Point3D(1.0, 2.0, 3.0);
-            Spatial.Classes.Vector3D vector3D_Normal = new Spatial.Classes.Vector3D(0.0, 0.0, 1.0);
-            Plane plane_Test = new Plane(point3D_Origin, vector3D_Normal);
+            Point3D point3D_Origin = new(1.0, 2.0, 3.0);
+            Spatial.Classes.Vector3D vector3D_Normal = new(0.0, 0.0, 1.0);
+            Plane plane_Test = new(point3D_Origin, vector3D_Normal);
 
-            Point3D point3D_Target = new Point3D(5.0, 6.0, 10.0);
+            Point3D point3D_Target = new(5.0, 6.0, 10.0);
             Point3D? point3D_Closest = plane_Test.ClosestPoint(point3D_Target);
 
             // Assert Plane Correctness
@@ -2201,18 +2202,18 @@ namespace DiGi.Geometry.xUnit
             Assert.True(Spatial.Query.On(plane_Test, new Point3D(5.0, 6.0, 3.0), 1e-5));
             Assert.False(Spatial.Query.On(plane_Test, point3D_Target, 1e-5));
 
-            Spatial.Classes.Vector3D vector3D_OnPlane = new Spatial.Classes.Vector3D(5.0, 5.0, 0.0);
-            Spatial.Classes.Vector3D vector3D_OffPlane = new Spatial.Classes.Vector3D(5.0, 5.0, 5.0);
+            Spatial.Classes.Vector3D vector3D_OnPlane = new(5.0, 5.0, 0.0);
+            Spatial.Classes.Vector3D vector3D_OffPlane = new(5.0, 5.0, 5.0);
             Assert.True(Spatial.Query.On(plane_Test, vector3D_OnPlane, 1e-5));
             Assert.False(Spatial.Query.On(plane_Test, vector3D_OffPlane, 1e-5));
 
             // Circle2D Setup
-            Point2D point2D_Center = new Point2D(0.0, 0.0);
-            Circle2D circle2D_Test = new Circle2D(point2D_Center, 5.0);
+            Point2D point2D_Center = new(0.0, 0.0);
+            Circle2D circle2D_Test = new(point2D_Center, 5.0);
 
-            Point2D point2D_Inside = new Point2D(3.0, 0.0);
-            Point2D point2D_Outside = new Point2D(6.0, 0.0);
-            Point2D point2D_Boundary = new Point2D(0.0, 5.0);
+            Point2D point2D_Inside = new(3.0, 0.0);
+            Point2D point2D_Outside = new(6.0, 0.0);
+            Point2D point2D_Boundary = new(0.0, 5.0);
 
             // Assert Circle2D Correctness
             Assert.True(circle2D_Test.Inside(point2D_Inside, 1e-5));
@@ -2257,11 +2258,11 @@ namespace DiGi.Geometry.xUnit
         public void Ellipse2D_PerformanceAndCorrectness()
         {
             // Setup Ellipse2D
-            Point2D point2D_Center = new Point2D(1.0, 2.0);
-            Vector2D vector2D_DirA = new Vector2D(1.0, 0.0);
-            Ellipse2D ellipse2D_Test = new Ellipse2D(point2D_Center, 10.0, 5.0, vector2D_DirA);
+            Point2D point2D_Center = new(1.0, 2.0);
+            Vector2D vector2D_DirA = new(1.0, 0.0);
+            Ellipse2D ellipse2D_Test = new(point2D_Center, 10.0, 5.0, vector2D_DirA);
 
-            Point2D point2D_Target = new Point2D(11.0, 2.0);
+            Point2D point2D_Target = new(11.0, 2.0);
             Point2D? point2D_Projected = ellipse2D_Test.Project(point2D_Target);
 
             // Assert Correctness of Project
@@ -2308,13 +2309,13 @@ namespace DiGi.Geometry.xUnit
         public void Rectangle2D_Queries_PerformanceAndCorrectness()
         {
             // Setup Rectangle2D
-            Point2D point2D_Origin = new Point2D(1.0, 2.0);
-            Vector2D vector2D_HeightDir = new Vector2D(0.0, 1.0); // World Y
-            Rectangle2D rectangle2D_Test = new Rectangle2D(point2D_Origin, 10.0, 5.0, vector2D_HeightDir);
+            Point2D point2D_Origin = new(1.0, 2.0);
+            Vector2D vector2D_HeightDir = new(0.0, 1.0); // World Y
+            Rectangle2D rectangle2D_Test = new(point2D_Origin, 10.0, 5.0, vector2D_HeightDir);
 
-            Point2D point2D_Inside = new Point2D(5.0, 4.0);
-            Point2D point2D_Outside = new Point2D(15.0, 10.0);
-            Point2D point2D_Boundary = new Point2D(1.0, 4.0);
+            Point2D point2D_Inside = new(5.0, 4.0);
+            Point2D point2D_Outside = new(15.0, 10.0);
+            Point2D point2D_Boundary = new(1.0, 4.0);
 
             // Assert Correctness
             Assert.True(rectangle2D_Test.Inside(point2D_Inside, 1e-5));
@@ -2358,8 +2359,8 @@ namespace DiGi.Geometry.xUnit
         public void SphereAndTriangle_PerformanceAndCorrectness()
         {
             // Setup Sphere
-            Point3D point3D_Center = new Point3D(1.0, 2.0, 3.0);
-            Sphere sphere_Test = new Sphere(point3D_Center, 5.0);
+            Point3D point3D_Center = new(1.0, 2.0, 3.0);
+            Sphere sphere_Test = new(point3D_Center, 5.0);
 
             // Assert Bounding Box correctness
             BoundingBox3D? boundingBox3D = sphere_Test.GetBoundingBox();
@@ -2374,15 +2375,15 @@ namespace DiGi.Geometry.xUnit
             Assert.Equal(8.0, boundingBox3D.Max.Z, 1e-5);
 
             // Setup Triangles
-            Point2D point2D_1 = new Point2D(0.0, 0.0);
-            Point2D point2D_2 = new Point2D(10.0, 0.0);
-            Point2D point2D_3 = new Point2D(0.0, 10.0);
-            Triangle2D triangle2D_Test = new Triangle2D(point2D_1, point2D_2, point2D_3);
+            Point2D point2D_1 = new(0.0, 0.0);
+            Point2D point2D_2 = new(10.0, 0.0);
+            Point2D point2D_3 = new(0.0, 10.0);
+            Triangle2D triangle2D_Test = new(point2D_1, point2D_2, point2D_3);
 
-            Point3D point3D_1 = new Point3D(0.0, 0.0, 0.0);
-            Point3D point3D_2 = new Point3D(10.0, 0.0, 0.0);
-            Point3D point3D_3 = new Point3D(0.0, 10.0, 0.0);
-            Triangle3D triangle3D_Test = new Triangle3D(point3D_1, point3D_2, point3D_3);
+            Point3D point3D_1 = new(0.0, 0.0, 0.0);
+            Point3D point3D_2 = new(10.0, 0.0, 0.0);
+            Point3D point3D_3 = new(0.0, 10.0, 0.0);
+            Triangle3D triangle3D_Test = new(point3D_1, point3D_2, point3D_3);
 
             // Assert Triangulation correctness
             List<Triangle2D>? list_Tri2D = triangle2D_Test.Triangulate();
@@ -2416,11 +2417,11 @@ namespace DiGi.Geometry.xUnit
         public void Segment_PerformanceAndCorrectness()
         {
             // Setup Segment2D
-            Point2D point2D_Start = new Point2D(1.0, 2.0);
-            Vector2D vector2D_Vec = new Vector2D(4.0, 3.0); // Length = 5.0
-            Segment2D segment2D_Test = new Segment2D(point2D_Start, vector2D_Vec);
+            Point2D point2D_Start = new(1.0, 2.0);
+            Vector2D vector2D_Vec = new(4.0, 3.0); // Length = 5.0
+            Segment2D segment2D_Test = new(point2D_Start, vector2D_Vec);
 
-            Point2D point2D_Target = new Point2D(5.0, 0.0);
+            Point2D point2D_Target = new(5.0, 0.0);
             Point2D? point2D_Projected = segment2D_Test.Project(point2D_Target);
             Assert.NotNull(point2D_Projected);
             Assert.Equal(2.6, point2D_Projected.X, 5);
@@ -2430,11 +2431,11 @@ namespace DiGi.Geometry.xUnit
             Assert.Equal(4.0, double_Dist2D, 5);
 
             // Setup Segment3D
-            Point3D point3D_Start = new Point3D(1.0, 2.0, 3.0);
-            Spatial.Classes.Vector3D vector3D_Vec = new Spatial.Classes.Vector3D(4.0, 3.0, 0.0); // Length = 5.0
-            Segment3D segment3D_Test = new Segment3D(point3D_Start, vector3D_Vec);
+            Point3D point3D_Start = new(1.0, 2.0, 3.0);
+            Spatial.Classes.Vector3D vector3D_Vec = new(4.0, 3.0, 0.0); // Length = 5.0
+            Segment3D segment3D_Test = new(point3D_Start, vector3D_Vec);
 
-            Point3D point3D_Target = new Point3D(5.0, 0.0, 3.0);
+            Point3D point3D_Target = new(5.0, 0.0, 3.0);
             Point3D? point3D_Projected = segment3D_Test.Project(point3D_Target);
             Assert.NotNull(point3D_Projected);
             Assert.Equal(2.6, point3D_Projected.X, 5);
@@ -2466,21 +2467,21 @@ namespace DiGi.Geometry.xUnit
         public void Rectangle3D_Queries_PerformanceAndCorrectness()
         {
             // Setup Plane
-            Point3D point3D_Origin = new Point3D(1.0, 2.0, 3.0);
-            Spatial.Classes.Vector3D vector3D_Normal = new Spatial.Classes.Vector3D(0.0, 0.0, 1.0); // Normal is Z axis
-            Plane plane_Test = new Plane(point3D_Origin, vector3D_Normal);
+            Point3D point3D_Origin = new(1.0, 2.0, 3.0);
+            Spatial.Classes.Vector3D vector3D_Normal = new(0.0, 0.0, 1.0); // Normal is Z axis
+            Plane plane_Test = new(point3D_Origin, vector3D_Normal);
 
             // Setup Rectangle3D on that plane
-            Rectangle2D rectangle2D_Geom = new Rectangle2D(10.0, 5.0); // Spans u from 0 to 10, v from 0 to 5.
-            Rectangle3D rectangle3D_Test = new Rectangle3D(plane_Test, rectangle2D_Geom);
+            Rectangle2D rectangle2D_Geom = new(10.0, 5.0); // Spans u from 0 to 10, v from 0 to 5.
+            Rectangle3D rectangle3D_Test = new(plane_Test, rectangle2D_Geom);
 
             // Test target points
             // Local u=4, v=3, offset in Z direction by 5.0
             // Global point: Origin + 4*AxisX + 3*AxisY + 5*AxisZ = (1, 2, 3) + (4, 0, 0) + (0, 3, 0) + (0, 0, 5) = (5, 5, 8)
-            Point3D point3D_Target = new Point3D(5.0, 5.0, 8.0);
-            Point3D point3D_InsideOnPlane = new Point3D(5.0, 5.0, 3.0); // u=4, v=3, z=3
-            Point3D point3D_OutsideOnPlane = new Point3D(15.0, 10.0, 3.0); // u=14, v=8, z=3
-            Point3D point3D_BoundaryOnPlane = new Point3D(1.0, 5.0, 3.0); // u=0, v=3, z=3
+            Point3D point3D_Target = new(5.0, 5.0, 8.0);
+            Point3D point3D_InsideOnPlane = new(5.0, 5.0, 3.0); // u=4, v=3, z=3
+            Point3D point3D_OutsideOnPlane = new(15.0, 10.0, 3.0); // u=14, v=8, z=3
+            Point3D point3D_BoundaryOnPlane = new(1.0, 5.0, 3.0); // u=0, v=3, z=3
 
             // Assert Correctness
             Assert.True(rectangle3D_Test.Inside(point3D_InsideOnPlane, 1e-5));
@@ -2522,34 +2523,34 @@ namespace DiGi.Geometry.xUnit
         public void Planar3D_Queries_PerformanceAndCorrectness()
         {
             // Setup Plane
-            Point3D point3D_Origin = new Point3D(1.0, 2.0, 3.0);
-            Spatial.Classes.Vector3D vector3D_Normal = new Spatial.Classes.Vector3D(0.0, 0.0, 1.0); // Normal is Z axis
-            Plane plane_Test = new Plane(point3D_Origin, vector3D_Normal);
+            Point3D point3D_Origin = new(1.0, 2.0, 3.0);
+            Spatial.Classes.Vector3D vector3D_Normal = new(0.0, 0.0, 1.0); // Normal is Z axis
+            Plane plane_Test = new(point3D_Origin, vector3D_Normal);
 
             // 1. Setup Polygon3D
-            List<Point2D> point2Ds_Poly = new List<Point2D>
+            List<Point2D> point2Ds_Poly = new()
             {
                 new Point2D(0.0, 0.0),
                 new Point2D(10.0, 0.0),
                 new Point2D(10.0, 5.0),
                 new Point2D(0.0, 5.0)
             };
-            Polygon2D polygon2D_Geom = new Polygon2D(point2Ds_Poly);
-            Polygon3D polygon3D_Test = new Polygon3D(plane_Test, polygon2D_Geom);
+            Polygon2D polygon2D_Geom = new(point2Ds_Poly);
+            Polygon3D polygon3D_Test = new(plane_Test, polygon2D_Geom);
 
             // 2. Setup PolygonalFace3D
-            PolygonalFace3D face3D_Test = new PolygonalFace3D(polygon3D_Test);
+            PolygonalFace3D face3D_Test = new(polygon3D_Test);
 
             // 3. Setup Ellipse3D
-            Ellipse2D ellipse2D_Geom = new Ellipse2D(new Point2D(5.0, 2.5), 10.0, 5.0, new Vector2D(1.0, 0.0)); // center=(5.0, 2.5)
-            Ellipse3D ellipse3D_Test = new Ellipse3D(plane_Test, ellipse2D_Geom);
+            Ellipse2D ellipse2D_Geom = new(new Point2D(5.0, 2.5), 10.0, 5.0, new Vector2D(1.0, 0.0)); // center=(5.0, 2.5)
+            Ellipse3D ellipse3D_Test = new(plane_Test, ellipse2D_Geom);
 
             // Test target points
             // Local u=4, v=3, offset in Z direction by 5.0
-            Point3D point3D_Target = new Point3D(5.0, 5.0, 8.0);
-            Point3D point3D_InsideOnPlane = new Point3D(5.0, 5.0, 3.0);
-            Point3D point3D_OutsideOnPlane = new Point3D(15.0, 10.0, 3.0);
-            Point3D point3D_BoundaryOnPlane = new Point3D(1.0, 5.0, 3.0); // u=0, v=3, z=3
+            Point3D point3D_Target = new(5.0, 5.0, 8.0);
+            Point3D point3D_InsideOnPlane = new(5.0, 5.0, 3.0);
+            Point3D point3D_OutsideOnPlane = new(15.0, 10.0, 3.0);
+            Point3D point3D_BoundaryOnPlane = new(1.0, 5.0, 3.0); // u=0, v=3, z=3
 
             // Verify Polygon3D
             Assert.True(polygon3D_Test.Inside(point3D_InsideOnPlane, 1e-5));
@@ -2618,19 +2619,19 @@ namespace DiGi.Geometry.xUnit
         public void PolylineAndSegmentable3D_Queries_PerformanceAndCorrectness()
         {
             // Setup Polyline3D (Open path)
-            List<Point3D> point3Ds_Poly = new List<Point3D>
+            List<Point3D> point3Ds_Poly = new()
             {
                 new Point3D(0.0, 0.0, 0.0),
                 new Point3D(10.0, 0.0, 0.0),
                 new Point3D(10.0, 10.0, 0.0),
                 new Point3D(0.0, 10.0, 0.0)
             };
-            Polyline3D polyline_Test = new Polyline3D(point3Ds_Poly);
+            Polyline3D polyline_Test = new(point3Ds_Poly);
 
             // Setup Polyloop (Closed path)
-            Polyloop polyloop_Test = new Polyloop(point3Ds_Poly);
+            Polyloop polyloop_Test = new(point3Ds_Poly);
 
-            Point3D point3D_Query = new Point3D(5.0, 5.0, 5.0);
+            Point3D point3D_Query = new(5.0, 5.0, 5.0);
 
             // 1. Correctness Checks
             // For polyline, the segments are: (0,0,0)->(10,0,0) [dist to query is 5 at (5,0,0)], (10,0,0)->(10,10,0) [dist to query is 5 at (10,5,0)], (10,10,0)->(0,10,0) [dist to query is 5 at (5,10,0)].

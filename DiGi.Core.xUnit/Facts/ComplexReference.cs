@@ -2,6 +2,7 @@ using DiGi.Core.Classes;
 using DiGi.Core.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DiGi.Core.xUnit
 {
@@ -86,7 +87,7 @@ namespace DiGi.Core.xUnit
             List<ISerializableReference?> references = [];
             for (int i = 0; i < 10; i++)
             {
-                references.Add(new UniqueIdReference(typeReference, string.Format("STEP-{0}", i)));
+                references.Add(new UniqueIdReference(typeReference, string.Format(CultureInfo.CurrentCulture, "STEP-{0}", i)));
             }
 
             ComplexReference complexReference_Deep = new(references);

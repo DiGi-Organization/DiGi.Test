@@ -458,7 +458,7 @@ namespace DiGi.WebAPI.xUnit
             Assert.Equal(versionInformation_Public.WebAPIVersion, versionInformation_Authorized.WebAPIVersion);
 
             string informationalVersion = versionInformation_Authorized.WebAPIInformationalVersion ?? string.Empty;
-            if (informationalVersion.Contains("+"))
+            if (informationalVersion.Contains('+'))
             {
                 Assert.StartsWith(versionInformation_Public.WebAPIInformationalVersion ?? string.Empty, informationalVersion);
             }
@@ -488,7 +488,7 @@ namespace DiGi.WebAPI.xUnit
 
             // If the build injected a commit hash, the authorized tier carries it and the public tier is its prefix.
             string authorizedInformationalVersion = authorizedExtension.InformationalVersion ?? string.Empty;
-            if (authorizedInformationalVersion.Contains("+"))
+            if (authorizedInformationalVersion.Contains('+'))
             {
                 Assert.StartsWith(publicExtension.InformationalVersion ?? string.Empty, authorizedInformationalVersion);
             }

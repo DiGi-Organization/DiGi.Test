@@ -163,7 +163,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             async Task<long?> RegisterIdAsync(string version)
             {
                 object? result = await ScalarAsync(npgsqlConnection, $"SELECT id FROM {Constants.TableName.BuildingDataset} WHERE dataset_key = 'microsoft' AND version = '{version}' AND download_date = DATE '{DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}';");
-                return result is null || result is DBNull ? null : System.Convert.ToInt64(result);
+                return result is null || result is DBNull ? null : System.Convert.ToInt64(result, CultureInfo.CurrentCulture);
             }
         }
 

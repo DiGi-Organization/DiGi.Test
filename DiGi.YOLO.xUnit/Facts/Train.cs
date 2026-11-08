@@ -404,7 +404,7 @@ namespace DiGi.YOLO.xUnit
                 "    print('%s %r %r %r %r' % (name, (x + w / 2) / 320, (y + h / 2) / 320, w / 320, h / 320))",
             ]);
 
-            Python.Classes.PythonProcessResult pythonProcessResult_Images = Python.Query.ExecuteProcess(path_Python!, string.Format("\"{0}\" \"{1}\" 32", path_Script, directory_Source), directory);
+            Python.Classes.PythonProcessResult pythonProcessResult_Images = Python.Query.ExecuteProcess(path_Python!, string.Format(CultureInfo.CurrentCulture, "\"{0}\" \"{1}\" 32", path_Script, directory_Source), directory);
             int exitCode_Images = pythonProcessResult_Images.ExitCode;
             List<string> standardOutput_Images = pythonProcessResult_Images.StandardOutput ?? [];
             List<string> standardError_Images = pythonProcessResult_Images.StandardError ?? [];
@@ -533,7 +533,7 @@ namespace DiGi.YOLO.xUnit
 
             foreach (string line in File.ReadAllLines(path_Configuration))
             {
-                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#", StringComparison.Ordinal))
+                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith('#'))
                 {
                     continue;
                 }

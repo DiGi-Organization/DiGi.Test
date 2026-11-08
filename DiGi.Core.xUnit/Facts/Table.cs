@@ -62,7 +62,9 @@ namespace DiGi.Core.xUnit
             }";
 
             // Deserialize using TableConverter
+#pragma warning disable CA1869 // the fact deserializes once, with a converter of its own
             JsonSerializerOptions jsonSerializerOptions = new();
+#pragma warning restore CA1869
             jsonSerializerOptions.Converters.Add(new TableConverter<Table, Column, Row>());
             Table? table_Deserialized = JsonSerializer.Deserialize<Table>(string_Json, jsonSerializerOptions);
             Assert.NotNull(table_Deserialized);

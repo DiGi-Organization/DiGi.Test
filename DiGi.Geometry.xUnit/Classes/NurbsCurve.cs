@@ -15,13 +15,13 @@ namespace DiGi.Geometry.xUnit
             Z = z;
         }
 
-        public static Vector3D operator +(Vector3D v1, Vector3D v2) => new Vector3D(v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z);
+        public static Vector3D operator +(Vector3D v1, Vector3D v2) => new(v1.X + v2.X, v1.Y + v2.Y, v1.Z + v2.Z);
 
-        public static Vector3D operator -(Vector3D v1, Vector3D v2) => new Vector3D(v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z);
+        public static Vector3D operator -(Vector3D v1, Vector3D v2) => new(v1.X - v2.X, v1.Y - v2.Y, v1.Z - v2.Z);
 
-        public static Vector3D operator *(Vector3D v, double scalar) => new Vector3D(v.X * scalar, v.Y * scalar, v.Z * scalar);
+        public static Vector3D operator *(Vector3D v, double scalar) => new(v.X * scalar, v.Y * scalar, v.Z * scalar);
 
-        public static Vector3D operator /(Vector3D v, double scalar) => new Vector3D(v.X / scalar, v.Y / scalar, v.Z / scalar);
+        public static Vector3D operator /(Vector3D v, double scalar) => new(v.X / scalar, v.Y / scalar, v.Z / scalar);
 
         public double LengthSquared() => X * X + Y * Y + Z * Z;
 
@@ -98,7 +98,7 @@ namespace DiGi.Geometry.xUnit
             int k = FindKnotSpan(u);
             double[] basisFunctions = CalculateNurbsBasisFunctions(k, u);
 
-            Vector3D C = new Vector3D(0, 0, 0);
+            Vector3D C = new(0, 0, 0);
             double sumBasisTimesWeights = 0;
 
             for (int i = 0; i <= Degree; i++)
@@ -167,7 +167,7 @@ namespace DiGi.Geometry.xUnit
         public static List<double> CreateClampedKnotVector(int numberOfControlPoints, int degree)
         {
             int m = numberOfControlPoints + degree;
-            List<double> knotVector = new List<double>(m + 1);
+            List<double> knotVector = new(m + 1);
 
             for (int i = 0; i <= degree; i++) knotVector.Add(0.0);
             for (int i = 1; i <= numberOfControlPoints - 1 - degree; i++) knotVector.Add((double)i / (numberOfControlPoints - degree));
@@ -289,7 +289,7 @@ namespace DiGi.Geometry.xUnit
             double[][] ND = CalculateNurbsBasisFunctionDerivatives(k, u, derivativeOrder);
 
             // Compute the weighted control points for the rational formulation
-            List<Vector3D> weightedControlPoints = new List<Vector3D>();
+            List<Vector3D> weightedControlPoints = new();
             for (int i = 0; i < NumberOfControlPoints; i++)
             {
                 weightedControlPoints.Add(ControlPoints[i] * Weights[i]);
@@ -300,7 +300,7 @@ namespace DiGi.Geometry.xUnit
             // And W(u) = sum(N_i,p(u) * w_i)
 
             // Calculate S(u) and W(u) for the current derivative order
-            Vector3D S = new Vector3D(0, 0, 0);
+            Vector3D S = new(0, 0, 0);
             double W = 0;
 
             for (int i = 0; i <= Degree; i++)
@@ -325,7 +325,7 @@ namespace DiGi.Geometry.xUnit
             if (derivativeOrder == 0) return (C_u, new Vector3D(0, 0, 0)); // No derivative needed
 
             // Calculate S'(u) and W'(u) for the first derivative
-            Vector3D S_prime = new Vector3D(0, 0, 0);
+            Vector3D S_prime = new(0, 0, 0);
             double W_prime = 0;
             for (int i = 0; i <= Degree; i++)
             {
@@ -343,7 +343,7 @@ namespace DiGi.Geometry.xUnit
             if (derivativeOrder == 1) return (C_u, C_prime_u);
 
             // Calculate S''(u) and W''(u) for the second derivative
-            Vector3D S_double_prime = new Vector3D(0, 0, 0);
+            Vector3D S_double_prime = new(0, 0, 0);
             double W_double_prime = 0;
             for (int i = 0; i <= Degree; i++)
             {
@@ -440,14 +440,14 @@ namespace DiGi.Geometry.xUnit
             int k = FindKnotSpan(u);
             double[][] ND = CalculateNurbsBasisFunctionDerivatives(k, u, 2); // Get up to 2nd derivative of basis functions
 
-            List<Vector3D> weightedControlPoints = new List<Vector3D>();
+            List<Vector3D> weightedControlPoints = new();
             for (int i = 0; i < NumberOfControlPoints; i++)
             {
                 weightedControlPoints.Add(ControlPoints[i] * Weights[i]);
             }
 
             // W(u) and S(u)
-            Vector3D S = new Vector3D(0, 0, 0);
+            Vector3D S = new(0, 0, 0);
             double W = 0;
             for (int i = 0; i <= Degree; i++)
             {
@@ -462,7 +462,7 @@ namespace DiGi.Geometry.xUnit
             Vector3D C_u = S / W;
 
             // W'(u) and S'(u)
-            Vector3D S_prime = new Vector3D(0, 0, 0);
+            Vector3D S_prime = new(0, 0, 0);
             double W_prime = 0;
             for (int i = 0; i <= Degree; i++)
             {
@@ -476,7 +476,7 @@ namespace DiGi.Geometry.xUnit
             Vector3D C_prime_u = (S_prime * W - S * W_prime) / (W * W);
 
             // W''(u) and S''(u)
-            Vector3D S_double_prime = new Vector3D(0, 0, 0);
+            Vector3D S_double_prime = new(0, 0, 0);
             double W_double_prime = 0;
             for (int i = 0; i <= Degree; i++)
             {

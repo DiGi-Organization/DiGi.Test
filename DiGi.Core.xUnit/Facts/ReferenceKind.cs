@@ -2,6 +2,7 @@ using DiGi.Core.Classes;
 using DiGi.Core.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DiGi.Core.xUnit
 {
@@ -30,7 +31,7 @@ namespace DiGi.Core.xUnit
 
                 Assert.False(
                     dictionary.TryGetValue(kind!, out Type? type_Existing),
-                    string.Format("Duplicate reference kind '{0}' declared by {1} and {2}.", kind, type_Existing?.FullName, type.FullName));
+                    string.Format(CultureInfo.CurrentCulture, "Duplicate reference kind '{0}' declared by {1} and {2}.", kind, type_Existing?.FullName, type.FullName));
 
                 dictionary[kind!] = type;
             }
@@ -107,7 +108,7 @@ namespace DiGi.Core.xUnit
             {
                 Assert.True(
                     Settings.ReferenceManager.GetReferenceConstructor(type) != null,
-                    string.Format("{0} is a public concrete IReference with no [ReferenceFactory]; it cannot be parsed back.", type.FullName));
+                    string.Format(CultureInfo.CurrentCulture, "{0} is a public concrete IReference with no [ReferenceFactory]; it cannot be parsed back.", type.FullName));
             }
         }
 

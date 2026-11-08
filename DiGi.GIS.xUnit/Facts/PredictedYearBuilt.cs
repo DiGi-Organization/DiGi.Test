@@ -1,5 +1,6 @@
 using DiGi.Core;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace DiGi.GIS.xUnit
@@ -68,7 +69,7 @@ namespace DiGi.GIS.xUnit
 
             Assert.Null(predictedYearBuilt.ModelId);
             Assert.Equal((short)1960, predictedYearBuilt.Year);
-            Assert.Equal(string.Format("Prediction_{0}", dateTime.Ticks), predictedYearBuilt.Source);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, "Prediction_{0}", dateTime.Ticks), predictedYearBuilt.Source);
         }
     }
 }

@@ -106,10 +106,10 @@ namespace DiGi.Typology.Visual.xUnit
             {
                 CultureInfo.CurrentCulture = new CultureInfo("pl-PL");
 
-                Assert.NotEqual("1.5", 1.5.ToString());
-                Assert.NotEqual("1.5", 1.5m.ToString());
-                Assert.NotEqual("Infinity", double.PositiveInfinity.ToString());
-                Assert.NotEqual("2024-01-15T10:30:00.0000000", dateTime_Utc.ToString());
+                Assert.NotEqual("1.5", 1.5.ToString(CultureInfo.CurrentCulture));
+                Assert.NotEqual("1.5", 1.5m.ToString(CultureInfo.CurrentCulture));
+                Assert.NotEqual("Infinity", double.PositiveInfinity.ToString(CultureInfo.CurrentCulture));
+                Assert.NotEqual("2024-01-15T10:30:00.0000000", dateTime_Utc.ToString(CultureInfo.CurrentCulture));
                 Assert.NotEqual("[0.5, 12.25]", range_Double.ToString());
                 Assert.NotEqual("[0.5, 12.25]", new RangeValueRuleData<double>(range_Double).ToString());
 

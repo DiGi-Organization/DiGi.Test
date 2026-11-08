@@ -3,6 +3,7 @@ using DiGi.PostgreSQL.Table.xUnit.Classes;
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace DiGi.PostgreSQL.Table.xUnit
@@ -116,7 +117,7 @@ namespace DiGi.PostgreSQL.Table.xUnit
                         for (int i = 0; i < table_Page.RowCount; i++)
                         {
                             Assert.Equal("AAA", table_Page[i, 1]);
-                            values.Add(System.Convert.ToInt32(table_Page[i, 0]));
+                            values.Add(System.Convert.ToInt32(table_Page[i, 0], CultureInfo.CurrentCulture));
                         }
 
                         if (position.Length == 0)

@@ -39,7 +39,7 @@ namespace DiGi.Analytical.xUnit
                             new Geometry.Planar.Classes.Point2D(5, 0)
             ]);
 
-            GuidReference guidReference = new GuidReference(faceFloor);
+            GuidReference guidReference = new(faceFloor);
 
             Classes.Face face = new(guidReference, polygonalFace3D_New);
 

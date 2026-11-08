@@ -33,7 +33,7 @@ namespace DiGi.CityGML.xUnit
                 string? path = Core.xUnit.Query.FilePath(assembly, fileName);
                 lines.Add($"\nSource File: {fileName}");
 
-                if (fileName.EndsWith(".zip") && File.Exists(path))
+                if (fileName.EndsWith(".zip", StringComparison.CurrentCulture) && File.Exists(path))
                 {
                     using ZipArchive archive = ZipFile.OpenRead(path);
                     lines.Add("  ZIP Archive Entries:");

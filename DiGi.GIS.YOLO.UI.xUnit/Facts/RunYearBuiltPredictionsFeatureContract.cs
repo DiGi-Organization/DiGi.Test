@@ -1,5 +1,6 @@
 using DiGi.GIS.WebAPI.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -116,7 +117,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.False(string.IsNullOrWhiteSpace(directory_Reports));
 
             string directory_Scratch = Path.Combine(directory_Reports!, name);
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
             Directory.CreateDirectory(Path.Combine(directory_County, Constants.DirectoryName.PredictionImages));
             File.Copy(path_Fixture!, Path.Combine(directory_County, Constants.FileName.PredictionResults), true);
 

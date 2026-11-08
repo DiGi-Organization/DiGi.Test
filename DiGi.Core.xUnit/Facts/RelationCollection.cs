@@ -7,7 +7,7 @@ namespace DiGi.Core.xUnit
 {
     public partial class Facts
     {
-        private class TestOneToOneRelation : OneToOneRelation
+        private sealed class TestOneToOneRelation : OneToOneRelation
         {
             public TestOneToOneRelation(IUniqueObject? uniqueObject_From, IUniqueObject? uniqueObject_To)
                 : base(uniqueObject_From, uniqueObject_To)
@@ -15,7 +15,7 @@ namespace DiGi.Core.xUnit
             }
         }
 
-        private class TestOneToManyRelation : OneToManyRelation
+        private sealed class TestOneToManyRelation : OneToManyRelation
         {
             public TestOneToManyRelation(IUniqueObject? uniqueObject_From, IEnumerable<IUniqueObject>? uniqueObjects_To)
                 : base(uniqueObject_From, uniqueObjects_To)
@@ -23,7 +23,7 @@ namespace DiGi.Core.xUnit
             }
         }
 
-        private class TestManyToManyRelation : ManyToManyRelation
+        private sealed class TestManyToManyRelation : ManyToManyRelation
         {
             public TestManyToManyRelation(IEnumerable<IUniqueObject>? uniqueObjects_From, IEnumerable<IUniqueObject>? uniqueObjects_To)
                 : base(uniqueObjects_From, uniqueObjects_To)

@@ -6,6 +6,7 @@ using DiGi.Geometry.Spatial.Classes;
 using DiGi.Geometry.Spatial.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -43,7 +44,7 @@ namespace DiGi.CityGML.xUnit
                 string? uniqueId = building.UniqueId;
 
                 Assert.False(string.IsNullOrWhiteSpace(uniqueId));
-                Assert.True(areas_ByUniqueId.ContainsKey(uniqueId!), string.Format("Building {0} of {1} has no counterpart in the source file.", uniqueId, fileName));
+                Assert.True(areas_ByUniqueId.ContainsKey(uniqueId!), string.Format(CultureInfo.CurrentCulture, "Building {0} of {1} has no counterpart in the source file.", uniqueId, fileName));
 
                 List<ISurface>? surfaces = building.Surfaces?.ToList();
 
@@ -84,7 +85,7 @@ namespace DiGi.CityGML.xUnit
 
                 foreach (ISurface surface in surfaces)
                 {
-                    string message = string.Format("Surface {0} of building {1} in {2}", surface.UniqueId, uniqueId, fileName);
+                    string message = string.Format(CultureInfo.CurrentCulture, "Surface {0} of building {1} in {2}", surface.UniqueId, uniqueId, fileName);
 
                     // Geometry clones on every get, so it is taken once and reused below.
                     IPolygonalFace3D? polygonalFace3D = surface.Geometry;
@@ -197,11 +198,11 @@ namespace DiGi.CityGML.xUnit
                     // 2476, the last of these on a face of four square metres losing 0.115 square millimetres. The bound
                     // is set an order of magnitude above that, so it holds the projection to a change nobody can measure
                     // on site while still catching a face which genuinely comes out the wrong shape.
-                    Assert.True(difference < 1E-04, string.Format("Surface area of building {0} in {1} changed by {2:E3} - source {3}, converted {4}.", uniqueId, fileName, difference, areas_Source[i], areas_Converted[i]));
+                    Assert.True(difference < 1E-04, string.Format(CultureInfo.CurrentCulture, "Surface area of building {0} in {1} changed by {2:E3} - source {3}, converted {4}.", uniqueId, fileName, difference, areas_Source[i], areas_Converted[i]));
                 }
 
                 // Over a whole building the deviations cancel rather than accumulate - the measured worst case is 1.7E-07.
-                Assert.True(Math.Abs(area_Converted - area_Source) / area_Source < 1E-06, string.Format("Total area of building {0} in {1} changed - source {2}, converted {3}.", uniqueId, fileName, area_Source, area_Converted));
+                Assert.True(Math.Abs(area_Converted - area_Source) / area_Source < 1E-06, string.Format(CultureInfo.CurrentCulture, "Total area of building {0} in {1} changed - source {2}, converted {3}.", uniqueId, fileName, area_Source, area_Converted));
             }
         }
 
@@ -241,7 +242,7 @@ namespace DiGi.CityGML.xUnit
 
                     foreach (IPolygonal2D polygonal2D in polygonal2Ds)
                     {
-                        string message = string.Format("Surface {0} of building {1} in {2}", surface.UniqueId, uniqueId, fileName);
+                        string message = string.Format(CultureInfo.CurrentCulture, "Surface {0} of building {1} in {2}", surface.UniqueId, uniqueId, fileName);
 
                         List<Point2D>? point2Ds = polygonal2D.GetPoints();
                         Assert.True(point2Ds is not null && point2Ds.Count >= 3, message);
@@ -513,7 +514,7 @@ namespace DiGi.CityGML.xUnit
                 string? uniqueId = CityGML_UniqueId(xmlNode_Building);
 
                 Assert.False(string.IsNullOrWhiteSpace(uniqueId));
-                Assert.False(result.ContainsKey(uniqueId!), string.Format("Building {0} of {1} is declared more than once.", uniqueId, fileName));
+                Assert.False(result.ContainsKey(uniqueId!), string.Format(CultureInfo.CurrentCulture, "Building {0} of {1} is declared more than once.", uniqueId, fileName));
 
                 List<double> areas = [];
 

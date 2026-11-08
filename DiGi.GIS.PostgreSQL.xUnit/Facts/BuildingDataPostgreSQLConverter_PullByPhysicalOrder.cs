@@ -6,6 +6,7 @@ using DiGi.Typology.Classes;
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -90,7 +91,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
                     for (int i = 0; i < table_Page.RowCount; i++)
                     {
-                        Assert.Equal(countyId_A, System.Convert.ToInt32(table_Page[i, index_CountyId]));
+                        Assert.Equal(countyId_A, System.Convert.ToInt32(table_Page[i, index_CountyId], CultureInfo.CurrentCulture));
                         Assert.True(references_A.Add(table_Page[i, index_Reference]!.ToString()!), "A row was read twice.");
                     }
 

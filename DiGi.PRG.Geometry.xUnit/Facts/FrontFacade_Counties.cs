@@ -40,7 +40,7 @@ namespace DiGi.PRG.Geometry.xUnit
             StringBuilder stringBuilder = new();
             stringBuilder.AppendLine("# Front facade from address point and road: per county (DiGi.Test#5)");
             stringBuilder.AppendLine();
-            stringBuilder.AppendLine($"BDOT10k: `{Path.GetFileName(Path.GetDirectoryName(path_Archive))}/{Path.GetFileName(path_Archive)}`; PRG: `{Path.GetFileName(directory_PRG)}`; run {DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm zzz", CultureInfo.InvariantCulture)}.");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"BDOT10k: `{Path.GetFileName(Path.GetDirectoryName(path_Archive))}/{Path.GetFileName(path_Archive)}`; PRG: `{Path.GetFileName(directory_PRG)}`; run {DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm zzz", CultureInfo.InvariantCulture)}.");
             stringBuilder.AppendLine();
             stringBuilder.AppendLine("Rule comparisons count two edges as agreeing when they face the same side of the building (outward normals within 20 degrees); the exact-edge rate follows in brackets. Shares of points are per address point.");
             stringBuilder.AppendLine();

@@ -213,8 +213,8 @@ namespace DiGi.GIS.WebAPI.xUnit
         {
             RangeAttribute? rangeAttribute_SampleCount = FindRange(typeof(OrtoDatasController), nameof(OrtoDatasController.GetSubdivisionLinksByCountyIdAsync), "sampleCount");
             Assert.NotNull(rangeAttribute_SampleCount);
-            Assert.Equal(0, System.Convert.ToDouble(rangeAttribute_SampleCount!.Minimum));
-            Assert.Equal(Constants.OrtoDatas.MaximumSampleCount, System.Convert.ToDouble(rangeAttribute_SampleCount.Maximum));
+            Assert.Equal(0, System.Convert.ToDouble(rangeAttribute_SampleCount!.Minimum, System.Globalization.CultureInfo.CurrentCulture));
+            Assert.Equal(Constants.OrtoDatas.MaximumSampleCount, System.Convert.ToDouble(rangeAttribute_SampleCount.Maximum, System.Globalization.CultureInfo.CurrentCulture));
         }
 
         /// <summary>

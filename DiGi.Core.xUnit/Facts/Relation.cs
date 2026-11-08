@@ -9,7 +9,7 @@ namespace DiGi.Core.xUnit
 {
     public partial class Facts
     {
-        private class TestUniqueObject : GuidObject
+        private sealed class TestUniqueObject : GuidObject
         {
             public TestUniqueObject() : base()
             {
@@ -68,7 +68,7 @@ namespace DiGi.Core.xUnit
             Assert.Equal(relation, relations[0]);
         }
 
-        private class TestManyToOneRelation : ManyToOneRelation
+        private sealed class TestManyToOneRelation : ManyToOneRelation
         {
             public TestManyToOneRelation(IEnumerable<IUniqueReference>? uniqueReferences_From, IUniqueReference? uniqueReference_To)
                 : base(uniqueReferences_From, uniqueReference_To)

@@ -8,6 +8,7 @@ using DiGi.Geometry.Spatial;
 using DiGi.Geometry.Spatial.Classes;
 using DiGi.Geometry.Spatial.Interfaces;
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 
 namespace DiGi.Analytical.xUnit
@@ -286,7 +287,7 @@ namespace DiGi.Analytical.xUnit
 
                 double? closingTolerance = shell.ClosingTolerance(tolerances);
                 List<double?> closingTolerances_Space = shells_Space.ConvertAll(x => x.ClosingTolerance(tolerances));
-                lines.Add(string.Format("Model {0}: spaces {1}, envelope faces {2}, partitions {3}, envelope closes at {4}, space shells close at {5}.", buildingModel.Guid, spaces.Count, shell.Count, guids_Partition.Count, closingTolerance?.ToString() ?? "none", string.Join(" / ", closingTolerances_Space.Select(x => x?.ToString() ?? "none"))));
+                lines.Add(string.Format(CultureInfo.CurrentCulture, "Model {0}: spaces {1}, envelope faces {2}, partitions {3}, envelope closes at {4}, space shells close at {5}.", buildingModel.Guid, spaces.Count, shell.Count, guids_Partition.Count, closingTolerance?.ToString(CultureInfo.CurrentCulture) ?? "none", string.Join(" / ", closingTolerances_Space.Select(x => x?.ToString(CultureInfo.CurrentCulture) ?? "none"))));
 
                 // Closed space shells give a closed envelope: dropping the partition leaves its two storeys pairing their edges with each other instead.
                 // The converse does not hold - a storey split that never closed leaves the envelope open too - and such a model is recorded rather than probed.
@@ -309,7 +310,7 @@ namespace DiGi.Analytical.xUnit
             File.WriteAllLines(System.IO.Path.Combine(path_Reports!, "BuildingModelGetExternalShell_RealModels.txt"), lines);
 
             Assert.Equal(1, count_MultiSpace);
-            Assert.True(count_Probed >= 3, string.Format("Only {0} of the stored models closed, so the probes ran on too few of them.", count_Probed));
+            Assert.True(count_Probed >= 3, string.Format(CultureInfo.CurrentCulture, "Only {0} of the stored models closed, so the probes ran on too few of them.", count_Probed));
         }
 
         /// <summary>
@@ -398,15 +399,15 @@ namespace DiGi.Analytical.xUnit
 
             List<string> lines =
             [
-                string.Format("Building models {0}, envelope faces {1}, processors {2}.", buildingModels_Temp.Count, count_Faces, Environment.ProcessorCount),
-                string.Format("GetExternalShell(Side.External): {0} ms ({1:F1} us per model).", string.Join(" / ", durations_Envelope), durations_Envelope.Max() * 1000.0 / buildingModels_Temp.Count),
-                string.Format("GetShells<Space>(Side.External): {0} ms ({1:F1} us per model).", string.Join(" / ", durations_Spaces), durations_Spaces.Max() * 1000.0 / buildingModels_Temp.Count)
+                string.Format(CultureInfo.CurrentCulture, "Building models {0}, envelope faces {1}, processors {2}.", buildingModels_Temp.Count, count_Faces, Environment.ProcessorCount),
+                string.Format(CultureInfo.CurrentCulture, "GetExternalShell(Side.External): {0} ms ({1:F1} us per model).", string.Join(" / ", durations_Envelope), durations_Envelope.Max() * 1000.0 / buildingModels_Temp.Count),
+                string.Format(CultureInfo.CurrentCulture, "GetShells<Space>(Side.External): {0} ms ({1:F1} us per model).", string.Join(" / ", durations_Spaces), durations_Spaces.Max() * 1000.0 / buildingModels_Temp.Count)
             ];
 
             File.WriteAllLines(System.IO.Path.Combine(path_Reports!, "BuildingModelGetExternalShell_Performance.txt"), lines);
 
             // Measured 2026-09-18 (Ryzen 9 9950X): 619-680 ms isolated in Release, 1536-1638 ms in-suite in Debug; the threshold clears the latter.
-            Assert.True(durations_Envelope.Max() < 5000, string.Format("BuildingModel.GetExternalShell failed threshold! Elapsed: {0} ms.", durations_Envelope.Max()));
+            Assert.True(durations_Envelope.Max() < 5000, string.Format(CultureInfo.CurrentCulture, "BuildingModel.GetExternalShell failed threshold! Elapsed: {0} ms.", durations_Envelope.Max()));
         }
 
         /// <summary>
@@ -451,7 +452,7 @@ namespace DiGi.Analytical.xUnit
             Assert.True(area_Floor > 100);
 
             double volume = BuildingModelGetExternalShell_SignedVolume(shell);
-            Assert.True(System.Math.Abs(volume - (area_Floor * 6.0)) < 0.01 * area_Floor * 6.0, string.Format("The signed volume {0} is not the footprint {1} times the six metres of the two storeys.", volume, area_Floor));
+            Assert.True(System.Math.Abs(volume - (area_Floor * 6.0)) < 0.01 * area_Floor * 6.0, string.Format(CultureInfo.CurrentCulture, "The signed volume {0} is not the footprint {1} times the six metres of the two storeys.", volume, area_Floor));
 
             Assert.True(new PolyhedronNormalizationUpdater<Shell>(Side.External, null, null) { Value = shell }.Normalized());
             BuildingModelGetExternalShell_AssertProbes(shell, 0.3, Core.Constants.Tolerance.MacroDistance);
@@ -727,8 +728,8 @@ namespace DiGi.Analytical.xUnit
             {
                 count++;
 
-                Assert.True(normals.TryGetValue(component.Guid, out Vector3D? normal), string.Format("The component {0} is missing from the envelope.", component.Guid));
-                Assert.True(normal * normal_Expected > 0.99, string.Format("The face of the component {0} is not oriented outward.", component.Guid));
+                Assert.True(normals.TryGetValue(component.Guid, out Vector3D? normal), string.Format(CultureInfo.CurrentCulture, "The component {0} is missing from the envelope.", component.Guid));
+                Assert.True(normal * normal_Expected > 0.99, string.Format(CultureInfo.CurrentCulture, "The face of the component {0} is not oriented outward.", component.Guid));
             }
 
             Assert.Equal(count, normals.Count);
@@ -866,7 +867,7 @@ namespace DiGi.Analytical.xUnit
                 foreach (Point3D point3D in point3Ds_After)
                 {
                     double distance = point3Ds.Min(x => x.Distance(point3D));
-                    Assert.True(distance < Core.Constants.Tolerance.Distance, string.Format("The point {0} moved by {1} when its face was oriented.", point3D, distance));
+                    Assert.True(distance < Core.Constants.Tolerance.Distance, string.Format(CultureInfo.CurrentCulture, "The point {0} moved by {1} when its face was oriented.", point3D, distance));
                 }
             }
         }

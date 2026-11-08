@@ -193,7 +193,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
 
             foreach (Column column in table.Columns)
             {
-                if (column.Name is string name && name.StartsWith("Prediction "))
+                if (column.Name is string name && name.StartsWith("Prediction ", StringComparison.CurrentCulture))
                 {
                     Assert.False(rows_ByReference["0208"].TryGetValue(column.Index, out object? _), $"{name} carries a value on a building the detector did not fire on.");
                 }

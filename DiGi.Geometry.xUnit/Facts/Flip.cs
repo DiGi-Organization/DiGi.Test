@@ -3,6 +3,7 @@ using DiGi.Geometry.Spatial;
 using DiGi.Geometry.Spatial.Classes;
 using DiGi.Geometry.Spatial.Enums;
 using DiGi.Geometry.Spatial.Interfaces;
+using System.Globalization;
 
 namespace DiGi.Geometry.xUnit
 {
@@ -111,7 +112,7 @@ namespace DiGi.Geometry.xUnit
             foreach (Point3D point3D in point3Ds_Actual)
             {
                 double distance = point3Ds_Expected.Min(x => x.Distance(point3D));
-                Assert.True(distance < DiGi.Core.Constants.Tolerance.Distance, string.Format("The point {0} moved by {1} when the face was flipped.", point3D, distance));
+                Assert.True(distance < DiGi.Core.Constants.Tolerance.Distance, string.Format(CultureInfo.CurrentCulture, "The point {0} moved by {1} when the face was flipped.", point3D, distance));
             }
         }
     }

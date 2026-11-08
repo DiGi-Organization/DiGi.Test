@@ -15,12 +15,12 @@ namespace DiGi.Geometry.xUnit
         {
             double tolerance = 0.01;
 
-            Polygon2D externalEdge = new Polygon2D([new Point2D(0, 0), new Point2D(10, 0), new Point2D(10, 4), new Point2D(6, 4), new Point2D(6, 8), new Point2D(10, 8), new Point2D(10, 12), new Point2D(0, 12)]);
-            Polygon2D internalEdge = new Polygon2D([new Point2D(2, 2), new Point2D(4, 2), new Point2D(4, 4), new Point2D(2, 4)]);
+            Polygon2D externalEdge = new([new Point2D(0, 0), new Point2D(10, 0), new Point2D(10, 4), new Point2D(6, 4), new Point2D(6, 8), new Point2D(10, 8), new Point2D(10, 12), new Point2D(0, 12)]);
+            Polygon2D internalEdge = new([new Point2D(2, 2), new Point2D(4, 2), new Point2D(4, 4), new Point2D(2, 4)]);
             PolygonalFace2D? polygonalFace2D = Create.PolygonalFace2D(externalEdge, [internalEdge]);
             Assert.NotNull(polygonalFace2D);
 
-            PolygonalFace2DPointRelationSolver polygonalFace2DPointRelationSolver = new PolygonalFace2DPointRelationSolver(polygonalFace2D, tolerance);
+            PolygonalFace2DPointRelationSolver polygonalFace2DPointRelationSolver = new(polygonalFace2D, tolerance);
             Assert.Equal(12, polygonalFace2DPointRelationSolver.EdgeCount);
 
             List<Point2D> point2Ds =
@@ -39,7 +39,7 @@ namespace DiGi.Geometry.xUnit
                 new Point2D(0, 12),         // on a vertex
             ];
 
-            System.Random random = new System.Random(5);
+            System.Random random = new(5);
             for (int i = 0; i < 2000; i++)
             {
                 point2Ds.Add(new Point2D(-1 + random.NextDouble() * 12, -1 + random.NextDouble() * 14));
@@ -81,7 +81,7 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void PolygonalFace2DPointRelationSolver_NoFace()
         {
-            PolygonalFace2DPointRelationSolver polygonalFace2DPointRelationSolver = new PolygonalFace2DPointRelationSolver(null);
+            PolygonalFace2DPointRelationSolver polygonalFace2DPointRelationSolver = new(null);
             Assert.Equal(0, polygonalFace2DPointRelationSolver.EdgeCount);
 
             polygonalFace2DPointRelationSolver.Input = new Point2D(1, 1);
@@ -100,7 +100,7 @@ namespace DiGi.Geometry.xUnit
             int pointCount = 100000;
 
             // A star-shaped ring with a jagged radius, so every query crosses many edges' vertical spans.
-            System.Random random = new System.Random(7);
+            System.Random random = new(7);
             List<Point2D> ring = [];
             for (int i = 0; i < vertexCount; i++)
             {
@@ -118,7 +118,7 @@ namespace DiGi.Geometry.xUnit
                 point2Ds.Add(new Point2D(random.NextDouble() * 2000, random.NextDouble() * 2000));
             }
 
-            PolygonalFace2DPointRelationSolver polygonalFace2DPointRelationSolver = new PolygonalFace2DPointRelationSolver(polygonalFace2D, tolerance);
+            PolygonalFace2DPointRelationSolver polygonalFace2DPointRelationSolver = new(polygonalFace2D, tolerance);
             Assert.Equal(vertexCount, polygonalFace2DPointRelationSolver.EdgeCount);
 
             // Warm-up

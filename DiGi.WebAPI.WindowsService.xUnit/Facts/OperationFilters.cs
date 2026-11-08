@@ -69,7 +69,7 @@ namespace DiGi.WebAPI.WindowsService.xUnit
 
                     foreach (var responsePair in operation.Responses)
                     {
-                        if ((responsePair.Key.StartsWith("4") || responsePair.Key.StartsWith("5"))
+                        if ((responsePair.Key.StartsWith("4", StringComparison.CurrentCulture) || responsePair.Key.StartsWith("5", StringComparison.CurrentCulture))
                             && responsePair.Value.Content is not null
                             && responsePair.Value.Content.TryGetValue("application/json", out OpenApiMediaType? mediaType)
                             && mediaType.Schema is OpenApiSchemaReference openApiSchemaReference

@@ -33,8 +33,8 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Difference_Disjoint()
         {
-            var p1 = new Polygon2D([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
-            var p2 = new Polygon2D([new Point2D(5, 5), new Point2D(7, 5), new Point2D(7, 7), new Point2D(5, 7)]);
+            Polygon2D p1 = new([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
+            Polygon2D p2 = new([new Point2D(5, 5), new Point2D(7, 5), new Point2D(7, 7), new Point2D(5, 7)]);
 
             // Test 1: IPolygonal2D Difference
             var result = Query.Difference(p1, p2);
@@ -57,8 +57,8 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Difference_TopologicallyEqual()
         {
-            var p1 = new Polygon2D([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
-            var p2 = new Polygon2D([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
+            Polygon2D p1 = new([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
+            Polygon2D p2 = new([new Point2D(0, 0), new Point2D(2, 0), new Point2D(2, 2), new Point2D(0, 2)]);
 
             var result = Query.Difference(p1, p2);
             Assert.NotNull(result);

@@ -4,6 +4,7 @@ using DiGi.Core.Interfaces;
 using DiGi.Core.Parameter.Classes;
 using DiGi.GIS.Analytical.Enums;
 using DiGi.GIS.Classes;
+using System.Globalization;
 
 namespace DiGi.GIS.PostgreSQL.xUnit
 {
@@ -58,7 +59,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             UniqueIdReference administrativeAreaReference = Assert.IsType<UniqueIdReference>(complexReference[0]);
             Assert.Equal(new TypeReference(typeof(AdministrativeDivision)).ToString(), administrativeAreaReference.TypeReference?.ToString());
-            Assert.Equal(countyId.ToString(), administrativeAreaReference.UniqueId);
+            Assert.Equal(countyId.ToString(CultureInfo.CurrentCulture), administrativeAreaReference.UniqueId);
 
             UniqueIdReference buildingReference = Assert.IsType<UniqueIdReference>(complexReference[1]);
             Assert.Equal(new TypeReference(typeof(BuildingModel)).ToString(), buildingReference.TypeReference?.ToString());

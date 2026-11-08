@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DiGi.Core.xUnit
 {
@@ -19,14 +20,14 @@ namespace DiGi.Core.xUnit
             };
 
             string? string_Key;
-            bool bool_Success = scores.TryGetFirstKey("SERVER", out string_Key, x => x?.ToUpper());
+            bool bool_Success = scores.TryGetFirstKey("SERVER", out string_Key, x => x?.ToUpper(CultureInfo.CurrentCulture));
 
             Assert.True(bool_Success);
             Assert.Equal("Server", string_Key); // Verifies the fix: should return original casing "Server", not transformed "SERVER"
 
             // 2. Test TryGetKeys
             List<string>? keys;
-            bool_Success = scores.TryGetKeys("DATABASE", out keys, x => x?.ToUpper());
+            bool_Success = scores.TryGetKeys("DATABASE", out keys, x => x?.ToUpper(CultureInfo.CurrentCulture));
 
             Assert.True(bool_Success);
             Assert.NotNull(keys);

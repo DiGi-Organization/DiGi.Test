@@ -1,5 +1,6 @@
 using DiGi.Core.Classes;
 using DiGi.Core.Interfaces;
+using System.Globalization;
 
 namespace DiGi.Core.xUnit
 {
@@ -19,11 +20,7 @@ namespace DiGi.Core.xUnit
             string? fullTypeName = Core.Query.FullTypeName(typeof(TypeReference));
             Assert.False(string.IsNullOrWhiteSpace(fullTypeName));
 
-            string value = string.Format(
-                "{0}{1}{2}",
-                fullTypeName,
-                Constants.Reference.Separator,
-                Core.Query.Segment(typeReference.FullTypeName));
+            string value = string.Format(CultureInfo.CurrentCulture, "{0}{1}{2}", fullTypeName, Constants.Reference.Separator, Core.Query.Segment(typeReference.FullTypeName));
 
             Assert.True(Core.Query.TryParse(value, out TypeReference? typeReference_Parsed));
             Assert.NotNull(typeReference_Parsed);

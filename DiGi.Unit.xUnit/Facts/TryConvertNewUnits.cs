@@ -17,7 +17,7 @@ namespace DiGi.Unit.xUnit
             double? double_Value;
 
             // 1. Verify bug fix: Unit.To should convert from base to target (e.g. 1 m -> 1000 mm)
-            Classes.Unit unit_Milimeter = new Classes.Unit(LengthUnit.Milimeter);
+            Classes.Unit unit_Milimeter = new(LengthUnit.Milimeter);
             double double_ToResult = unit_Milimeter.To(1.0);
             Assert.Equal(1000.0, double_ToResult, 5);
 

@@ -44,7 +44,7 @@ namespace DiGi.Analytical.xUnit
             }
 
             List<Building.HVAC.Classes.UsageProfile> usageProfiles = [];
-            foreach (UsageType usageType in System.Enum.GetValues(typeof(UsageType)).Cast<UsageType>().Where(x => x != UsageType.Undefined))
+            foreach (UsageType usageType in Enum.GetValues<UsageType>().Cast<UsageType>().Where(x => x != UsageType.Undefined))
             {
                 Building.HVAC.Classes.UsageProfile? usageProfile = Building.HVAC.Create.UsageProfile(usageType);
                 Assert.NotNull(usageProfile);

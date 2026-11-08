@@ -162,7 +162,7 @@ namespace DiGi.Analytical.xUnit
                 IRegulatedHeatTransferCoefficients regulatedHeatTransferCoefficients = regulatedHeatTransferCoefficientsManager.GetRegulatedHeatTransferCoefficients(dateTime)!;
                 foreach (string name in regulatedHeatTransferCoefficients.GetNames())
                 {
-                    Assert.False(name.StartsWith("Residential building") || name.StartsWith("Public building"), name);
+                    Assert.False(name.StartsWith("Residential building", StringComparison.CurrentCulture) || name.StartsWith("Public building", StringComparison.CurrentCulture), name);
                 }
 
                 // A copy and a JSON round trip keep the type, the act and every value.

@@ -382,10 +382,10 @@ namespace DiGi.Geometry.xUnit
         {
             Polygon2D polygon2D = new(new List<Point2D>()
             {
-                new Point2D(0, 0),
-                new Point2D(10, 0),
-                new Point2D(10, 10),
-                new Point2D(0, 10)
+                new(0, 0),
+                new(10, 0),
+                new(10, 10),
+                new(0, 10)
             });
 
             PolygonalFace2D? polygonalFace2D = Planar.Create.PolygonalFace2D(polygon2D);
@@ -406,10 +406,10 @@ namespace DiGi.Geometry.xUnit
         {
             Polygon2D polygon2D = new(new List<Point2D>()
             {
-                new Point2D(0, 0),
-                new Point2D(10, 0),
-                new Point2D(10, 10),
-                new Point2D(0, 10)
+                new(0, 0),
+                new(10, 0),
+                new(10, 10),
+                new(0, 10)
             });
 
             PolygonalFace2D? polygonalFace2D = Planar.Create.PolygonalFace2D(polygon2D);

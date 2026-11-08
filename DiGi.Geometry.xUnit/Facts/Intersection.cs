@@ -91,13 +91,13 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Intersection_TopologicallyEqual()
         {
-            var p1 = new Point2D(0, 0);
-            var p2 = new Point2D(10, 0);
-            var p3 = new Point2D(10, 10);
-            var p4 = new Point2D(0, 10);
+            Point2D p1 = new(0, 0);
+            Point2D p2 = new(10, 0);
+            Point2D p3 = new(10, 10);
+            Point2D p4 = new(0, 10);
 
-            var poly1 = new Polygon2D([p1, p2, p3, p4]);
-            var poly2 = new Polygon2D([p1, p2, p3, p4]);
+            Polygon2D poly1 = new([p1, p2, p3, p4]);
+            Polygon2D poly2 = new([p1, p2, p3, p4]);
 
             // Test 1: PolygonalFace2D Intersection
             var face1 = poly1.ToNTS_Polygon().ToDiGi();
@@ -120,14 +120,14 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Intersection_Disjoint()
         {
-            var poly1 = new Polygon2D([
+            Polygon2D poly1 = new([
                 new Point2D(0, 0),
                 new Point2D(2, 0),
                 new Point2D(2, 2),
                 new Point2D(0, 2)
             ]);
 
-            var poly2 = new Polygon2D([
+            Polygon2D poly2 = new([
                 new Point2D(5, 5),
                 new Point2D(7, 5),
                 new Point2D(7, 7),
@@ -151,7 +151,7 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Intersection_MultipleResults()
         {
-            var uShape = new Polygon2D([
+            Polygon2D uShape = new([
                 new Point2D(0, 0),
                 new Point2D(6, 0),
                 new Point2D(6, 4),
@@ -162,7 +162,7 @@ namespace DiGi.Geometry.xUnit
                 new Point2D(0, 4)
             ]);
 
-            var rect = new Polygon2D([
+            Polygon2D rect = new([
                 new Point2D(0, 3),
                 new Point2D(6, 3),
                 new Point2D(6, 5),

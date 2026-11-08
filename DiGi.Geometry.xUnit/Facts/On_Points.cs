@@ -15,8 +15,8 @@ namespace DiGi.Geometry.xUnit
 
             // An L-shaped ring: the closing edge (0,6)->(0,0) is only present when closed is true.
             List<Point2D> ring = [new Point2D(0, 0), new Point2D(10, 0), new Point2D(10, 4), new Point2D(4, 4), new Point2D(4, 6), new Point2D(0, 6)];
-            Polygon2D polygon2D = new Polygon2D(ring);
-            Polyline2D polyline2D = new Polyline2D(ring);
+            Polygon2D polygon2D = new(ring);
+            Polyline2D polyline2D = new(ring);
 
             List<Point2D> probes =
             [
@@ -61,8 +61,8 @@ namespace DiGi.Geometry.xUnit
         {
             double tolerance = 0.01;
 
-            Polygon2D externalEdge = new Polygon2D([new Point2D(0, 0), new Point2D(10, 0), new Point2D(10, 10), new Point2D(0, 10)]);
-            Polygon2D internalEdge = new Polygon2D([new Point2D(4, 4), new Point2D(6, 4), new Point2D(6, 6), new Point2D(4, 6)]);
+            Polygon2D externalEdge = new([new Point2D(0, 0), new Point2D(10, 0), new Point2D(10, 10), new Point2D(0, 10)]);
+            Polygon2D internalEdge = new([new Point2D(4, 4), new Point2D(6, 4), new Point2D(6, 6), new Point2D(4, 6)]);
             PolygonalFace2D? polygonalFace2D = Create.PolygonalFace2D(externalEdge, [internalEdge]);
             Assert.NotNull(polygonalFace2D);
 

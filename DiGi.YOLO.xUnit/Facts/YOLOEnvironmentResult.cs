@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -95,7 +96,7 @@ namespace DiGi.YOLO.xUnit
 
             Assert.NotNull(yOLOEnvironmentResult);
             Assert.False(yOLOEnvironmentResult.Runnable);
-            Assert.True(stopwatch.ElapsedMilliseconds < 2000, string.Format("Preflight check took {0} ms, expected under 2000 ms.", stopwatch.ElapsedMilliseconds));
+            Assert.True(stopwatch.ElapsedMilliseconds < 2000, string.Format(CultureInfo.CurrentCulture, "Preflight check took {0} ms, expected under 2000 ms.", stopwatch.ElapsedMilliseconds));
         }
 
         /// <summary>
@@ -123,7 +124,7 @@ namespace DiGi.YOLO.xUnit
             Dictionary<string, string> settings = [];
             foreach (string line in File.ReadAllLines(path_Configuration))
             {
-                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#", StringComparison.Ordinal))
+                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith('#'))
                 {
                     continue;
                 }
@@ -199,7 +200,7 @@ namespace DiGi.YOLO.xUnit
             Dictionary<string, string> settings = [];
             foreach (string line in File.ReadAllLines(path_Configuration))
             {
-                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#", StringComparison.Ordinal))
+                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith('#'))
                 {
                     continue;
                 }
@@ -308,7 +309,7 @@ namespace DiGi.YOLO.xUnit
                     Python.Classes.PythonProcessResult pythonProcessResult = pythonProcessResults[i];
                     List<string> standardOutput = pythonProcessResult.StandardOutput ?? [];
 
-                    List<string> report_Run = [string.Concat("Part B run ", i + 1, ": ", interpreters[i]), string.Concat("exit code ", pythonProcessResult.ExitCode.ToString()), "--stdout--"];
+                    List<string> report_Run = [string.Concat("Part B run ", i + 1, ": ", interpreters[i]), string.Concat("exit code ", pythonProcessResult.ExitCode.ToString(CultureInfo.CurrentCulture)), "--stdout--"];
                     report_Run.AddRange(standardOutput);
                     report_Run.Add("--stderr--");
                     report_Run.AddRange(pythonProcessResult.StandardError ?? []);
@@ -343,7 +344,7 @@ namespace DiGi.YOLO.xUnit
                         reportLines.Add(string.Empty);
                     }
 
-                    File.WriteAllLines(Path.Combine(directory_Reports!, "YOLOEnvironmentResult_SettingsIsolation_" + DateTimeOffset.Now.ToString("yyyyMMdd_HHmmss") + ".txt"), reportLines);
+                    File.WriteAllLines(Path.Combine(directory_Reports!, "YOLOEnvironmentResult_SettingsIsolation_" + DateTimeOffset.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.CurrentCulture) + ".txt"), reportLines);
                 }
 
                 throw;

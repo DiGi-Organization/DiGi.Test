@@ -2,6 +2,7 @@ using DiGi.CityGML.Classes;
 using DiGi.GIS.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -46,7 +47,7 @@ namespace DiGi.CityGML.xUnit
                 if (string.IsNullOrWhiteSpace(buildingId))
                 {
                     string? uniqueId = building.UniqueId;
-                    if (!string.IsNullOrWhiteSpace(uniqueId) && uniqueId.StartsWith("ID-"))
+                    if (!string.IsNullOrWhiteSpace(uniqueId) && uniqueId.StartsWith("ID-", StringComparison.CurrentCulture))
                     {
                         string[] parts = uniqueId.Split('-');
                         if (parts.Length >= 3)
@@ -58,7 +59,7 @@ namespace DiGi.CityGML.xUnit
 
                 if (string.IsNullOrWhiteSpace(buildingId))
                 {
-                    missingPairs.Add(string.Format("Building UniqueId={0} has no buildingId parameter.", building.UniqueId));
+                    missingPairs.Add(string.Format(CultureInfo.CurrentCulture, "Building UniqueId={0} has no buildingId parameter.", building.UniqueId));
                     continue;
                 }
 
@@ -67,7 +68,7 @@ namespace DiGi.CityGML.xUnit
                     continue;
                 }
 
-                string url = string.Format("https://api.digiproject.uk/gis/building2d/itembyreference?reference={0}", buildingId);
+                string url = string.Format(CultureInfo.CurrentCulture, "https://api.digiproject.uk/gis/building2d/itembyreference?reference={0}", buildingId);
                 HttpResponseMessage response = await httpClient.GetAsync(url);
 
                 if (response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.NoContent)
@@ -75,7 +76,7 @@ namespace DiGi.CityGML.xUnit
                     string json_Building2D = await response.Content.ReadAsStringAsync();
                     if (!string.IsNullOrWhiteSpace(json_Building2D))
                     {
-                        string json_Array = json_Building2D.Trim().StartsWith("[") ? json_Building2D : string.Format("[{0}]", json_Building2D);
+                        string json_Array = json_Building2D.Trim().StartsWith("[", StringComparison.CurrentCulture) ? json_Building2D : string.Format(CultureInfo.CurrentCulture, "[{0}]", json_Building2D);
                         List<Building2D>? items = Core.Convert.ToDiGi<Building2D>(json_Array);
                         Building2D? building2D = items?.FirstOrDefault();
 
@@ -85,17 +86,17 @@ namespace DiGi.CityGML.xUnit
                         }
                         else
                         {
-                            missingPairs.Add(string.Format("Reference={0} (Building UniqueId={1}) returned empty payload.", buildingId, building.UniqueId));
+                            missingPairs.Add(string.Format(CultureInfo.CurrentCulture, "Reference={0} (Building UniqueId={1}) returned empty payload.", buildingId, building.UniqueId));
                         }
                     }
                     else
                     {
-                        missingPairs.Add(string.Format("Reference={0} (Building UniqueId={1}) returned empty response body.", buildingId, building.UniqueId));
+                        missingPairs.Add(string.Format(CultureInfo.CurrentCulture, "Reference={0} (Building UniqueId={1}) returned empty response body.", buildingId, building.UniqueId));
                     }
                 }
                 else
                 {
-                    missingPairs.Add(string.Format("Reference={0} (Building UniqueId={1}) status code={2}.", buildingId, building.UniqueId, (int)response.StatusCode));
+                    missingPairs.Add(string.Format(CultureInfo.CurrentCulture, "Reference={0} (Building UniqueId={1}) status code={2}.", buildingId, building.UniqueId, (int)response.StatusCode));
                 }
             }
 

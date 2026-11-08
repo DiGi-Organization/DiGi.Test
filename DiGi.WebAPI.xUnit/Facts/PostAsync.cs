@@ -227,7 +227,7 @@ namespace DiGi.WebAPI.xUnit
         private sealed class TimeoutHttpMessageHandler : HttpMessageHandler
         {
             private readonly int timeoutAttempts;
-            private int requestCount = 0;
+            private int requestCount;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="TimeoutHttpMessageHandler"/> class.
@@ -263,7 +263,7 @@ namespace DiGi.WebAPI.xUnit
         {
             private readonly List<string> requestBodies = [];
             private readonly int failureAttempts;
-            private int requestCount = 0;
+            private int requestCount;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="ConnectionFailureHttpMessageHandler"/> class.
@@ -310,7 +310,7 @@ namespace DiGi.WebAPI.xUnit
             private readonly List<string> requestBodies = [];
             private readonly IReadOnlyList<HttpStatusCode> httpStatusCodes;
 
-            private int requestCount = 0;
+            private int requestCount;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="StubHttpMessageHandler"/> class.

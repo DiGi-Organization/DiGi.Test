@@ -4,6 +4,7 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 
 namespace DiGi.PostgreSQL.Table.xUnit
@@ -93,7 +94,7 @@ namespace DiGi.PostgreSQL.Table.xUnit
 
                     for (int i = 0; i < table_Page.RowCount; i++)
                     {
-                        values.Add(System.Convert.ToInt32(table_Page[i, 0]));
+                        values.Add(System.Convert.ToInt32(table_Page[i, 0], CultureInfo.CurrentCulture));
                     }
 
                     if (calls == 1)

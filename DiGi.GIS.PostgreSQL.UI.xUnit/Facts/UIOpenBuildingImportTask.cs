@@ -238,7 +238,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 npgsqlCommand.Parameters.AddWithValue("version", version);
 
                 object? result = await npgsqlCommand.ExecuteScalarAsync();
-                return result is null || result is DBNull ? null : System.Convert.ToInt64(result);
+                return result is null || result is DBNull ? null : System.Convert.ToInt64(result, CultureInfo.CurrentCulture);
             }
         }
     }

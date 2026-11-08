@@ -103,7 +103,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             Assert.Equal("custom-api-key", capturedHeaderKey);
         }
 
-        private class HttpMessageHandlerStub : HttpMessageHandler
+        private sealed class HttpMessageHandlerStub : HttpMessageHandler
         {
             private readonly System.Func<HttpRequestMessage, HttpResponseMessage> handler;
 

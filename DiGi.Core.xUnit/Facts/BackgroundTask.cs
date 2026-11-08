@@ -8,7 +8,7 @@ namespace DiGi.Core.xUnit
 {
     public partial class Facts
     {
-        private class TestBackgroundTask : BackgroundTask
+        private sealed class TestBackgroundTask : BackgroundTask
         {
             private readonly int delayMs;
             private readonly bool shouldSucceed;
@@ -30,7 +30,7 @@ namespace DiGi.Core.xUnit
             }
         }
 
-        private class TestCancelableBackgroundTask : CancelableBackgroundTask
+        private sealed class TestCancelableBackgroundTask : CancelableBackgroundTask
         {
             private readonly int delayMs;
 
@@ -51,7 +51,7 @@ namespace DiGi.Core.xUnit
             }
         }
 
-        private class TestRefusingBackgroundTask : BackgroundTask
+        private sealed class TestRefusingBackgroundTask : BackgroundTask
         {
             protected override Task<bool> ExecuteAsync()
             {
@@ -61,7 +61,7 @@ namespace DiGi.Core.xUnit
             }
         }
 
-        private class TestTimingOutBackgroundTask : CancelableBackgroundTask
+        private sealed class TestTimingOutBackgroundTask : CancelableBackgroundTask
         {
             protected override Task<bool> ExecuteAsync(CancellationToken token)
             {
@@ -70,7 +70,7 @@ namespace DiGi.Core.xUnit
             }
         }
 
-        private class TestTimingOutAfterStopBackgroundTask : CancelableBackgroundTask
+        private sealed class TestTimingOutAfterStopBackgroundTask : CancelableBackgroundTask
         {
             protected override async Task<bool> ExecuteAsync(CancellationToken token)
             {
@@ -88,7 +88,7 @@ namespace DiGi.Core.xUnit
             }
         }
 
-        private class TestConfigurableBackgroundTask : BackgroundTask
+        private sealed class TestConfigurableBackgroundTask : BackgroundTask
         {
             public bool ShouldSucceed { get; set; } = true;
 
@@ -98,7 +98,7 @@ namespace DiGi.Core.xUnit
             }
         }
 
-        private class TestThrowingRefusalBackgroundTask : BackgroundTask
+        private sealed class TestThrowingRefusalBackgroundTask : BackgroundTask
         {
             protected override Task<bool> ExecuteAsync()
             {

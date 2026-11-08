@@ -30,8 +30,7 @@ namespace DiGi.Python.xUnit
 
             static string SHA256Hex(string text)
             {
-                using SHA256 sHA256 = SHA256.Create();
-                return Hex(sHA256.ComputeHash(Encoding.UTF8.GetBytes(text)));
+                return Hex(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
             }
 
             try

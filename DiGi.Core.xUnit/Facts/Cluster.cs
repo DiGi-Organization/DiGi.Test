@@ -141,14 +141,14 @@ namespace DiGi.Core.xUnit
             Assert.Equal(3, testKeyedListCluster.Count());
 
             // Deferred LINQ evaluation passed to constructor
-            Classes.TestKeyedListCluster fromDeferred = new(testKeyedListCluster.Where(x => x.EndsWith("1") || x.EndsWith("3")));
+            Classes.TestKeyedListCluster fromDeferred = new(testKeyedListCluster.Where(x => x.EndsWith("1", StringComparison.CurrentCulture) || x.EndsWith("3", StringComparison.CurrentCulture)));
             Assert.Equal(2, fromDeferred.Count());
             Assert.Contains("groupA:sub1:item1", fromDeferred);
             Assert.Contains("groupB:sub1:item3", fromDeferred);
             Assert.DoesNotContain("groupA:sub2:item2", fromDeferred);
 
             // Deferred LINQ evaluation assigned to Values property via collection expression
-            testKeyedListCluster.Values = [.. testKeyedListCluster.Where(x => x.EndsWith("1") || x.EndsWith("3"))];
+            testKeyedListCluster.Values = [.. testKeyedListCluster.Where(x => x.EndsWith("1", StringComparison.CurrentCulture) || x.EndsWith("3", StringComparison.CurrentCulture))];
             Assert.Equal(2, testKeyedListCluster.Count());
             Assert.Contains("groupA:sub1:item1", testKeyedListCluster);
             Assert.Contains("groupB:sub1:item3", testKeyedListCluster);
@@ -179,12 +179,12 @@ namespace DiGi.Core.xUnit
             Assert.Equal("groupA:sub1:alpha", matchedLeading);
 
             // Trailing out TryGetValues
-            Assert.True(testKeyedListCluster.TryGetValues(x => x != null && x.StartsWith("groupA"), out List<string>? matchedValues));
+            Assert.True(testKeyedListCluster.TryGetValues(x => x != null && x.StartsWith("groupA", StringComparison.CurrentCulture), out List<string>? matchedValues));
             Assert.NotNull(matchedValues);
             Assert.Equal(2, matchedValues.Count);
 
             // Leading out TryGetValues (backward compatibility)
-            Assert.True(testKeyedListCluster.TryGetValues(out List<string>? matchedValuesLeading, x => x != null && x.StartsWith("groupB")));
+            Assert.True(testKeyedListCluster.TryGetValues(out List<string>? matchedValuesLeading, x => x != null && x.StartsWith("groupB", StringComparison.CurrentCulture)));
             Assert.NotNull(matchedValuesLeading);
             Assert.Single(matchedValuesLeading);
         }

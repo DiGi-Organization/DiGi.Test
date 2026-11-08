@@ -8,7 +8,7 @@
         [Fact]
         public void MultiUpdater()
         {
-            Core.Classes.MultiUpdater<double> multiUpdater = new Core.Classes.MultiUpdater<double>([new TestUpdater(1), new TestUpdater(2)])
+            Core.Classes.MultiUpdater<double> multiUpdater = new([new TestUpdater(1), new TestUpdater(2)])
             {
                 Value = 10
             };

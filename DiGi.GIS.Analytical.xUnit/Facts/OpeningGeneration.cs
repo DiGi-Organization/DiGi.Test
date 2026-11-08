@@ -43,7 +43,7 @@ namespace DiGi.GIS.Analytical.xUnit
         [Fact]
         public void OpeningGeneration_Serialization()
         {
-            foreach (Regulation.Enums.BuildingRegulation buildingRegulation in Enum.GetValues(typeof(Regulation.Enums.BuildingRegulation)))
+            foreach (Regulation.Enums.BuildingRegulation buildingRegulation in Enum.GetValues<Regulation.Enums.BuildingRegulation>())
             {
                 OpeningGenerationOptions openingGenerationOptions_Regime = Create.OpeningGenerationOptions(buildingRegulation);
                 Assert.NotNull(openingGenerationOptions_Regime.RoomMixes);

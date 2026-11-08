@@ -20,16 +20,16 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
         public async Task TypologyController_GetBuildingCountAsync()
         {
             // A county of two parts, 1 234 buildings each.
-            ScriptedWebApi scriptedWebApi = new((request, body) => Answer(request.RequestUri!.AbsolutePath.EndsWith("/idsbycode") ? "[78238,78244]" : "1234"));
+            ScriptedWebApi scriptedWebApi = new((request, body) => Answer(request.RequestUri!.AbsolutePath.EndsWith("/idsbycode", StringComparison.CurrentCulture) ? "[78238,78244]" : "1234"));
             TypologyAreaCountViewModel typologyAreaCountViewModel = Count(await Controller(scriptedWebApi).GetBuildingCountAsync(78238, "2412", AdministrativeArealType.County));
             Assert.Equal(2468, typologyAreaCountViewModel.Count);
             Assert.Equal(2, typologyAreaCountViewModel.CountyPartCount);
             Assert.Equal(Constants.Default.BuildingSolveCeiling, typologyAreaCountViewModel.Ceiling);
             Assert.False(typologyAreaCountViewModel.Clipped);
-            Assert.Equal(2, scriptedWebApi.Requests.Count(x => x.RequestUri!.AbsolutePath.EndsWith("/countbycountyid")));
+            Assert.Equal(2, scriptedWebApi.Requests.Count(x => x.RequestUri!.AbsolutePath.EndsWith("/countbycountyid", StringComparison.CurrentCulture)));
 
             // A municipality reads its county's parts: the count is an upper bound, flagged as clipped.
-            TypologyAreaCountViewModel typologyAreaCountViewModel_Municipality = Count(await Controller(new ScriptedWebApi((request, body) => Answer(request.RequestUri!.AbsolutePath.EndsWith("/idsbycode") ? "[78238]" : "500"))).GetBuildingCountAsync(78241, "2412022", AdministrativeArealType.Municipality));
+            TypologyAreaCountViewModel typologyAreaCountViewModel_Municipality = Count(await Controller(new ScriptedWebApi((request, body) => Answer(request.RequestUri!.AbsolutePath.EndsWith("/idsbycode", StringComparison.CurrentCulture) ? "[78238]" : "500"))).GetBuildingCountAsync(78241, "2412022", AdministrativeArealType.Municipality));
             Assert.Equal(500, typologyAreaCountViewModel_Municipality.Count);
             Assert.True(typologyAreaCountViewModel_Municipality.Clipped);
 
@@ -45,7 +45,7 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
             Assert.Equal(0, typologyAreaCountViewModel_None.CountyPartCount);
 
             // A part count that cannot be read, or a failed resolution, is a 503.
-            IActionResult actionResult_CountFailed = await Controller(new ScriptedWebApi((request, body) => request.RequestUri!.AbsolutePath.EndsWith("/idsbycode") ? Answer("[78238]") : new HttpResponseMessage(HttpStatusCode.InternalServerError))).GetBuildingCountAsync(78238, "2412", AdministrativeArealType.County);
+            IActionResult actionResult_CountFailed = await Controller(new ScriptedWebApi((request, body) => request.RequestUri!.AbsolutePath.EndsWith("/idsbycode", StringComparison.CurrentCulture) ? Answer("[78238]") : new HttpResponseMessage(HttpStatusCode.InternalServerError))).GetBuildingCountAsync(78238, "2412", AdministrativeArealType.County);
             Assert.Equal(503, Assert.IsType<StatusCodeResult>(actionResult_CountFailed).StatusCode);
 
             IActionResult actionResult_PartsFailed = await Controller(new ScriptedWebApi((request, body) => new HttpResponseMessage(HttpStatusCode.InternalServerError))).GetBuildingCountAsync(78238, "2412", AdministrativeArealType.County);

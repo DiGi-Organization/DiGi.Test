@@ -91,7 +91,7 @@ namespace DiGi.Laya.xUnit
                 Assert.DoesNotContain(messages, x => x.Contains("'item-2' got no response"));
                 Assert.Contains(messages, x => x.Contains("'item-3' got no response"));
                 Assert.Contains(messages, x => x.Contains("id 'item-9'"));
-                Assert.Contains(messages, x => x.StartsWith("Line 4 of responses.jsonl is not a JSON object"));
+                Assert.Contains(messages, x => x.StartsWith("Line 4 of responses.jsonl is not a JSON object", StringComparison.CurrentCulture));
                 Assert.Contains(messages, x => x.Contains("'item-5' got no answer to: department"));
                 Assert.Contains(messages, x => x.Contains("'item-5' was truncated"));
                 Assert.DoesNotContain(messages, x => x.Contains("'item-1'"));

@@ -48,15 +48,15 @@ namespace DiGi.Geometry.xUnit
         {
             Polygon2D polygon2D = new(new List<Point2D>()
             {
-                new Point2D(0, 0),
-                new Point2D(10, 0),
-                new Point2D(10, 10),
-                new Point2D(11, 10),
-                new Point2D(11, 0),
-                new Point2D(11, 0),
-                new Point2D(20, 0),
-                new Point2D(20, 11),
-                new Point2D(0, 11)
+                new(0, 0),
+                new(10, 0),
+                new(10, 10),
+                new(11, 10),
+                new(11, 0),
+                new(11, 0),
+                new(20, 0),
+                new(20, 11),
+                new(0, 11)
             });
 
             List<Polygon2D>? polygon2Ds_Offset = Planar.Query.Offset(polygon2D, -1);

@@ -1,6 +1,7 @@
 using DiGi.CityGML.Classes;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 
@@ -39,7 +40,7 @@ namespace DiGi.CityGML.xUnit
 
             Assert.NotNull(cityModels);
 
-            Assert.True(stopwatch.ElapsedMilliseconds < 1500, string.Format("{0} parses took {1}ms; the adopting parse path measured 179ms.", count, stopwatch.ElapsedMilliseconds));
+            Assert.True(stopwatch.ElapsedMilliseconds < 1500, string.Format(CultureInfo.CurrentCulture, "{0} parses took {1}ms; the adopting parse path measured 179ms.", count, stopwatch.ElapsedMilliseconds));
         }
     }
 }

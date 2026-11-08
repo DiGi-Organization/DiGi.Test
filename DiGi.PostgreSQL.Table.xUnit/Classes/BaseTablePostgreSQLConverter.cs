@@ -4,7 +4,7 @@ using DiGi.PostgreSQL.Table.Classes;
 
 namespace DiGi.PostgreSQL.Table.xUnit.Classes
 {
-    internal class BaseTablePostgreSQLConverter : TablePostgreSQLConverter<Core.IO.Table.Classes.Column>
+    internal sealed class BaseTablePostgreSQLConverter : TablePostgreSQLConverter<Core.IO.Table.Classes.Column>
     {
         public BaseTablePostgreSQLConverter(ConnectionData? connectionData)
             : base(connectionData)

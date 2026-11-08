@@ -12,7 +12,7 @@ namespace DiGi.Core.xUnit
         {
             int count = 4;
 
-            Core.Classes.SerializableObjectCollection serializableObjectCollection_1 = new Core.Classes.SerializableObjectCollection();
+            Core.Classes.SerializableObjectCollection serializableObjectCollection_1 = new();
             for (int i = 0; i < count; i++)
             {
                 serializableObjectCollection_1.Add(new Core.Classes.Size(i, 1000 + i));

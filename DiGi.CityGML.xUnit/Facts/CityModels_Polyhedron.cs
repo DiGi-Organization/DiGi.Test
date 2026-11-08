@@ -3,6 +3,7 @@ using DiGi.CityGML.Interfaces;
 using DiGi.Geometry.Spatial;
 using DiGi.Geometry.Spatial.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace DiGi.CityGML.xUnit
@@ -42,7 +43,7 @@ namespace DiGi.CityGML.xUnit
             {
                 Polyhedron polyhedron = CityGML_Polyhedron(building);
 
-                string message = string.Format("Building {0} of {1}, {2} faces", building.UniqueId, fileName, polyhedron.Count);
+                string message = string.Format(CultureInfo.CurrentCulture, "Building {0} of {1}, {2} faces", building.UniqueId, fileName, polyhedron.Count);
 
                 Assert.True(polyhedron.IsClosed(tolerance_Weld_Coarse), message);
                 Assert.True(polyhedron.IsClosed(true, tolerance_Weld_Coarse), message);

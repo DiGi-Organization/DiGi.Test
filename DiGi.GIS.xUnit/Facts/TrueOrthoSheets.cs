@@ -78,7 +78,7 @@ namespace DiGi.GIS.xUnit
             Assert.All(ortoSheets_NoGml!, x => Assert.Null(x.Footprint));
 
             // One box for two sheets cannot be paired safely.
-            string gml_OneBox = gml.Substring(0, gml.IndexOf("<Skorowidze_feature>", gml.IndexOf("</Skorowidze_feature>", StringComparison.Ordinal), StringComparison.Ordinal)) + "</Skorowidze_layer></msGMLOutput>";
+            string gml_OneBox = string.Concat(gml.AsSpan(0, gml.IndexOf("<Skorowidze_feature>", gml.IndexOf("</Skorowidze_feature>", StringComparison.Ordinal), StringComparison.Ordinal)), "</Skorowidze_layer></msGMLOutput>");
             Assert.All(Convert.ToDiGi_OrtoSheets(html, gml_OneBox)!, x => Assert.Null(x.Footprint));
 
             Point2D point2D = new(636500, 467500);

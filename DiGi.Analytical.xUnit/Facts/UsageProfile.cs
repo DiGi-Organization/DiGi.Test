@@ -113,7 +113,7 @@ namespace DiGi.Analytical.xUnit
             string[] tags = ["PL-376", "PL-WT", "ASHRAE-90.1", "DEFAULT"];
 
             HashSet<string> defaults = [];
-            foreach (UsageType usageType in System.Enum.GetValues(typeof(UsageType)).Cast<UsageType>().Where(x => x != UsageType.Undefined))
+            foreach (UsageType usageType in Enum.GetValues<UsageType>().Cast<UsageType>().Where(x => x != UsageType.Undefined))
             {
                 Building.HVAC.Classes.UsageProfile? usageProfile = Building.HVAC.Create.UsageProfile(usageType, hourly: true);
                 Assert.NotNull(usageProfile);
@@ -137,8 +137,8 @@ namespace DiGi.Analytical.xUnit
 
                 foreach (KeyValuePair<string, string> keyValuePair in sources)
                 {
-                    Assert.Contains(tags, x => keyValuePair.Value.StartsWith(x));
-                    if (keyValuePair.Value.StartsWith("DEFAULT"))
+                    Assert.Contains(tags, x => keyValuePair.Value.StartsWith(x, StringComparison.CurrentCulture));
+                    if (keyValuePair.Value.StartsWith("DEFAULT", StringComparison.CurrentCulture))
                     {
                         defaults.Add(usageType + "." + keyValuePair.Key);
                     }

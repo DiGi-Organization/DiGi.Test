@@ -137,7 +137,7 @@ namespace DiGi.Analytical.xUnit
                 return Declared(constructionLibrary.GetConstruction(constructionSet, constructionRole));
             }
 
-            List<ConstructionRole> constructionRoles = [.. (ConstructionRole[])Enum.GetValues(typeof(ConstructionRole))];
+            List<ConstructionRole> constructionRoles = [.. Enum.GetValues<ConstructionRole>()];
             constructionRoles.Remove(ConstructionRole.Undefined);
 
             int count = 0;

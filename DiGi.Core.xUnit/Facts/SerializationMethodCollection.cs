@@ -25,10 +25,10 @@ namespace DiGi.Core.xUnit
 
             string json = jsonObject.ToJsonString();
 
-            int index_Alpha = json.IndexOf("\"Alpha\"");
-            int index_Beta = json.IndexOf("\"Beta\"");
-            int index_Zulu = json.IndexOf("\"Zulu\"");
-            int index_Yankee = json.IndexOf("\"Yankee\"");
+            int index_Alpha = json.IndexOf("\"Alpha\"", StringComparison.CurrentCulture);
+            int index_Beta = json.IndexOf("\"Beta\"", StringComparison.CurrentCulture);
+            int index_Zulu = json.IndexOf("\"Zulu\"", StringComparison.CurrentCulture);
+            int index_Yankee = json.IndexOf("\"Yankee\"", StringComparison.CurrentCulture);
 
             Assert.True(index_Alpha >= 0 && index_Beta >= 0 && index_Zulu >= 0 && index_Yankee >= 0);
 

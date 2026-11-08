@@ -3,6 +3,7 @@ using DiGi.Geometry.Planar.Interfaces;
 using DiGi.GIS.PostgreSQL.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DiGi.GIS.PostgreSQL.xUnit
 {
@@ -130,7 +131,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// <returns>The stored administrative areal record.</returns>
         private static AdministrativeAreal2D Create_AdministrativeAreal2D(int id, string name, GIS.Enums.AdministrativeDivisionType administrativeDivisionType, PolygonalFace2D polygonalFace2D, AdministrativeAreal2D? administrativeAreal2D_Parent)
         {
-            GIS.Classes.AdministrativeDivision administrativeDivision = new(Guid.NewGuid(), $"REFERENCE_{id}", id.ToString(), polygonalFace2D, administrativeDivisionType, name);
+            GIS.Classes.AdministrativeDivision administrativeDivision = new(Guid.NewGuid(), $"REFERENCE_{id}", id.ToString(CultureInfo.CurrentCulture), polygonalFace2D, administrativeDivisionType, name);
 
             AdministrativeAreal2D? result = Convert.ToPostgreSQL(administrativeDivision);
             Assert.NotNull(result);

@@ -60,7 +60,7 @@ namespace DiGi.ComputeSharp.xUnit
             return false;
         }
 
-        private void AssertTilesAndInheritsSolid(Triangle3 original, Triangulation3 triangulation)
+        private static void AssertTilesAndInheritsSolid(Triangle3 original, Triangulation3 triangulation)
         {
             Assert.False(triangulation.IsNaN(), "Triangulation is NaN (no valid sub-triangles).");
 
@@ -83,7 +83,7 @@ namespace DiGi.ComputeSharp.xUnit
             Assert.True(Math.Abs(areaSum - originalArea) <= areaTolerance, $"Area not conserved: sub-triangle sum={areaSum}, original={originalArea}.");
         }
 
-        private void AssertValidTriangulation(Triangle3 original, Line3 line, Triangulation3 triangulation, double tolerance)
+        private static void AssertValidTriangulation(Triangle3 original, Line3 line, Triangulation3 triangulation, double tolerance)
         {
             AssertTilesAndInheritsSolid(original, triangulation);
 

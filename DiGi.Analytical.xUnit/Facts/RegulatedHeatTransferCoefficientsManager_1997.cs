@@ -76,7 +76,7 @@ namespace DiGi.Analytical.xUnit
             // Every residential row is single-family, keeping the "residential" prefix the portal filters on.
             foreach (string name in regulatedHeatTransferCoefficients.GetNames())
             {
-                Assert.True(name.StartsWith("Residential building (single-family)") || name.StartsWith("Public building"), name);
+                Assert.True(name.StartsWith("Residential building (single-family)", StringComparison.CurrentCulture) || name.StartsWith("Public building", StringComparison.CurrentCulture), name);
             }
 
             // Both maps survive a copy and a JSON round trip.

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Reflection;
 
 namespace DiGi.GIS.WebAPI.xUnit
@@ -135,11 +136,11 @@ namespace DiGi.GIS.WebAPI.xUnit
         {
             RangeAttribute? rangeAttribute_Radius = FindRange(typeof(TerrainController), nameof(TerrainController.GetMesh3DByCircleAsync), "radius");
             Assert.NotNull(rangeAttribute_Radius);
-            Assert.Equal(Constants.Terrain.MaximumRadius, System.Convert.ToDouble(rangeAttribute_Radius.Maximum));
+            Assert.Equal(Constants.Terrain.MaximumRadius, System.Convert.ToDouble(rangeAttribute_Radius.Maximum, CultureInfo.CurrentCulture));
 
             RangeAttribute? rangeAttribute_Diameter = FindRange(typeof(TerrainController), nameof(TerrainController.GetMesh3DByCircleAsync), "diameter");
             Assert.NotNull(rangeAttribute_Diameter);
-            Assert.Equal(2 * Constants.Terrain.MaximumRadius, System.Convert.ToDouble(rangeAttribute_Diameter.Maximum));
+            Assert.Equal(2 * Constants.Terrain.MaximumRadius, System.Convert.ToDouble(rangeAttribute_Diameter.Maximum, CultureInfo.CurrentCulture));
         }
 
         /// <summary>
@@ -265,11 +266,11 @@ namespace DiGi.GIS.WebAPI.xUnit
             {
                 RangeAttribute? rangeAttribute_Radius = FindRange(type, method, "radius");
                 Assert.NotNull(rangeAttribute_Radius);
-                Assert.Equal(Constants.Terrain.MaximumRadius, System.Convert.ToDouble(rangeAttribute_Radius.Maximum));
+                Assert.Equal(Constants.Terrain.MaximumRadius, System.Convert.ToDouble(rangeAttribute_Radius.Maximum, CultureInfo.CurrentCulture));
 
                 RangeAttribute? rangeAttribute_Diameter = FindRange(type, method, "diameter");
                 Assert.NotNull(rangeAttribute_Diameter);
-                Assert.Equal(2 * Constants.Terrain.MaximumRadius, System.Convert.ToDouble(rangeAttribute_Diameter.Maximum));
+                Assert.Equal(2 * Constants.Terrain.MaximumRadius, System.Convert.ToDouble(rangeAttribute_Diameter.Maximum, CultureInfo.CurrentCulture));
             }
         }
 

@@ -50,7 +50,9 @@ namespace DiGi.Laya.xUnit
                 Assert.False(layaResponse.Truncated);
 
                 Classes.LayaChoiceAnswer layaChoiceAnswer = Assert.IsType<Classes.LayaChoiceAnswer>(layaResponse.Answers![0]);
+#pragma warning disable CA1861 // a one-off assertion; hoisting the array buys nothing
                 Assert.Contains(layaChoiceAnswer.Label, new string[] { "billing", "technical" });
+#pragma warning restore CA1861
                 Assert.Equal(["billing", "technical"], layaChoiceAnswer.Probabilities!.Select(x => x.Label));
                 Assert.InRange(layaChoiceAnswer.Probabilities!.Sum(x => x.Value), 0.999, 1.001);
 

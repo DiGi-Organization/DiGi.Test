@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace DiGi.Core.xUnit
 {
-    internal class DictionaryObject : GuidObject
+    internal sealed class DictionaryObject : GuidObject
     {
         [JsonInclude, JsonPropertyName("Dictionary")]
         private Dictionary<string, TestObject>? dictionary;

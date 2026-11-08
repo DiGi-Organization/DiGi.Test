@@ -128,7 +128,7 @@ namespace DiGi.ComputeSharp.xUnit
                     _ = new Triangle3ExternalShadingRowOffsetComputeShader(trianglesBuffer, externalBuffer, fullBuffer, vector, -1, tolerance);
                 });
 
-                Triangle3Intersection sentinel = new Triangle3Intersection(new Bool(true), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999));
+                Triangle3Intersection sentinel = new(new Bool(true), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999), new Coordinate3(9999, 9999, 9999));
 
                 int[] blockSizes = [1, 7, count];
                 foreach (int blockSize in blockSizes)

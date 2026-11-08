@@ -12,8 +12,8 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Point3D_Distance_Correctness()
         {
-            Point3D point3D_1 = new Point3D(0, 0, 0);
-            Point3D point3D_2 = new Point3D(3, 4, 12); // Distance should be sqrt(3^2 + 4^2 + 12^2) = sqrt(9 + 16 + 144) = 13
+            Point3D point3D_1 = new(0, 0, 0);
+            Point3D point3D_2 = new(3, 4, 12); // Distance should be sqrt(3^2 + 4^2 + 12^2) = sqrt(9 + 16 + 144) = 13
 
             double distance = point3D_1.Distance(point3D_2);
 
@@ -26,13 +26,13 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Segment3D_Similar_Correctness()
         {
-            Point3D point3D_Start = new Point3D(0, 0, 0);
-            Point3D point3D_End = new Point3D(10, 10, 10);
+            Point3D point3D_Start = new(0, 0, 0);
+            Point3D point3D_End = new(10, 10, 10);
 
-            Segment3D segment3D_1 = new Segment3D(point3D_Start, point3D_End);
-            Segment3D segment3D_2 = new Segment3D(point3D_Start, point3D_End);
-            Segment3D segment3D_Reversed = new Segment3D(point3D_End, point3D_Start);
-            Segment3D segment3D_Different = new Segment3D(point3D_Start, new Point3D(5, 5, 5));
+            Segment3D segment3D_1 = new(point3D_Start, point3D_End);
+            Segment3D segment3D_2 = new(point3D_Start, point3D_End);
+            Segment3D segment3D_Reversed = new(point3D_End, point3D_Start);
+            Segment3D segment3D_Different = new(point3D_Start, new Point3D(5, 5, 5));
 
             Assert.True(segment3D_1.Similar(segment3D_2));
             Assert.True(segment3D_1.Similar(segment3D_Reversed));
@@ -45,36 +45,36 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void BoundingBox3D_InRange_SlabMethod()
         {
-            Point3D point3D_Min = new Point3D(-5, -5, -5);
-            Point3D point3D_Max = new Point3D(5, 5, 5);
-            BoundingBox3D boundingBox3D = new BoundingBox3D(point3D_Min, point3D_Max);
+            Point3D point3D_Min = new(-5, -5, -5);
+            Point3D point3D_Max = new(5, 5, 5);
+            BoundingBox3D boundingBox3D = new(point3D_Min, point3D_Max);
 
             // 1. Line passing directly through AABB
-            Line3D line3D_Through = new Line3D(new Point3D(-10, 0, 0), new Spatial.Classes.Vector3D(1, 0, 0));
+            Line3D line3D_Through = new(new Point3D(-10, 0, 0), new Spatial.Classes.Vector3D(1, 0, 0));
             Assert.True(boundingBox3D.InRange(line3D_Through));
 
             // 2. Line missing AABB
-            Line3D line3D_Miss = new Line3D(new Point3D(-10, 10, 0), new Spatial.Classes.Vector3D(1, 0, 0));
+            Line3D line3D_Miss = new(new Point3D(-10, 10, 0), new Spatial.Classes.Vector3D(1, 0, 0));
             Assert.False(boundingBox3D.InRange(line3D_Miss));
 
             // 3. Segment completely inside AABB
-            Segment3D segment3D_Inside = new Segment3D(new Point3D(-2, -2, -2), new Point3D(2, 2, 2));
+            Segment3D segment3D_Inside = new(new Point3D(-2, -2, -2), new Point3D(2, 2, 2));
             Assert.True(boundingBox3D.InRange(segment3D_Inside));
 
             // 4. Segment outside AABB but aligned
-            Segment3D segment3D_Outside = new Segment3D(new Point3D(10, 0, 0), new Point3D(15, 0, 0));
+            Segment3D segment3D_Outside = new(new Point3D(10, 0, 0), new Point3D(15, 0, 0));
             Assert.False(boundingBox3D.InRange(segment3D_Outside));
 
             // 5. Ray starting inside and pointing away
-            Ray3D ray3D_Inside = new Ray3D(new Point3D(0, 0, 0), new Spatial.Classes.Vector3D(0, 0, 1));
+            Ray3D ray3D_Inside = new(new Point3D(0, 0, 0), new Spatial.Classes.Vector3D(0, 0, 1));
             Assert.True(boundingBox3D.InRange(ray3D_Inside));
 
             // 6. Ray pointing towards AABB
-            Ray3D ray3D_Towards = new Ray3D(new Point3D(-10, 0, 0), new Spatial.Classes.Vector3D(1, 0, 0));
+            Ray3D ray3D_Towards = new(new Point3D(-10, 0, 0), new Spatial.Classes.Vector3D(1, 0, 0));
             Assert.True(boundingBox3D.InRange(ray3D_Towards));
 
             // 7. Ray pointing away from AABB
-            Ray3D ray3D_Away = new Ray3D(new Point3D(-10, 0, 0), new Spatial.Classes.Vector3D(-1, 0, 0));
+            Ray3D ray3D_Away = new(new Point3D(-10, 0, 0), new Spatial.Classes.Vector3D(-1, 0, 0));
             Assert.False(boundingBox3D.InRange(ray3D_Away));
         }
 
@@ -84,10 +84,10 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Sphere_IntersectionResult3D_Correctness()
         {
-            Sphere sphere = new Sphere(new Point3D(0, 0, 0), 5.0);
+            Sphere sphere = new(new Point3D(0, 0, 0), 5.0);
 
             // Line passing through the center: 2 intersection points
-            Line3D line3D_Through = new Line3D(new Point3D(-10, 0, 0), new Spatial.Classes.Vector3D(1, 0, 0));
+            Line3D line3D_Through = new(new Point3D(-10, 0, 0), new Spatial.Classes.Vector3D(1, 0, 0));
             IntersectionResult3D? intersectionResult3D_1 = sphere.IntersectionResult3D(line3D_Through);
 
             Assert.NotNull(intersectionResult3D_1);
@@ -95,7 +95,7 @@ namespace DiGi.Geometry.xUnit
             Assert.Equal(2, intersectionResult3D_1.Count);
 
             // Segment inside/crossing
-            Segment3D segment3D_Crossing = new Segment3D(new Point3D(-3, 0, 0), new Point3D(6, 0, 0));
+            Segment3D segment3D_Crossing = new(new Point3D(-3, 0, 0), new Point3D(6, 0, 0));
             IntersectionResult3D? intersectionResult3D_2 = sphere.IntersectionResult3D(segment3D_Crossing);
 
             Assert.NotNull(intersectionResult3D_2);
@@ -109,9 +109,9 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Polyhedron_IntersectionResult3D_Correctness()
         {
-            Point3D point3D_Min = new Point3D(-2, -2, -2);
-            Point3D point3D_Max = new Point3D(2, 2, 2);
-            BoundingBox3D boundingBox3D = new BoundingBox3D(point3D_Min, point3D_Max);
+            Point3D point3D_Min = new(-2, -2, -2);
+            Point3D point3D_Max = new(2, 2, 2);
+            BoundingBox3D boundingBox3D = new(point3D_Min, point3D_Max);
 
             Polyhedron? polyhedron = Create.Polyhedron(boundingBox3D);
             Assert.NotNull(polyhedron);
@@ -121,7 +121,7 @@ namespace DiGi.Geometry.xUnit
                 return;
             }
 
-            Line3D line3D_Through = new Line3D(new Point3D(0, 0, -10), new Spatial.Classes.Vector3D(0, 0, 1));
+            Line3D line3D_Through = new(new Point3D(0, 0, -10), new Spatial.Classes.Vector3D(0, 0, 1));
             IntersectionResult3D? intersectionResult3D = polyhedron.IntersectionResult3D(line3D_Through);
 
             Assert.NotNull(intersectionResult3D);
@@ -137,10 +137,10 @@ namespace DiGi.Geometry.xUnit
         {
             Polygon2D polygon2D = new(new List<Point2D>()
             {
-                new Point2D(0, 0),
-                new Point2D(10, 0),
-                new Point2D(10, 10),
-                new Point2D(0, 10)
+                new(0, 0),
+                new(10, 0),
+                new(10, 10),
+                new(0, 10)
             });
 
             PolygonalFace2D? polygonalFace2D = Planar.Create.PolygonalFace2D(polygon2D);

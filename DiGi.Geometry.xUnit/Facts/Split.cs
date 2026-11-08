@@ -66,10 +66,10 @@ namespace DiGi.Geometry.xUnit
         {
             Polygon2D polygon2D_1 = new(new List<Point2D>()
             {
-                new Point2D(0, 0),
-                new Point2D(10, 0),
-                new Point2D(10, 10),
-                new Point2D(0, 10)
+                new(0, 0),
+                new(10, 0),
+                new(10, 10),
+                new(0, 10)
             });
 
             PolygonalFace2D? polygonalFace2D_1 = Planar.Create.PolygonalFace2D(polygon2D_1);
@@ -79,18 +79,18 @@ namespace DiGi.Geometry.xUnit
 
             Polygon2D polygon2D_2 = new(new List<Point2D>()
             {
-                new Point2D(5, 5),
-                new Point2D(20, 5),
-                new Point2D(20, 20),
-                new Point2D(5, 20)
+                new(5, 5),
+                new(20, 5),
+                new(20, 20),
+                new(5, 20)
             });
 
             Polygon3D? polygon3D_2 = Create.Polygon3D(new List<Point3D>()
             {
-                new Point3D(2, 5, -1),
-                new Point3D(2, 20, -1),
-                new Point3D(2, 20, 1),
-                new Point3D(2, 5, 1)
+                new(2, 5, -1),
+                new(2, 20, -1),
+                new(2, 20, 1),
+                new(2, 5, 1)
             });
             Assert.NotNull(polygon3D_2);
 
@@ -99,10 +99,10 @@ namespace DiGi.Geometry.xUnit
 
             Polygon3D? polygon3D_3 = Create.Polygon3D(new List<Point3D>()
             {
-                new Point3D(2, 5, -1),
-                new Point3D(2, 5, 1),
-                new Point3D(10, 5, 1),
-                new Point3D(10, 5, -1)
+                new(2, 5, -1),
+                new(2, 5, 1),
+                new(10, 5, 1),
+                new(10, 5, -1)
             });
             Assert.NotNull(polygon3D_3);
 

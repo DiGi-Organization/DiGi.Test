@@ -418,14 +418,14 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.True(table.RowCount > 0, $"The building data pull of part {countyId} returned no rows for the cross-county references - the unassigned pass did not write them.");
 
             // The defect: those rows carried no Municipality population columns at all, so the column lookup itself failed on unmodified code.
-            Assert.True(table.Columns.Any(x => x.Name?.StartsWith("Municipality population ") == true), $"The pulled building data of part {countyId} carries no Municipality population column - the unassigned pass did not write the population columns.");
+            Assert.True(table.Columns.Any(x => x.Name?.StartsWith("Municipality population ", StringComparison.CurrentCulture) == true), $"The pulled building data of part {countyId} carries no Municipality population column - the unassigned pass did not write the population columns.");
 
             foreach (Core.IO.Table.Classes.Row row in table.Rows)
             {
                 bool populationFound = false;
                 foreach (Core.IO.Table.Classes.Column column in table.Columns)
                 {
-                    if (column.Name?.StartsWith("Municipality population ") == true && row.TryGetValue(column.Index, out int population) && population > 0)
+                    if (column.Name?.StartsWith("Municipality population ", StringComparison.CurrentCulture) == true && row.TryGetValue(column.Index, out int population) && population > 0)
                     {
                         populationFound = true;
                         break;

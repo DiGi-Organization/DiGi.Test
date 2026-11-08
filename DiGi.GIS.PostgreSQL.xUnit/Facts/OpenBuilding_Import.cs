@@ -319,7 +319,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             object? result = await ScalarAsync(npgsqlConnection, commandText);
             Assert.NotNull(result);
 
-            return System.Convert.ToInt32(result);
+            return System.Convert.ToInt32(result, CultureInfo.CurrentCulture);
         }
 
         /// <summary>

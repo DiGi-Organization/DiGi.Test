@@ -20,7 +20,7 @@ namespace DiGi.Core.xUnit
                 indexDoubles_1.Add(random.Next(0, 100), random.NextDouble());
             }
 
-            Core.Classes.IndexedDoubles indexDoubles_2 = new Core.Classes.IndexedDoubles(indexDoubles_1);
+            Core.Classes.IndexedDoubles indexDoubles_2 = new(indexDoubles_1);
 
             string? @string_1 = indexDoubles_1.ToSystem_String();
             string? @string_2 = indexDoubles_2.ToSystem_String();

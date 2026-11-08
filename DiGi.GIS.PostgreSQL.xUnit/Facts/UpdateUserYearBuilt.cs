@@ -3,6 +3,7 @@ using DiGi.GIS.PostgreSQL.Classes;
 using DiGi.PostgreSQL.Classes;
 using Npgsql;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace DiGi.GIS.PostgreSQL.xUnit
@@ -115,7 +116,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 await using NpgsqlCommand npgsqlCommand_Sibling = new("SELECT id FROM administrative_areal_2d WHERE reference = 'XUNIT-COUNTY-990102';", npgsqlConnection);
                 object? siblingId = await npgsqlCommand_Sibling.ExecuteScalarAsync();
                 Assert.NotNull(siblingId);
-                countyId_Sibling = System.Convert.ToInt32(siblingId);
+                countyId_Sibling = System.Convert.ToInt32(siblingId, CultureInfo.CurrentCulture);
 
                 await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS building_2d_{countyId_Sibling};");
                 await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS year_built_data_{countyId_Sibling};");
@@ -217,7 +218,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             await using NpgsqlCommand npgsqlCommand = new(commandText, npgsqlConnection);
             object? count = await npgsqlCommand.ExecuteScalarAsync();
-            return System.Convert.ToInt32(count);
+            return System.Convert.ToInt32(count, CultureInfo.CurrentCulture);
         }
 
         /// <summary>
@@ -238,7 +239,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             await using NpgsqlCommand npgsqlCommand = new(commandText, npgsqlConnection);
             object? year = await npgsqlCommand.ExecuteScalarAsync();
-            return year is null ? null : System.Convert.ToInt32(year);
+            return year is null ? null : System.Convert.ToInt32(year, CultureInfo.CurrentCulture);
         }
 
         /// <summary>
@@ -259,7 +260,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             await using NpgsqlCommand npgsqlCommand = new(commandText, npgsqlConnection);
             object? year = await npgsqlCommand.ExecuteScalarAsync();
-            return year is null ? null : System.Convert.ToInt32(year);
+            return year is null ? null : System.Convert.ToInt32(year, CultureInfo.CurrentCulture);
         }
     }
 }

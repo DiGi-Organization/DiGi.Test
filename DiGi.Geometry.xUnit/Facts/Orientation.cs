@@ -89,7 +89,7 @@ namespace DiGi.Geometry.xUnit
 
             //Case 3
 
-            Plane plane_1 = new Plane(new Point3D(0, 0, 0), new Spatial.Classes.Vector3D(0, 0, 1));
+            Plane plane_1 = new(new Point3D(0, 0, 0), new Spatial.Classes.Vector3D(0, 0, 1));
             List<Point2D>? point2Ds = [new Point2D(0, 0), new Point2D(0, 10), new Point2D(10, 10), new Point2D(10, 0)];
 
             polygonalFace3D_1 = Spatial.Create.PolygonalFace3D(plane_1, [.. point2Ds]);
@@ -102,7 +102,7 @@ namespace DiGi.Geometry.xUnit
                 return;
             }
 
-            Plane plane_2 = new Plane(new Point3D(0, 0, 0), new Spatial.Classes.Vector3D(0, 0, -1));
+            Plane plane_2 = new(new Point3D(0, 0, 0), new Spatial.Classes.Vector3D(0, 0, -1));
 
             point2Ds = point2Ds.ConvertAll(plane_1.Convert).ConvertAll(plane_2.Convert)!;
 

@@ -2,6 +2,7 @@ using DiGi.Core.xUnit;
 using DiGi.GIS.PostgreSQL.Classes;
 using DiGi.GIS.PostgreSQL.Enums;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -38,8 +39,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             StringBuilder stringBuilder = new();
 
             int subdivisionCount_WithoutCounty = administrativeAreal2DReferences.Count(x => x.CountyId is null);
-            stringBuilder.AppendLine($"Subdivision references: {administrativeAreal2DReferences.Count}");
-            stringBuilder.AppendLine($"  without a parent county: {subdivisionCount_WithoutCounty}");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"Subdivision references: {administrativeAreal2DReferences.Count}");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"  without a parent county: {subdivisionCount_WithoutCounty}");
             stringBuilder.AppendLine();
 
             // The set the update actually visits, keyed the way it keys it.
@@ -65,7 +66,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 List<Building2DReference>? building2DReferences = await building2DPostgreSQLConverter.GetBuilding2DReferencesByCountyIdAsync(countyId, commandTimeout: 600);
                 if (building2DReferences is null)
                 {
-                    stringBuilder.AppendLine($"{countyId,-9}  (not read)");
+                    stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"{countyId,-9}  (not read)");
                     continue;
                 }
 
@@ -108,7 +109,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 // Cross-check: the same figure taken straight from the database rather than from the references.
                 // The two disagreeing would mean the reference reader is dropping a column.
                 long count_WithoutSubdivision = await building2DPostgreSQLConverter.GetCountWithoutSubdivisionAsync(countyId, 600);
-                stringBuilder.AppendLine($"{countyId,-9} {building2DReferences.Count,10} {unreachable,12} {noSubdivision,11} {subdivisionWithoutCounty,17} {subdivisionOtherCounty,20} {subdivisionUnknown,15}   GetCountWithoutSubdivisionAsync={count_WithoutSubdivision}");
+                stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"{countyId,-9} {building2DReferences.Count,10} {unreachable,12} {noSubdivision,11} {subdivisionWithoutCounty,17} {subdivisionOtherCounty,20} {subdivisionUnknown,15}   GetCountWithoutSubdivisionAsync={count_WithoutSubdivision}");
             }
 
             string? directory = Assembly.GetExecutingAssembly().ReportsDirectory();

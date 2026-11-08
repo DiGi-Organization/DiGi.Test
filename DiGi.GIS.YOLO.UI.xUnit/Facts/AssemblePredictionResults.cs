@@ -32,8 +32,8 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             List<string> lines_Fixture = [.. File.ReadAllLines(path_Fixture!).Where(x => !string.IsNullOrWhiteSpace(x))];
             Assert.NotEmpty(lines_Fixture);
 
-            List<string> lines_First = [.. lines_Fixture.Where(x => x.StartsWith("0207_"))];
-            List<string> lines_Last = [.. lines_Fixture.Where(x => !x.StartsWith("0207_"))];
+            List<string> lines_First = [.. lines_Fixture.Where(x => x.StartsWith("0207_", StringComparison.CurrentCulture))];
+            List<string> lines_Last = [.. lines_Fixture.Where(x => !x.StartsWith("0207_", StringComparison.CurrentCulture))];
             Assert.NotEmpty(lines_First);
             Assert.NotEmpty(lines_Last);
 

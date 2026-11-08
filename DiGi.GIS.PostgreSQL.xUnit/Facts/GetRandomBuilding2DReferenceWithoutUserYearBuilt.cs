@@ -3,6 +3,7 @@ using DiGi.GIS.PostgreSQL.Enums;
 using DiGi.PostgreSQL.Classes;
 using Npgsql;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace DiGi.GIS.PostgreSQL.xUnit
@@ -384,7 +385,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             await using NpgsqlCommand npgsqlCommand = new("SELECT id FROM administrative_areal_2d WHERE reference = 'XUNIT-COUNTY-990101';", npgsqlConnection);
             object? id = await npgsqlCommand.ExecuteScalarAsync();
             Assert.NotNull(id);
-            int countyId = System.Convert.ToInt32(id);
+            int countyId = System.Convert.ToInt32(id, CultureInfo.CurrentCulture);
 
             await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS building_2d_{countyId};");
             await ExecuteAsync(npgsqlConnection_Storage, $"DROP TABLE IF EXISTS orto_datas_{countyId};");
@@ -525,7 +526,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             await using NpgsqlCommand npgsqlCommand = new(commandText, npgsqlConnection);
             object? count = await npgsqlCommand.ExecuteScalarAsync();
-            return System.Convert.ToInt64(count) == 0;
+            return System.Convert.ToInt64(count, CultureInfo.CurrentCulture) == 0;
         }
 
         /// <summary>

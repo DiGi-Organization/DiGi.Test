@@ -2,6 +2,7 @@ using DiGi.Analytical.Building.Classes;
 using DiGi.Analytical.Building.Interfaces;
 using DiGi.Analytical.Classes;
 using DiGi.Geometry.Spatial.Classes;
+using System.Globalization;
 
 namespace DiGi.Analytical.xUnit
 {
@@ -42,7 +43,7 @@ namespace DiGi.Analytical.xUnit
             BuildingModel buildingModel = new();
             for (int i = 0; i < count_Spaces; i++)
             {
-                Space space = new(point3D, string.Format("Space {0}", i));
+                Space space = new(point3D, string.Format(CultureInfo.CurrentCulture, "Space {0}", i));
                 spaces.Add(space);
                 for (int j = 0; j < count_ComponentsPerSpace; j++)
                 {
@@ -72,9 +73,9 @@ namespace DiGi.Analytical.xUnit
             Assert.False(string.IsNullOrWhiteSpace(pathReportsDirectory));
 
             string pathReport = Path.Combine(pathReportsDirectory!, "BuildingModelGetShells_Performance.txt");
-            File.WriteAllLines(pathReport, [.. durations.Select(x => string.Format("{0} ms", x))]);
+            File.WriteAllLines(pathReport, [.. durations.Select(x => string.Format(CultureInfo.CurrentCulture, "{0} ms", x))]);
 
-            Assert.True(durations.Max() < 2000, string.Format("BuildingModel.GetShells failed threshold! Elapsed: {0} ms.", durations.Max()));
+            Assert.True(durations.Max() < 2000, string.Format(CultureInfo.CurrentCulture, "BuildingModel.GetShells failed threshold! Elapsed: {0} ms.", durations.Max()));
         }
     }
 }

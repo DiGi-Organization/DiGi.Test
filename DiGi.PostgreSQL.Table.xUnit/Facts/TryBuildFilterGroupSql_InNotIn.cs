@@ -3,6 +3,7 @@ using DiGi.PostgreSQL.Table.Classes;
 using DiGi.PostgreSQL.Table.Enums;
 using Npgsql;
 using NpgsqlTypes;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Column = DiGi.Core.IO.Table.Classes.Column;
@@ -67,9 +68,9 @@ namespace DiGi.PostgreSQL.Table.xUnit
 
             object[] values = Assert.IsType<object[]>(parameter.Value);
             Assert.Equal(3, values.Length);
-            Assert.Equal(1L, System.Convert.ToInt64(values[0]));
-            Assert.Equal(2L, System.Convert.ToInt64(values[1]));
-            Assert.Equal(3L, System.Convert.ToInt64(values[2]));
+            Assert.Equal(1L, System.Convert.ToInt64(values[0], CultureInfo.CurrentCulture));
+            Assert.Equal(2L, System.Convert.ToInt64(values[1], CultureInfo.CurrentCulture));
+            Assert.Equal(3L, System.Convert.ToInt64(values[2], CultureInfo.CurrentCulture));
         }
 
         /// <summary>
@@ -169,8 +170,8 @@ namespace DiGi.PostgreSQL.Table.xUnit
 
             object[] values = Assert.IsType<object[]>(parameter.Value);
             Assert.Equal(2, values.Length);
-            Assert.Equal(5L, System.Convert.ToInt64(values[0]));
-            Assert.Equal(6L, System.Convert.ToInt64(values[1]));
+            Assert.Equal(5L, System.Convert.ToInt64(values[0], CultureInfo.CurrentCulture));
+            Assert.Equal(6L, System.Convert.ToInt64(values[1], CultureInfo.CurrentCulture));
         }
     }
 }

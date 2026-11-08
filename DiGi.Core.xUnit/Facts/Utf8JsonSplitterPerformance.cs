@@ -1,6 +1,7 @@
 using DiGi.Core.Classes;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 
 namespace DiGi.Core.xUnit
@@ -36,7 +37,7 @@ namespace DiGi.Core.xUnit
 
             long milliseconds_Utf8Json = stopwatch.ElapsedMilliseconds;
 
-            Assert.True(milliseconds_Utf8Json < milliseconds + 10.0, string.Format("Utf8JsonSplitter took {0}ms, the size-then-serialize pair took {1}ms.", milliseconds_Utf8Json, milliseconds));
+            Assert.True(milliseconds_Utf8Json < milliseconds + 10.0, string.Format(CultureInfo.CurrentCulture, "Utf8JsonSplitter took {0}ms, the size-then-serialize pair took {1}ms.", milliseconds_Utf8Json, milliseconds));
         }
 
         /// <summary>

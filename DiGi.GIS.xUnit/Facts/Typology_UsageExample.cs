@@ -2,6 +2,7 @@ using DiGi.Core.Classes;
 using DiGi.Core.IO.Table.Classes;
 using DiGi.Typology.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 
 namespace DiGi.GIS.xUnit
@@ -153,7 +154,7 @@ namespace DiGi.GIS.xUnit
                 List<string> references_Node = typology_Node.References;
                 references_Node.Sort();
 
-                lines_Report.Add(string.Format("  [{0}]{1}{2} -> {3}", typologyPath, new string(' ', typologyPath.Count * 2), typology_Node.Name, string.Join(", ", references_Node)));
+                lines_Report.Add(string.Format(CultureInfo.CurrentCulture, "  [{0}]{1}{2} -> {3}", typologyPath, new string(' ', typologyPath.Count * 2), typology_Node.Name, string.Join(", ", references_Node)));
             }
 
             lines_Report.Add(string.Empty);

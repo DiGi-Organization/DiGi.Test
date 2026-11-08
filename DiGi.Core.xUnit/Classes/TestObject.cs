@@ -67,7 +67,7 @@ namespace DiGi.Core.xUnit
                 { 1, random.NextDouble() }
             };
 
-            testEnum = (TestEnum)random.Next(Enum.GetValues(typeof(TestEnum)).Length);
+            testEnum = (TestEnum)random.Next(Enum.GetValues<TestEnum>().Length);
 
             KeyValuePair = new KeyValuePair<int, string>(random.Next(), Guid.NewGuid().ToString());
 

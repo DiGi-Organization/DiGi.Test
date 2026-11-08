@@ -2,6 +2,7 @@ using DiGi.Core.IO.Table.Classes;
 using DiGi.GIS.WebAPI.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -99,7 +100,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.False(string.IsNullOrWhiteSpace(directory_Reports));
 
             string directory_Scratch = Path.Combine(directory_Reports!, name);
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
             Directory.CreateDirectory(Path.Combine(directory_County, Constants.DirectoryName.PredictionImages));
             File.Copy(path_Fixture!, Path.Combine(directory_County, Constants.FileName.PredictionResults), true);
 
@@ -180,7 +181,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 table.AddRow([.. values]);
             }
 
+#pragma warning disable CA1869 // the fact serializes once, with options of its own
             JsonSerializerOptions jsonSerializerOptions = new();
+#pragma warning restore CA1869
             jsonSerializerOptions.Converters.Add(new TableConverter<Table, Column, Row>());
 
             return JsonSerializer.Serialize(table, jsonSerializerOptions);
@@ -218,7 +221,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 return true;
             }
 
-            return type.IsValueType ? System.Convert.ChangeType(1, type) : "x";
+            return type.IsValueType ? System.Convert.ChangeType(1, type, CultureInfo.CurrentCulture) : "x";
         }
     }
 }

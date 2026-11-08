@@ -166,7 +166,7 @@ namespace DiGi.PRG.Geometry.xUnit
             StringBuilder stringBuilder = new();
             stringBuilder.AppendLine("# Entrance-facade rule accuracy (DiGi.Test#7)");
             stringBuilder.AppendLine();
-            stringBuilder.AppendLine($"Sample seed {sample["Seed"]}, BDOT10k `{sample["BDOT10k"]}`, PRG `{sample["PRG"]}`, labelled by {sample["Labeller"]} on {sample["LabelDate"]}. A rule is correct when its edge faces the same side as the labelled entrance (outward normals within 20 degrees); the exact-edge rate is in brackets; n is the number of labelled buildings the rule applies to (a road rule finding no road does not apply).");
+            stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"Sample seed {sample["Seed"]}, BDOT10k `{sample["BDOT10k"]}`, PRG `{sample["PRG"]}`, labelled by {sample["Labeller"]} on {sample["LabelDate"]}. A rule is correct when its edge faces the same side as the labelled entrance (outward normals within 20 degrees); the exact-edge rate is in brackets; n is the number of labelled buildings the rule applies to (a road rule finding no road does not apply).");
             stringBuilder.AppendLine();
             stringBuilder.AppendLine("| Stratum | Labelled | Unknown | " + string.Join(" | ", entranceFacadeControlSample_Rules) + " |");
             stringBuilder.AppendLine("|---|---|---|" + string.Concat(Enumerable.Repeat("---|", entranceFacadeControlSample_Rules.Length)));
@@ -181,7 +181,7 @@ namespace DiGi.PRG.Geometry.xUnit
                     cells.Add(applicable == 0 ? "-" : $"{Percent(sameSide, applicable)} ({Percent(exact, applicable)}), n {applicable}");
                 }
 
-                stringBuilder.AppendLine($"| {stratum} | {labelled} | {unknown} | {string.Join(" | ", cells)} |");
+                stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| {stratum} | {labelled} | {unknown} | {string.Join(" | ", cells)} |");
             }
 
             File.WriteAllText(Path.Combine(Core.xUnit.Query.ReportsDirectory(Assembly.GetExecutingAssembly())!, "EntranceFacadeControlSample_Scores.md"), stringBuilder.ToString());

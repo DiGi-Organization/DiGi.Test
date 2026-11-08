@@ -1,5 +1,6 @@
 using DiGi.CityGML.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
@@ -58,7 +59,7 @@ namespace DiGi.CityGML.xUnit
             Assert.False(string.IsNullOrWhiteSpace(path_Gml));
             Assert.True(File.Exists(path_Gml));
 
-            string path_Zip = Path.Combine(Path.GetTempPath(), string.Format("DiGi_CityGML_Stored_{0}.zip", System.Guid.NewGuid()));
+            string path_Zip = Path.Combine(Path.GetTempPath(), string.Format(CultureInfo.CurrentCulture, "DiGi_CityGML_Stored_{0}.zip", System.Guid.NewGuid()));
 
             try
             {

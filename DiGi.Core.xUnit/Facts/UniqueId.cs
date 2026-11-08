@@ -40,7 +40,7 @@ namespace DiGi.Core.xUnit
             // Test fallback overload for unsupported types (Verifying the fix for Bug 4)
             long long_Val = 9876543210L;
             string string_Id2 = Core.Query.UniqueId(long_Val);
-            Assert.Equal(long_Val.ToString(), string_Id2);
+            Assert.Equal(long_Val.ToString(CultureInfo.CurrentCulture), string_Id2);
 
             // Test JsonValue types
             JsonValue jsonValue_String = JsonValue.Create("JsonString")!;
@@ -113,8 +113,8 @@ namespace DiGi.Core.xUnit
             Assert.Equal("0", TestEnum.Test1.UniqueId());
             Assert.Equal("1", TestEnum.Test2.UniqueId());
 
-            Assert.Equal(long.MaxValue.ToString(), TestEnumLong.Max.UniqueId());
-            Assert.Equal(uint.MaxValue.ToString(), TestEnumUInt.Max.UniqueId());
+            Assert.Equal(long.MaxValue.ToString(CultureInfo.CurrentCulture), TestEnumLong.Max.UniqueId());
+            Assert.Equal(uint.MaxValue.ToString(CultureInfo.CurrentCulture), TestEnumUInt.Max.UniqueId());
         }
 
         /// <summary>

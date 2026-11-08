@@ -312,7 +312,7 @@ namespace DiGi.GIS.Analytical.xUnit
                     records.AddRange(records_County);
 
                     int entries_Other = headers.Values.Count(x => x.HasEnvelope && x.Horizontal != "EPSG:2180");
-                    string classification = entries_Other == 0 ? "All2180" : (headers.Values.Count(x => x.HasEnvelope && x.Horizontal == "EPSG:2180") > 0 ? "Mixed" : "Other");
+                    string classification = entries_Other == 0 ? "All2180" : (headers.Values.Any(x => x.HasEnvelope && x.Horizontal == "EPSG:2180") ? "Mixed" : "Other");
 
                     censusLines.Add(string.Join(' ',
                         datasetName,
@@ -678,7 +678,7 @@ namespace DiGi.GIS.Analytical.xUnit
                 (string Dataset, string County, string Source, string Reference, double Easting, double Northing, double MinZ, double MaxZ, string HorizontalCrs, string VerticalCrs) record_Cell = records.Find(x => x.Dataset + "|" + x.County == key_Cell);
                 List<double> dz_Cell_Temp = dz_Cell[key_Cell];
                 (int N, double MeanAbs, double MedianAbs, double P95Abs, double MaxAbs, double MeanSigned, double CiLow, double CiHigh, double Rmse, double Le95) stats = ElevationBenchmark_Stats(dz_Cell_Temp);
-                stringBuilder.AppendLine($"| {record_Cell.Dataset} | {record_Cell.County} | {stats.N.ToString(CultureInfo.InvariantCulture)} | {ElevationBenchmark_Text(stats.MeanAbs)} | {ElevationBenchmark_Text(stats.P95Abs)} | {ElevationBenchmark_Text(stats.MaxAbs)} |");
+                stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| {record_Cell.Dataset} | {record_Cell.County} | {stats.N.ToString(CultureInfo.InvariantCulture)} | {ElevationBenchmark_Text(stats.MeanAbs)} | {ElevationBenchmark_Text(stats.P95Abs)} | {ElevationBenchmark_Text(stats.MaxAbs)} |");
             }
 
             stringBuilder.AppendLine();
@@ -690,7 +690,7 @@ namespace DiGi.GIS.Analytical.xUnit
                 stringBuilder.Append('[').Append(ElevationBenchmark_Text(i == 0 ? 0 : elevationBenchmark_BinEdges[i - 1])).Append(", ").Append(ElevationBenchmark_Text(elevationBenchmark_BinEdges[i])).Append(") | ");
             }
 
-            stringBuilder.Append($"[ {ElevationBenchmark_Text(elevationBenchmark_BinEdges[^1])}, inf) |");
+            stringBuilder.Append(CultureInfo.CurrentCulture, $"[ {ElevationBenchmark_Text(elevationBenchmark_BinEdges[^1])}, inf) |");
             stringBuilder.AppendLine();
             stringBuilder.Append("|---|");
             for (int i = 0; i < elevationBenchmark_BinEdges.Length + 1; i++)
@@ -736,7 +736,7 @@ namespace DiGi.GIS.Analytical.xUnit
                 int rows = counts[0] + counts[1] + counts[2] + counts[3];
                 int resolved = counts[1] + counts[3];
                 double fraction = rows == 0 ? 0 : (double)resolved / rows;
-                stringBuilder.AppendLine($"| {datasetName} | {rows.ToString(CultureInfo.InvariantCulture)} | {resolved.ToString(CultureInfo.InvariantCulture)} | {fraction.ToString("0.000", CultureInfo.InvariantCulture)} |");
+                stringBuilder.AppendLine(CultureInfo.CurrentCulture, $"| {datasetName} | {rows.ToString(CultureInfo.InvariantCulture)} | {resolved.ToString(CultureInfo.InvariantCulture)} | {fraction.ToString("0.000", CultureInfo.InvariantCulture)} |");
             }
 
             string directory_Reports = Core.xUnit.Query.ReportsDirectory(assembly)!;
@@ -786,7 +786,7 @@ namespace DiGi.GIS.Analytical.xUnit
             Dictionary<string, string> result = [];
             foreach (string line in File.ReadAllLines(path_Configuration))
             {
-                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#", StringComparison.Ordinal))
+                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith('#'))
                 {
                     continue;
                 }

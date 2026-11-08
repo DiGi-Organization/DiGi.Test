@@ -10,7 +10,7 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void Perimeter()
         {
-            Polygon2D polygon2D = new Polygon2D([new Point2D(0, 0), new Point2D(0, 2), new Point2D(2, 2), new Point2D(2, 0)]);
+            Polygon2D polygon2D = new([new Point2D(0, 0), new Point2D(0, 2), new Point2D(2, 2), new Point2D(2, 0)]);
 
             double perimeter = polygon2D.GetPerimeter();
 

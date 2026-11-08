@@ -11,7 +11,7 @@ namespace DiGi.Scripting.CSharp.xUnit
         [Fact]
         public void SerializableInput()
         {
-            SerializableInput serializableInput_1 = new SerializableInput("AAA", 7);
+            SerializableInput serializableInput_1 = new("AAA", 7);
 
             string? json_1 = serializableInput_1.ToSystem_String();
             Assert.NotNull(json_1);

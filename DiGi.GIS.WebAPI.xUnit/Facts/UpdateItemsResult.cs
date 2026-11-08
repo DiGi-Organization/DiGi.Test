@@ -1,6 +1,7 @@
 using DiGi.GIS.PostgreSQL.Enums;
 using DiGi.GIS.WebAPI.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DiGi.GIS.WebAPI.xUnit
 {
@@ -89,7 +90,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             List<UpdateItemsResult.Rejection> rejections = [];
             for (int i = 0; i < 25; i++)
             {
-                rejections.Add(new UpdateItemsResult.Rejection { Reference = i.ToString(), Reason = UpdateRejectionReason.CountyUnresolved });
+                rejections.Add(new UpdateItemsResult.Rejection { Reference = i.ToString(CultureInfo.CurrentCulture), Reason = UpdateRejectionReason.CountyUnresolved });
             }
 
             string sample = Query.RejectionSample(rejections);

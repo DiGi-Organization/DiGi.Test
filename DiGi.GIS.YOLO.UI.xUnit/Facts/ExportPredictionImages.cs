@@ -74,7 +74,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
 
             // 2. Export prediction images via DiGi.GIS.YOLO database export pipeline using stubbed WebAPI response
             string json_References = Core.Convert.ToSystem_String(
-                new List<OrtoDatasReference> { new OrtoDatasReference { Reference = ortoDatas.Reference, CountyId = 1 } }) ?? string.Empty;
+                new List<OrtoDatasReference> { new() { Reference = ortoDatas.Reference, CountyId = 1 } }) ?? string.Empty;
 
             string json_Item = Core.Convert.ToSystem_String((Core.Interfaces.ISerializableObject)ortoDatas) ?? string.Empty;
             StubHttpClientFactory stubHttpClientFactory = new((request) =>
@@ -116,7 +116,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             }
         }
 
-        private class StubHttpClientFactory : IHttpClientFactory
+        private sealed class StubHttpClientFactory : IHttpClientFactory
         {
             private readonly Func<HttpRequestMessage, HttpResponseMessage> handler;
 
@@ -134,7 +134,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             }
         }
 
-        private class StubHttpMessageHandler : HttpMessageHandler
+        private sealed class StubHttpMessageHandler : HttpMessageHandler
         {
             private readonly Func<HttpRequestMessage, HttpResponseMessage> handler;
 

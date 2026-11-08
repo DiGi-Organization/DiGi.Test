@@ -166,7 +166,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             Assert.Empty(visualBackgroundTasks_NoManager);
         }
 
-        private class TestRefusingBackgroundTask : Core.Classes.BackgroundTask
+        private sealed class TestRefusingBackgroundTask : Core.Classes.BackgroundTask
         {
             protected override Task<bool> ExecuteAsync()
             {

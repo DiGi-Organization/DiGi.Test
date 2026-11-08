@@ -1,6 +1,7 @@
 using DiGi.GIS.IO.Interfaces;
 using DiGi.GIS.YOLO.UI.Classes;
 using DiGi.GIS.WebAPI.Classes;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -67,7 +68,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.False(string.IsNullOrWhiteSpace(directory_Reports));
 
             string directory_Scratch = Path.Combine(directory_Reports!, nameof(RunYearBuiltPredictions_Detections));
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
             Directory.CreateDirectory(Path.Combine(directory_County, Constants.DirectoryName.PredictionImages));
             File.Copy(path_Fixture!, Path.Combine(directory_County, Constants.FileName.PredictionResults), true);
 
@@ -117,7 +118,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             string? directory_Reports = Core.xUnit.Query.ReportsDirectory(Assembly.GetExecutingAssembly());
 
             string directory_Scratch = Path.Combine(directory_Reports!, nameof(RunYearBuiltPredictions_MissingPredictor));
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
             Directory.CreateDirectory(Path.Combine(directory_County, Constants.DirectoryName.PredictionImages));
             File.Copy(path_Fixture!, Path.Combine(directory_County, Constants.FileName.PredictionResults), true);
 
@@ -157,7 +158,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             string? directory_Reports = Core.xUnit.Query.ReportsDirectory(Assembly.GetExecutingAssembly());
 
             string directory_Scratch = Path.Combine(directory_Reports!, nameof(RunYearBuiltPredictions_StubPredictor));
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
             Directory.CreateDirectory(Path.Combine(directory_County, Constants.DirectoryName.PredictionImages));
             File.Copy(path_Fixture!, Path.Combine(directory_County, Constants.FileName.PredictionResults), true);
 
@@ -203,7 +204,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             string? directory_Reports = Core.xUnit.Query.ReportsDirectory(Assembly.GetExecutingAssembly());
 
             string directory_Scratch = Path.Combine(directory_Reports!, nameof(RunYearBuiltPredictions_UnrunnablePredictor));
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
             Directory.CreateDirectory(Path.Combine(directory_County, Constants.DirectoryName.PredictionImages));
             File.Copy(path_Fixture!, Path.Combine(directory_County, Constants.FileName.PredictionResults), true);
 
@@ -249,7 +250,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.False(string.IsNullOrWhiteSpace(directory_Reports));
 
             string directory_Scratch = Path.Combine(directory_Reports!, nameof(RunYearBuiltPredictions_MissingResults));
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
 
             if (Directory.Exists(directory_County))
             {
@@ -302,7 +303,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
             Assert.False(string.IsNullOrWhiteSpace(directory_Reports));
 
             string directory_Scratch = Path.Combine(directory_Reports!, nameof(RunYearBuiltPredictions_CleanScratchDirectory));
-            string directory_County = Path.Combine(directory_Scratch, countyId.ToString());
+            string directory_County = Path.Combine(directory_Scratch, countyId.ToString(CultureInfo.CurrentCulture));
 
             void LayOutCounty()
             {

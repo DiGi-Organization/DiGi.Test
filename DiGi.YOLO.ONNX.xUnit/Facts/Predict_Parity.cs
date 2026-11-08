@@ -67,7 +67,7 @@ namespace DiGi.YOLO.ONNX.xUnit
             Dictionary<string, string> settings = [];
             foreach (string line in File.ReadAllLines(path_Configuration))
             {
-                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith("#", StringComparison.Ordinal))
+                if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith('#'))
                 {
                     continue;
                 }

@@ -33,7 +33,7 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
             ScriptedWebApi scriptedWebApi = new((request, body) =>
             {
                 string path = request.RequestUri!.AbsolutePath;
-                if (path.EndsWith("/administrativeareal2Dreferencesbyadministrativearealtype"))
+                if (path.EndsWith("/administrativeareal2Dreferencesbyadministrativearealtype", StringComparison.CurrentCulture))
                 {
                     return Answer(json_Counties);
                 }

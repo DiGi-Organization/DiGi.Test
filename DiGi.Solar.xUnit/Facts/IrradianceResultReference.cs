@@ -1,6 +1,7 @@
 using DiGi.Core.Classes;
 using DiGi.Geometry.Spatial.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -22,7 +23,7 @@ namespace DiGi.Solar.xUnit
             List<PVGISReferenceRow> pVGISReferenceRows = [];
             foreach (string line in System.IO.File.ReadAllLines(path!))
             {
-                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#", StringComparison.CurrentCulture))
                 {
                     continue;
                 }
@@ -32,7 +33,7 @@ namespace DiGi.Solar.xUnit
 
                 // PVGIS stamps each hour as yyyyMMdd:HHmm in UTC.
                 string text = values[0];
-                System.DateTime dateTime = new(int.Parse(text.Substring(0, 4)), int.Parse(text.Substring(4, 2)), int.Parse(text.Substring(6, 2)), int.Parse(text.Substring(9, 2)), int.Parse(text.Substring(11, 2)), 0);
+                System.DateTime dateTime = new(int.Parse(text.AsSpan(0, 4), CultureInfo.CurrentCulture), int.Parse(text.AsSpan(4, 2), CultureInfo.CurrentCulture), int.Parse(text.AsSpan(6, 2), CultureInfo.CurrentCulture), int.Parse(text.AsSpan(9, 2), CultureInfo.CurrentCulture), int.Parse(text.AsSpan(11, 2), CultureInfo.CurrentCulture), 0);
 
                 pVGISReferenceRows.Add(new PVGISReferenceRow(
                     dateTime,

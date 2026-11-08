@@ -11,9 +11,9 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void ClosestPoint()
         {
-            Point2D point2D_1 = new Point2D(1, 10);
-            Point2D point2D_2 = new Point2D(0, 0);
-            Point2D point2D_3 = new Point2D(0, 9);
+            Point2D point2D_1 = new(1, 10);
+            Point2D point2D_2 = new(0, 0);
+            Point2D point2D_3 = new(0, 9);
 
             Point2D? point2D_Closest;
 
@@ -57,9 +57,9 @@ namespace DiGi.Geometry.xUnit
                 Assert.Equal(point2D_Closest, new Point2D(0, 9));
             }
 
-            Point3D point3D_1 = new Point3D(1, 10, 0);
-            Point3D point3D_2 = new Point3D(0, 0, 0);
-            Point3D point3D_3 = new Point3D(0, 9, 0);
+            Point3D point3D_1 = new(1, 10, 0);
+            Point3D point3D_2 = new(0, 0, 0);
+            Point3D point3D_3 = new(0, 9, 0);
 
             Point3D? point3D_Closest;
 

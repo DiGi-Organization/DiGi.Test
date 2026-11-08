@@ -323,7 +323,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
         /// <summary>
         /// Answers the Web API calls a training dataset build makes, from in-memory labels, histories and orthophotos, and records what was asked.
         /// </summary>
-        private class TrainingDatasetStub
+        private sealed class TrainingDatasetStub
         {
             private readonly Dictionary<int, Dictionary<string, short>> labels;
             private readonly Func<string, OrtoDatas?> ortoDatas;
@@ -489,7 +489,9 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 table.AddRow([keyValuePair.Key, (ushort)keyValuePair.Value]);
             }
 
+#pragma warning disable CA1869 // the fact serializes once, with options of its own
             JsonSerializerOptions jsonSerializerOptions = new();
+#pragma warning restore CA1869
             jsonSerializerOptions.Converters.Add(new TableConverter<Table, Column, Row>());
 
             return JsonSerializer.Serialize(table, jsonSerializerOptions);

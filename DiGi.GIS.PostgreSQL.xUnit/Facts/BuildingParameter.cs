@@ -1,6 +1,7 @@
 using DiGi.Core.Parameter.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 
 namespace DiGi.GIS.PostgreSQL.xUnit
@@ -28,9 +29,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
                 string? uniqueId = parameterProperties.UniqueId;
 
-                Assert.False(string.IsNullOrWhiteSpace(uniqueId), string.Format("{0} declares no unique identifier.", buildingParameter));
+                Assert.False(string.IsNullOrWhiteSpace(uniqueId), string.Format(CultureInfo.CurrentCulture, "{0} declares no unique identifier.", buildingParameter));
 
-                Assert.False(dictionary.TryGetValue(uniqueId!, out string? name), string.Format("{0} and {1} share unique identifier {2}.", name, buildingParameter, uniqueId));
+                Assert.False(dictionary.TryGetValue(uniqueId!, out string? name), string.Format(CultureInfo.CurrentCulture, "{0} and {1} share unique identifier {2}.", name, buildingParameter, uniqueId));
 
                 dictionary[uniqueId!] = buildingParameter.ToString();
             }

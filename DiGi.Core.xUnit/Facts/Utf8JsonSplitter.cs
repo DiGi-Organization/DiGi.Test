@@ -1,5 +1,6 @@
 using DiGi.Core.Classes;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace DiGi.Core.xUnit
@@ -39,7 +40,7 @@ namespace DiGi.Core.xUnit
                 addresses_Emitted.AddRange(utf8JsonBatch.SerializableObjects);
             }
 
-            Assert.True(batchCount > 1, string.Format("Expected the budget to force multiple batches but got {0}.", batchCount));
+            Assert.True(batchCount > 1, string.Format(CultureInfo.CurrentCulture, "Expected the budget to force multiple batches but got {0}.", batchCount));
 
             Assert.Equal(addresses.Count, addresses_Emitted.Count);
 
@@ -89,7 +90,7 @@ namespace DiGi.Core.xUnit
             List<Address> result = [];
             for (int i = 0; i < count; i++)
             {
-                result.Add(new Address(string.Format("Street {0}", i), string.Format("City {0}", i), string.Format("{0:00}-000", i % 100), Enums.CountryCode.PL));
+                result.Add(new Address(string.Format(CultureInfo.CurrentCulture, "Street {0}", i), string.Format(CultureInfo.CurrentCulture, "City {0}", i), string.Format(CultureInfo.CurrentCulture, "{0:00}-000", i % 100), Enums.CountryCode.PL));
             }
 
             return result;

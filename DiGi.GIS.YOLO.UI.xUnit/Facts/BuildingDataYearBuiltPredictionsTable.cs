@@ -65,7 +65,7 @@ namespace DiGi.GIS.YOLO.UI.xUnit
                 Row row_Cleared = rows_ByReference["b_ref_002"];
                 foreach (Column column in table.Columns)
                 {
-                    if (column.Name is string name && name.StartsWith("Prediction "))
+                    if (column.Name is string name && name.StartsWith("Prediction ", StringComparison.CurrentCulture))
                     {
                         Assert.False(row_Cleared.TryGetValue(column.Index, out object? _), $"{name} carries a value on a building the detector did not fire on.");
                     }

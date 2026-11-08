@@ -19,7 +19,7 @@ namespace DiGi.Geometry.xUnit
         [Fact]
         public void VisualCollection2D_Enumeration_NoSnapshotCopy()
         {
-            VisualCollection2D visualCollection2D = new(new IVisual2D[0]);
+            VisualCollection2D visualCollection2D = new(Array.Empty<IVisual2D>());
             visualCollection2D.Add(CreateVisualPoint2D(0, 0));
 
             IEnumerable<IVisual2D> view = visualCollection2D.GetValues()!;
@@ -47,7 +47,7 @@ namespace DiGi.Geometry.xUnit
         {
             const int elementCount = 10000;
 
-            VisualCollection2D visualCollection2D = new(new IVisual2D[0]);
+            VisualCollection2D visualCollection2D = new(Array.Empty<IVisual2D>());
             for (int i = 0; i < elementCount; i++)
             {
                 visualCollection2D.Add(CreateVisualPoint2D(i, 0));

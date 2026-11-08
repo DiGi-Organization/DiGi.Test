@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
 
-    <LangVersion>latest</LangVersion>
     <OutputPath>..\bin\$(MSBuildProjectName)\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -16,6 +15,11 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
+
+  <!-- WPF facts: Label, ListBox, ProgressBar mean the WPF controls; a file using Windows Forms imports it itself -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="10.0.0">

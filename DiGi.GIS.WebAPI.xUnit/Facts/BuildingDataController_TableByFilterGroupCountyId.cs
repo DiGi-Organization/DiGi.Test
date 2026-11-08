@@ -181,6 +181,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             /// <see cref="FilterOperator.Equals"/> condition on the given county - the shape a client puts in the body to scope
             /// the read by county itself.
             /// </summary>
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Called on the fixture instance the facts receive.")]
             public DiGi.PostgreSQL.Table.Classes.FilterGroup CallerCountyFilter(int countyId)
             {
                 return new DiGi.PostgreSQL.Table.Classes.FilterGroup

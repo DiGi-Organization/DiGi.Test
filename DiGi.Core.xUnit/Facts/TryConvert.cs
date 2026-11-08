@@ -125,7 +125,7 @@ namespace DiGi.Core.xUnit
             Assert.Equal([53429, 53412], (List<int>)list_Result!);
 
             // Array element still passes through for an object target (identity), which the short-circuit must not change.
-            Assert.True(Core.Query.TryConvert(jsonElement_Array, out object? object_Result, typeof(object)));
+            Assert.True(Core.Query.TryConvert(jsonElement_Array, out object? object_Result));
             Assert.NotNull(object_Result);
         }
 

@@ -126,7 +126,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(0, table_Empty.RowCount);
 
             // A result whose single surface has no usable area: a row, but every summary column null.
-            GIS.Classes.SurfaceSolarRadiation skipped = new GIS.Classes.SurfaceSolarRadiation("no-area", 0, new Vector3D(0, 1, 0), 0.8, 0.6, 200, 120, 60, 20, 240, 2000, null);
+            GIS.Classes.SurfaceSolarRadiation skipped = new("no-area", 0, new Vector3D(0, 1, 0), 0.8, 0.6, 200, 120, 60, 20, 240, 2000, null);
             GIS.Classes.BuildingSolarRadiationResult result_Skipped = SolarResult("skip-building", skipped);
 
             Table table_Skipped = new();

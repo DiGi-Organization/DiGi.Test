@@ -76,7 +76,7 @@ namespace DiGi.Core.xUnit
             Assert.Equal(string_ExpectedGenericName, string_GenericResult1);
 
             // 4. Test ISerializableObject
-            Core.Classes.Color color_Instance = new Core.Classes.Color(System.Drawing.Color.Blue);
+            Core.Classes.Color color_Instance = new(System.Drawing.Color.Blue);
             string? string_ColorResult = Core.Query.FullTypeName(color_Instance);
             string? string_ExpectedColorName = Core.Query.FullTypeName(typeof(Core.Classes.Color));
             Assert.Equal(string_ExpectedColorName, string_ColorResult);

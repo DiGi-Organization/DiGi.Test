@@ -2,6 +2,7 @@ using DiGi.User.PostgreSQL.Classes;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
@@ -133,8 +134,8 @@ namespace DiGi.User.WebAPI.xUnit
             Assert.True(jsonDocument.RootElement.TryGetProperty("issuedAt", out JsonElement jsonElement_IssuedAt));
             Assert.True(jsonDocument.RootElement.TryGetProperty("expiresAt", out JsonElement jsonElement_ExpiresAt));
 
-            DateTimeOffset issuedAt = DateTimeOffset.Parse(jsonElement_IssuedAt.GetString() ?? string.Empty);
-            DateTimeOffset expiresAt = DateTimeOffset.Parse(jsonElement_ExpiresAt.GetString() ?? string.Empty);
+            DateTimeOffset issuedAt = DateTimeOffset.Parse(jsonElement_IssuedAt.GetString() ?? string.Empty, CultureInfo.CurrentCulture);
+            DateTimeOffset expiresAt = DateTimeOffset.Parse(jsonElement_ExpiresAt.GetString() ?? string.Empty, CultureInfo.CurrentCulture);
             Assert.True(expiresAt > issuedAt);
             Assert.True(expiresAt > DateTimeOffset.UtcNow);
         }

@@ -2,6 +2,7 @@ using DiGi.BDL.Enums;
 using DiGi.GIS.Classes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DiGi.GIS.PostgreSQL.xUnit
 {
@@ -42,7 +43,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 new(2018, 12.345),
                 new(2019, 13.0)
             ];
-            string bdlRef = ((int)Variable.population_thousand_persons).ToString();
+            string bdlRef = ((int)Variable.population_thousand_persons).ToString(CultureInfo.CurrentCulture);
             StatisticalYearlyDoubleData bdlData = new(Core.Query.Description(Variable.population_thousand_persons), bdlRef, bdlValues);
             StatisticalDataCollection collection_Bdl = new(Guid.NewGuid(), new UnitCode("012345678901"));
             collection_Bdl.Add(bdlData);

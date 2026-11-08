@@ -75,10 +75,10 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
             // 2005, 2002 regulation, single-family building: the single-family rows as well.
             RegulatedHeatTransferCoefficientsViewModel regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily = await RegulatedHeatTransferCoefficientsViewModelAsync(2005, building2D_SingleFamily, true);
             Assert.Equal(8, regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.Names.Count);
-            Assert.Equal(4, regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.Names.Count(x => x.StartsWith("Residential building (single-family)")));
+            Assert.Equal(4, regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.Names.Count(x => x.StartsWith("Residential building (single-family)", StringComparison.CurrentCulture)));
             Assert.Contains("Residential building (single-family) multilayer wall", regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.Names);
             Assert.Contains("Residential building door", regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.Names);
-            Assert.DoesNotContain(regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.Names, x => x.StartsWith("Public building"));
+            Assert.DoesNotContain(regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.Names, x => x.StartsWith("Public building", StringComparison.CurrentCulture));
             Assert.Equal(["Residential building floor on ground"], regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.MinimumThermalResistanceNames);
             Assert.False(regulatedHeatTransferCoefficientsViewModel_2005_SingleFamily.EnergyIndicatorRequirement);
 

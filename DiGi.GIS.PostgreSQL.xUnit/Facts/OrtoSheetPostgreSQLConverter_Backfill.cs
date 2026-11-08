@@ -7,6 +7,7 @@ using Npgsql;
 using NpgsqlTypes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -234,7 +235,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 npgsqlCommand.Parameters.Add(new NpgsqlParameter("max_x", NpgsqlDbType.Double) { Value = boundingBox2D.Max.X });
                 npgsqlCommand.Parameters.Add(new NpgsqlParameter("max_y", NpgsqlDbType.Double) { Value = boundingBox2D.Max.Y });
                 npgsqlCommand.Parameters.Add(new NpgsqlParameter("object", NpgsqlDbType.Jsonb) { Value = ortoDatas.ToJsonObject()!.ToJsonString() });
-                return System.Convert.ToInt64(await npgsqlCommand.ExecuteScalarAsync());
+                return System.Convert.ToInt64(await npgsqlCommand.ExecuteScalarAsync(), CultureInfo.CurrentCulture);
             }
 
             async Task<GIS.Classes.OrtoDatas> ReadAsync(long id)

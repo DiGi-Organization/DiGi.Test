@@ -11,7 +11,7 @@ namespace DiGi.Scripting.CSharp.xUnit
         [Fact]
         public void VariableType()
         {
-            VariableType variableType_1 = new VariableType("Test", typeof(int));
+            VariableType variableType_1 = new("Test", typeof(int));
 
             string? json_1 = variableType_1.ToSystem_String();
             Assert.NotNull(json_1);
