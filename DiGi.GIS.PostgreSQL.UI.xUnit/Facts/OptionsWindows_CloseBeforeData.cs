@@ -57,6 +57,20 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             AssertCloseBeforeData(closeBeforeDataResult, "Reading terrain point densities...");
         }
 
+        /// <summary>
+        /// Verifies that closing the acquisition backfill options window before its coverage arrives cancels the read, hides the progress bar and leaves the county list untouched (<c>Coding - WPF Deferred Loading.md</c> §6, DiGi.GIS.PostgreSQL#134).
+        /// </summary>
+        [Fact]
+        public void PostgreSQLOrtoDatasAcquisitionUpdateOptionsWindow_CloseBeforeData()
+        {
+            CloseBeforeDataResult closeBeforeDataResult = CloseBeforeData<Dictionary<int, OrtoDataAcquisitionCoverageResult>>(
+                xAsync => new PostgreSQLOrtoDatasAcquisitionUpdateOptionsWindow(new PostgreSQLOrtoDatasAcquisitionUpdateOptions(), CloseBeforeDataCounties(), xAsync),
+                "ProgressBar_Coverage",
+                "Label_Coverage");
+
+            AssertCloseBeforeData(closeBeforeDataResult, "Reading acquisition-date coverage...");
+        }
+
         private sealed record CloseBeforeDataResult(Exception? Exception, Visibility Visibility_Before, bool Cancelled, Visibility Visibility_After, List<string?> Texts_Before, List<string?> Texts_After, string? Status_After);
 
         private static List<AdministrativeAreal2DReference> CloseBeforeDataCounties()
