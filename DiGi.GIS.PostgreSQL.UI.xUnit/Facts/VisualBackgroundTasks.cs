@@ -29,7 +29,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             Assert.NotNull(visualBackgroundTasks_NullManagers_Client);
             Assert.Empty(visualBackgroundTasks_NullManagers_Client);
 
-            List<IVisualBackgroundTask>? visualBackgroundTasks_NullManagers_Both = Create.VisualBackgroundTasks(null, null, null, Mode.ServerAndCient);
+            List<IVisualBackgroundTask>? visualBackgroundTasks_NullManagers_Both = Create.VisualBackgroundTasks(null, null, null, Mode.ServerAndClient);
             Assert.NotNull(visualBackgroundTasks_NullManagers_Both);
             Assert.Empty(visualBackgroundTasks_NullManagers_Both);
 
@@ -84,7 +84,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 Assert.DoesNotContain(visualBackgroundTasks_Server, x => x.TypeName == typeof(UIYOLOTrainingTask).Name);
 
                 // Without a manager there is nothing to read the counties with, so the row must not be offered at all.
-                List<IVisualBackgroundTask>? visualBackgroundTasks_NoManager = Create.VisualBackgroundTasks(new GISPostgreSQLConverterManager(), null, null, Mode.ServerAndCient, path_ConsoleApp);
+                List<IVisualBackgroundTask>? visualBackgroundTasks_NoManager = Create.VisualBackgroundTasks(new GISPostgreSQLConverterManager(), null, null, Mode.ServerAndClient, path_ConsoleApp);
                 Assert.NotNull(visualBackgroundTasks_NoManager);
                 Assert.DoesNotContain(visualBackgroundTasks_NoManager, x => x.TypeName == typeof(UIYearBuiltPredictionsTask).Name);
                 Assert.DoesNotContain(visualBackgroundTasks_NoManager, x => x.TypeName == typeof(UIYOLOTrainingTask).Name);
@@ -161,7 +161,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             Assert.DoesNotContain(visualBackgroundTasks_Client, x => x.TypeName == typeof(UIPostgreSQLBuildingDataExternalComponentsUpdateTask).Name);
 
             // Without a converter manager there is nothing to read the stored models with, so the row must not be offered at all.
-            List<IVisualBackgroundTask>? visualBackgroundTasks_NoManager = Create.VisualBackgroundTasks(null, null, null, Mode.ServerAndCient);
+            List<IVisualBackgroundTask>? visualBackgroundTasks_NoManager = Create.VisualBackgroundTasks(null, null, null, Mode.ServerAndClient);
             Assert.NotNull(visualBackgroundTasks_NoManager);
             Assert.Empty(visualBackgroundTasks_NoManager);
         }
