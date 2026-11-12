@@ -16,7 +16,8 @@ namespace DiGi.GIS.WebAPI.xUnit
     {
         /// <summary>
         /// Walks one annotator through a scratch sample on the throwaway main test database through <c>gis/buildingshape</c> (DiGi.GIS.WebAPI#80), checking the wire bodies the labelling page relies on.
-        /// <para><c>nextsample</c> answers <c>SampleKey</c>, <c>Ordinal</c>, <c>CountyId</c>, <c>Reference</c> and <c>Building2D</c> - null here, because the scratch references hold no footprint - and never <c>SolverShape</c>; <c>afterordinal</c> moves past a skipped item. A label is stamped with the token's e-mail, <c>progress</c> answers <c>{ Labelled, Total }</c>, <c>labels</c> and <c>sampleitems</c> answer DiGi JSON that reads back as <see cref="BuildingShapeLabel"/> and <see cref="BuildingShapeSampleItem"/>, a label outside the sample answers 400, and loading the existing sample key answers 409 before any footprint is read. The fact writes scratch rows under a guid-based <c>xunit-building-shape-api-</c> key and removes them before and after. Medium test (a live database server).</para>
+        /// <para><c>nextsample</c> answers <c>SampleKey</c>, <c>Ordinal</c>, <c>CountyId</c>, <c>Reference</c> and <c>Building2D</c> - null here, because the scratch references hold no footprint - and never <c>SolverShape</c>; <c>afterordinal</c> moves past a skipped item. A label is stamped with the token's e-mail, <c>progress</c> answers <c>{ Labelled, Total }</c>, <c>labels</c> and <c>sampleitems</c> answer DiGi JSON that reads back as <see cref="BuildingShapeLabel"/> and <see cref="BuildingShapeSampleItem"/>, a label outside the sample answers 400, and loading the existing sample key answers 409 before any footprint is read. The fact writes scratch rows under a guid-based <c>xunit-building-shape-api-</c> key and removes them before and after.</para>
+        /// <para>Medium test (0.4 s, a live database server): runs when DIGI_TEST_MAX_DURATION is Medium (the default) or Long.</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task BuildingShapeController_TestDatabase()
@@ -48,10 +49,10 @@ namespace DiGi.GIS.WebAPI.xUnit
                 ]));
 
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingShapeController controller = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true, email: email, connectionData_Main: connectionData_Main);
+                BuildingShapeController buildingShapeController = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true, email: email, connectionData_Main: connectionData_Main);
 
                 // The next item carries the identity and the footprint slot, never the solver shape.
-                JsonObject jsonObject_Next = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<ContentResult>(await controller.NextSampleAsync(sampleKey)).Content!));
+                JsonObject jsonObject_Next = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<ContentResult>(await buildingShapeController.NextSampleAsync(sampleKey)).Content!));
                 Assert.Equal(sampleKey, (string?)jsonObject_Next["SampleKey"]);
                 Assert.Equal(0, (int?)jsonObject_Next["Ordinal"]);
                 Assert.Equal(countyId, (int?)jsonObject_Next["CountyId"]);
@@ -61,35 +62,35 @@ namespace DiGi.GIS.WebAPI.xUnit
                 Assert.False(jsonObject_Next.ContainsKey("SolverShape"));
 
                 // Skip: after ordinal 0 the next item is ordinal 1.
-                JsonObject jsonObject_Skipped = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<ContentResult>(await controller.NextSampleAsync(sampleKey, afterOrdinal: 0)).Content!));
+                JsonObject jsonObject_Skipped = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<ContentResult>(await buildingShapeController.NextSampleAsync(sampleKey, afterOrdinal: 0)).Content!));
                 Assert.Equal(1, (int?)jsonObject_Skipped["Ordinal"]);
 
                 // Label the first item; progress moves and the next item is ordinal 1.
-                Assert.IsType<OkResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = sampleKey, CountyId = countyId, Reference = "XUNIT-API-SHAPE-0", Shape = (short)BuildingShape.L, Note = "notch" }));
+                Assert.IsType<OkResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = sampleKey, CountyId = countyId, Reference = "XUNIT-API-SHAPE-0", Shape = (short)BuildingShape.L, Note = "notch" }));
 
-                JsonObject jsonObject_Progress = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<ContentResult>(await controller.ProgressAsync(sampleKey)).Content!));
+                JsonObject jsonObject_Progress = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<ContentResult>(await buildingShapeController.ProgressAsync(sampleKey)).Content!));
                 Assert.Equal(1, (int?)jsonObject_Progress["Labelled"]);
                 Assert.Equal(2, (int?)jsonObject_Progress["Total"]);
 
-                JsonObject jsonObject_Next_2 = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<ContentResult>(await controller.NextSampleAsync(sampleKey)).Content!));
+                JsonObject jsonObject_Next_2 = Assert.IsType<JsonObject>(JsonNode.Parse(Assert.IsType<ContentResult>(await buildingShapeController.NextSampleAsync(sampleKey)).Content!));
                 Assert.Equal(1, (int?)jsonObject_Next_2["Ordinal"]);
 
                 // A label outside the sample is refused.
-                Assert.IsType<BadRequestObjectResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = sampleKey, CountyId = countyId, Reference = "XUNIT-API-SHAPE-OUTSIDE", Shape = 4 }));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = sampleKey, CountyId = countyId, Reference = "XUNIT-API-SHAPE-OUTSIDE", Shape = 4 }));
 
                 // The exports read back as DiGi objects; the interpreter is the token's e-mail.
-                List<BuildingShapeLabel>? buildingShapeLabels = Core.Convert.ToDiGi<BuildingShapeLabel>(Assert.IsType<ContentResult>(await controller.LabelsAsync(sampleKey)).Content);
+                List<BuildingShapeLabel>? buildingShapeLabels = Core.Convert.ToDiGi<BuildingShapeLabel>(Assert.IsType<ContentResult>(await buildingShapeController.LabelsAsync(sampleKey)).Content);
                 BuildingShapeLabel buildingShapeLabel = Assert.Single(buildingShapeLabels!);
                 Assert.Equal(email, buildingShapeLabel.Interpreter);
                 Assert.Equal(BuildingShape.L, buildingShapeLabel.BuildingShape);
                 Assert.Equal("notch", buildingShapeLabel.Note);
 
-                List<BuildingShapeSampleItem>? buildingShapeSampleItems = Core.Convert.ToDiGi<BuildingShapeSampleItem>(Assert.IsType<ContentResult>(await controller.SampleItemsAsync(sampleKey)).Content);
+                List<BuildingShapeSampleItem>? buildingShapeSampleItems = Core.Convert.ToDiGi<BuildingShapeSampleItem>(Assert.IsType<ContentResult>(await buildingShapeController.SampleItemsAsync(sampleKey)).Content);
                 Assert.NotNull(buildingShapeSampleItems);
                 Assert.Equal([BuildingShape.T, BuildingShape.Square], buildingShapeSampleItems.Select(x => x.SolverShape));
 
                 // Loading an existing key is refused before any footprint is read.
-                Assert.IsType<ConflictObjectResult>(await controller.CreateSampleAsync(sampleKey, [countyId], 10, 12, key: buildingShapeKey));
+                Assert.IsType<ConflictObjectResult>(await buildingShapeController.CreateSampleAsync(sampleKey, [countyId], 10, 12, key: buildingShapeKey));
             }
             finally
             {

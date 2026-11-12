@@ -15,14 +15,17 @@ namespace DiGi.GIS.WebAPI.xUnit
 
         /// <summary>
         /// Writes a synthetic GIS Web API configuration for the building shape controller facts: the <see cref="GISWebAPIConfigurationFileWatcher.AllowUpdateBuildingShapeLabel"/> gate, and either the open escape hatch or an enforced access key (<see cref="buildingShapeKey"/>).
-        /// <para>The watcher reads plain Name=Value lines and its constructor throws when the file is missing, so the keys have to exist on disk before the controller is built.</para>
+        /// <para>The watcher reads plain Name=Value lines and its constructor throws when the file is missing, so the keys have to exist on disk before the controller is built. The file is written to the git-ignored reports directory (never a real conf, Coding - WebAPI Simple Authorization section 5) under a unique name, so parallel facts never share one.</para>
         /// </summary>
         /// <param name="allowUpdateBuildingShapeLabel">The value written for the labelling gate.</param>
         /// <param name="open">Whether the configuration sets <c>Open=true</c>; when false, key enforcement is enabled with <see cref="buildingShapeKey"/>.</param>
-        /// <returns>The path of the temporary configuration file; the caller deletes it.</returns>
+        /// <returns>The path of the synthetic configuration file; the caller deletes it.</returns>
         private static string BuildingShapeConfigurationFilePath(bool allowUpdateBuildingShapeLabel = true, bool open = true)
         {
-            string result = System.IO.Path.GetTempFileName();
+            string? directory = Core.xUnit.Query.ReportsDirectory(System.Reflection.Assembly.GetExecutingAssembly());
+            Assert.NotNull(directory);
+
+            string result = System.IO.Path.Combine(directory, $"BuildingShape_{System.Guid.NewGuid():N}.conf");
 
             System.IO.File.WriteAllLines(result,
             [
@@ -51,23 +54,23 @@ namespace DiGi.GIS.WebAPI.xUnit
             _ = securityKeyManager.Generate();
             TokenRevocationStore tokenRevocationStore = new();
 
-            DefaultHttpContext httpContext = new();
+            DefaultHttpContext defaultHttpContext = new();
             if (supplyToken)
             {
                 string token = rawToken ?? CreateToken(securityKeyManager, email);
-                httpContext.Request.Headers.Authorization = "Bearer " + token;
+                defaultHttpContext.Request.Headers.Authorization = "Bearer " + token;
             }
 
-            BuildingShapeController controller = new(
+            BuildingShapeController buildingShapeController = new(
                 gISWebAPIConfigurationFileWatcher,
                 new PostgreSQL.Classes.Building2DPostgreSQLConverter(connectionData_Main),
                 new PostgreSQL.Classes.BuildingShapePostgreSQLConverter(connectionData_Main),
                 securityKeyManager,
                 tokenRevocationStore);
 
-            controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
+            buildingShapeController.ControllerContext = new ControllerContext { HttpContext = defaultHttpContext };
 
-            return controller;
+            return buildingShapeController;
         }
     }
 }

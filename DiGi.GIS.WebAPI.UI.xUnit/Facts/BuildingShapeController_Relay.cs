@@ -22,22 +22,22 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
         /// <returns>The controller.</returns>
         private static BuildingShapeController CreateBuildingShapeController(HttpMessageHandler httpMessageHandler, bool signedIn, string? body = null)
         {
-            BuildingShapeController controller = new(new HandlerHttpClientFactory(httpMessageHandler));
+            BuildingShapeController buildingShapeController = new(new HandlerHttpClientFactory(httpMessageHandler));
 
-            DefaultHttpContext httpContext = new();
+            DefaultHttpContext defaultHttpContext = new();
             if (signedIn)
             {
-                httpContext.Request.Headers["Cookie"] = $"{DiGi.GIS.WebAPI.UI.Constants.Default.UserTokenCookieName}=test-token";
+                defaultHttpContext.Request.Headers["Cookie"] = $"{DiGi.GIS.WebAPI.UI.Constants.Default.UserTokenCookieName}=test-token";
             }
 
             if (body is not null)
             {
-                httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+                defaultHttpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
             }
 
-            controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
+            buildingShapeController.ControllerContext = new ControllerContext { HttpContext = defaultHttpContext };
 
-            return controller;
+            return buildingShapeController;
         }
 
         /// <summary>
@@ -47,14 +47,14 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
         public async Task BuildingShapeController_Relay_Anonymous()
         {
             ScriptedWebApi scriptedWebApi = new((request, body) => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") });
-            BuildingShapeController controller = CreateBuildingShapeController(scriptedWebApi, signedIn: false, body: "{\"Shape\":1}");
+            BuildingShapeController buildingShapeController = CreateBuildingShapeController(scriptedWebApi, signedIn: false, body: "{\"Shape\":1}");
 
-            Assert.IsType<UnauthorizedResult>(await controller.GetNextAsync(null));
-            Assert.IsType<UnauthorizedResult>(await controller.GetProgressAsync());
-            Assert.IsType<UnauthorizedResult>(await controller.GetLabelsAsync());
-            Assert.IsType<UnauthorizedResult>(await controller.GetSampleItemsAsync());
-            Assert.IsType<UnauthorizedResult>(await controller.SetLabelAsync());
-            Assert.IsType<UnauthorizedResult>(await controller.GetImageAsync(1465, "REF"));
+            Assert.IsType<UnauthorizedResult>(await buildingShapeController.GetNextAsync(null));
+            Assert.IsType<UnauthorizedResult>(await buildingShapeController.GetProgressAsync());
+            Assert.IsType<UnauthorizedResult>(await buildingShapeController.GetLabelsAsync());
+            Assert.IsType<UnauthorizedResult>(await buildingShapeController.GetSampleItemsAsync());
+            Assert.IsType<UnauthorizedResult>(await buildingShapeController.SetLabelAsync());
+            Assert.IsType<UnauthorizedResult>(await buildingShapeController.GetImageAsync(1465, "REF"));
 
             Assert.Empty(scriptedWebApi.Requests);
         }
@@ -68,9 +68,9 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
             const string json = "{\"SampleKey\":\"gis12-2026\",\"Ordinal\":3,\"CountyId\":1465,\"Reference\":\"REF\",\"Building2D\":null}";
 
             ScriptedWebApi scriptedWebApi = new((request, body) => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) });
-            BuildingShapeController controller = CreateBuildingShapeController(scriptedWebApi, signedIn: true);
+            BuildingShapeController buildingShapeController = CreateBuildingShapeController(scriptedWebApi, signedIn: true);
 
-            ContentResult contentResult = Assert.IsType<ContentResult>(await controller.GetNextAsync(2));
+            ContentResult contentResult = Assert.IsType<ContentResult>(await buildingShapeController.GetNextAsync(2));
             Assert.Equal(json, contentResult.Content);
 
             (HttpMethod method, Uri? requestUri, _) = Assert.Single(scriptedWebApi.Requests);
@@ -131,6 +131,7 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
 
         /// <summary>
         /// Verifies the orthophoto relay (DiGi.GIS.WebAPI.UI#86): the photo years are read first and the newest one is fetched, with the reference fallback; a footprint without photo years answers 404 without an image request, and a missing reference is 400.
+        /// <para>A failure is never read as "no photo" (Coding - WebAPI Contracts section 3): an unreachable service is 503 on either read, a years body that is not a year list and a photo without bytes are 502, an upstream fault status is mirrored, and only an upstream 404 of the photo is 404.</para>
         /// </summary>
         [Fact]
         public async Task BuildingShapeController_Relay_Image()
@@ -163,6 +164,34 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
             Assert.Single(scriptedWebApi_NoYears.Requests);
 
             Assert.IsType<BadRequestResult>(await CreateBuildingShapeController(scriptedWebApi_NoYears, signedIn: true).GetImageAsync(1465, " "));
+
+            // The years read: unreachable, an answered fault and an unreadable body each keep their own status.
+            ScriptedWebApi scriptedWebApi_Unreachable = new((request, body) => throw new HttpRequestException("The service is unreachable."));
+            Assert.Equal(503, Assert.IsType<StatusCodeResult>(await CreateBuildingShapeController(scriptedWebApi_Unreachable, signedIn: true).GetImageAsync(1465, "REF")).StatusCode);
+
+            ScriptedWebApi scriptedWebApi_YearsFault = new((request, body) => new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(string.Empty) });
+            Assert.Equal(500, Assert.IsType<StatusCodeResult>(await CreateBuildingShapeController(scriptedWebApi_YearsFault, signedIn: true).GetImageAsync(1465, "REF")).StatusCode);
+
+            ScriptedWebApi scriptedWebApi_YearsGarbled = new((request, body) => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"not\":\"a list\"}") });
+            Assert.Equal(502, Assert.IsType<StatusCodeResult>(await CreateBuildingShapeController(scriptedWebApi_YearsGarbled, signedIn: true).GetImageAsync(1465, "REF")).StatusCode);
+
+            // The photo read: only its 404 is "no photo".
+            ScriptedWebApi ScriptedImage(HttpStatusCode httpStatusCode, byte[] bytes_Image)
+            {
+                return new ScriptedWebApi((request, body) =>
+                {
+                    if ((request.RequestUri?.AbsolutePath ?? string.Empty).EndsWith("/yearsbyreference", StringComparison.Ordinal))
+                    {
+                        return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("[2023]") };
+                    }
+
+                    return new HttpResponseMessage(httpStatusCode) { Content = new ByteArrayContent(bytes_Image) };
+                });
+            }
+
+            Assert.IsType<NotFoundResult>(await CreateBuildingShapeController(ScriptedImage(HttpStatusCode.NotFound, []), signedIn: true).GetImageAsync(1465, "REF"));
+            Assert.Equal(500, Assert.IsType<StatusCodeResult>(await CreateBuildingShapeController(ScriptedImage(HttpStatusCode.InternalServerError, []), signedIn: true).GetImageAsync(1465, "REF")).StatusCode);
+            Assert.Equal(502, Assert.IsType<StatusCodeResult>(await CreateBuildingShapeController(ScriptedImage(HttpStatusCode.OK, []), signedIn: true).GetImageAsync(1465, "REF")).StatusCode);
         }
     }
 }

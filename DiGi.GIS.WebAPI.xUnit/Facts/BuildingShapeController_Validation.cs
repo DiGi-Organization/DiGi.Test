@@ -7,7 +7,8 @@ namespace DiGi.GIS.WebAPI.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Pins the labelling gate of <c>gis/buildingshape</c> (DiGi.GIS.WebAPI#80): with <c>AllowUpdateBuildingShapeLabel=false</c> a fully valid label body and an authorized sample load both answer the gate's bare 400 (a message-less <see cref="BadRequestResult"/>), so the flag fires before body validation and before any store read.
+        /// Pins the labelling gate of <c>gis/buildingshape</c> (DiGi.GIS.WebAPI#80): with <c>AllowUpdateBuildingShapeLabel=false</c> a fully valid label body answers the gate's bare 400 (a message-less <see cref="BadRequestResult"/>), so the flag fires before body validation and before any store read.
+        /// <para>The sample load, authorized by a valid key, answers the same bodyless 401 as the key gate (Coding - WebAPI Simple Authorization section 3): the label route keeps 400 because a 401 on a session route reads as an expired session.</para>
         /// </summary>
         [Fact]
         public async Task BuildingShapeController_Gate()
@@ -17,13 +18,13 @@ namespace DiGi.GIS.WebAPI.xUnit
             try
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingShapeController controller = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true);
+                BuildingShapeController buildingShapeController = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true);
 
                 Classes.Parameter.BuildingShapeLabelParameter buildingShapeLabelParameter = new() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF", Shape = 4 };
-                Assert.IsType<BadRequestResult>(await controller.SetLabelAsync(buildingShapeLabelParameter));
-                Assert.IsType<BadRequestResult>(await controller.SetLabelAsync(null));
+                Assert.IsType<BadRequestResult>(await buildingShapeController.SetLabelAsync(buildingShapeLabelParameter));
+                Assert.IsType<BadRequestResult>(await buildingShapeController.SetLabelAsync(null));
 
-                Assert.IsType<BadRequestResult>(await controller.CreateSampleAsync("gis12-2026", [1465], 500, 12, key: buildingShapeKey));
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController.CreateSampleAsync("gis12-2026", [1465], 500, 12, key: buildingShapeKey));
             }
             finally
             {
@@ -43,34 +44,34 @@ namespace DiGi.GIS.WebAPI.xUnit
             try
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingShapeController controller = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true);
+                BuildingShapeController buildingShapeController = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true);
 
-                Assert.IsType<BadRequestObjectResult>(await controller.NextSampleAsync(" "));
-                Assert.IsType<BadRequestObjectResult>(await controller.ProgressAsync(null));
-                Assert.IsType<BadRequestObjectResult>(await controller.LabelsAsync(null));
-                Assert.IsType<BadRequestObjectResult>(await controller.SampleItemsAsync(null));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.NextSampleAsync(" "));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.ProgressAsync(null));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.LabelsAsync(null));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SampleItemsAsync(null));
 
-                Assert.IsType<BadRequestObjectResult>(await controller.SetLabelAsync(null));
-                Assert.IsType<BadRequestObjectResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { CountyId = 1465, Reference = "REF", Shape = 4 }));
-                Assert.IsType<BadRequestObjectResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", Reference = "REF", Shape = 4 }));
-                Assert.IsType<BadRequestObjectResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Shape = 4 }));
-                Assert.IsType<BadRequestObjectResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF" }));
-                Assert.IsType<BadRequestObjectResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF", Shape = 99 }));
-                Assert.IsType<BadRequestObjectResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF", Shape = -1 }));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SetLabelAsync(null));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { CountyId = 1465, Reference = "REF", Shape = 4 }));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", Reference = "REF", Shape = 4 }));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Shape = 4 }));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF" }));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF", Shape = 99 }));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF", Shape = -1 }));
 
-                Assert.IsType<BadRequestObjectResult>(await controller.CreateSampleAsync(null, [1465], 500, 12));
-                Assert.IsType<BadRequestObjectResult>(await controller.CreateSampleAsync("gis12-2026", [], 500, 12));
-                Assert.IsType<BadRequestObjectResult>(await controller.CreateSampleAsync("gis12-2026", [1465], 0, 12));
-                Assert.IsType<BadRequestObjectResult>(await controller.CreateSampleAsync("gis12-2026", [1465], 10001, 12));
-                Assert.IsType<BadRequestObjectResult>(await controller.CreateSampleAsync("gis12-2026", [1465], 500, null));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.CreateSampleAsync(null, [1465], 500, 12));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.CreateSampleAsync("gis12-2026", [], 500, 12));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.CreateSampleAsync("gis12-2026", [1465], 0, 12));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.CreateSampleAsync("gis12-2026", [1465], 10001, 12));
+                Assert.IsType<BadRequestObjectResult>(await buildingShapeController.CreateSampleAsync("gis12-2026", [1465], 500, null));
 
                 // No database: nothing to label is a 404, but an unreadable count, an unstored label and an unreadable export are failures.
-                Assert.IsType<NotFoundResult>(await controller.NextSampleAsync("gis12-2026"));
-                Assert.Equal(500, Assert.IsType<ObjectResult>(await controller.ProgressAsync("gis12-2026")).StatusCode);
-                Assert.Equal(500, Assert.IsType<ObjectResult>(await controller.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF", Shape = 0 })).StatusCode);
-                Assert.Equal(500, Assert.IsType<ObjectResult>(await controller.LabelsAsync("gis12-2026")).StatusCode);
-                Assert.Equal(500, Assert.IsType<ObjectResult>(await controller.SampleItemsAsync("gis12-2026")).StatusCode);
-                Assert.Equal(500, Assert.IsType<ObjectResult>(await controller.CreateSampleAsync("gis12-2026", [1465], 500, 12)).StatusCode);
+                Assert.IsType<NotFoundResult>(await buildingShapeController.NextSampleAsync("gis12-2026"));
+                Assert.Equal(500, Assert.IsType<ObjectResult>(await buildingShapeController.ProgressAsync("gis12-2026")).StatusCode);
+                Assert.Equal(500, Assert.IsType<ObjectResult>(await buildingShapeController.SetLabelAsync(new Classes.Parameter.BuildingShapeLabelParameter() { SampleKey = "gis12-2026", CountyId = 1465, Reference = "REF", Shape = 0 })).StatusCode);
+                Assert.Equal(500, Assert.IsType<ObjectResult>(await buildingShapeController.LabelsAsync("gis12-2026")).StatusCode);
+                Assert.Equal(500, Assert.IsType<ObjectResult>(await buildingShapeController.SampleItemsAsync("gis12-2026")).StatusCode);
+                Assert.Equal(500, Assert.IsType<ObjectResult>(await buildingShapeController.CreateSampleAsync("gis12-2026", [1465], 500, 12)).StatusCode);
             }
             finally
             {

@@ -19,21 +19,21 @@ namespace DiGi.GIS.WebAPI.xUnit
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
 
-                BuildingShapeController controller = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: false);
+                BuildingShapeController buildingShapeController = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: false);
 
-                Assert.IsType<UnauthorizedResult>(await controller.NextSampleAsync(null));
-                Assert.IsType<UnauthorizedResult>(await controller.ProgressAsync(null));
-                Assert.IsType<UnauthorizedResult>(await controller.SetLabelAsync(null));
-                Assert.IsType<UnauthorizedResult>(await controller.LabelsAsync(null));
-                Assert.IsType<UnauthorizedResult>(await controller.SampleItemsAsync(null));
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController.NextSampleAsync(null));
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController.ProgressAsync(null));
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController.SetLabelAsync(null));
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController.LabelsAsync(null));
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController.SampleItemsAsync(null));
 
-                BuildingShapeController controller_Malformed = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true, rawToken: "not-a-valid-token");
-                Assert.IsType<UnauthorizedResult>(await controller_Malformed.NextSampleAsync("gis12-2026"));
+                BuildingShapeController buildingShapeController_Malformed = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true, rawToken: "not-a-valid-token");
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController_Malformed.NextSampleAsync("gis12-2026"));
 
                 // The sample load is key-authorized: a valid session is not enough.
-                BuildingShapeController controller_Token = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true);
-                Assert.IsType<UnauthorizedResult>(await controller_Token.CreateSampleAsync("gis12-2026", [1465], 500, 12));
-                Assert.IsType<UnauthorizedResult>(await controller_Token.CreateSampleAsync("gis12-2026", [1465], 500, 12, key: "wrong-key"));
+                BuildingShapeController buildingShapeController_Token = CreateBuildingShapeController(gISWebAPIConfigurationFileWatcher, supplyToken: true);
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController_Token.CreateSampleAsync("gis12-2026", [1465], 500, 12));
+                Assert.IsType<UnauthorizedResult>(await buildingShapeController_Token.CreateSampleAsync("gis12-2026", [1465], 500, 12, key: "wrong-key"));
             }
             finally
             {
