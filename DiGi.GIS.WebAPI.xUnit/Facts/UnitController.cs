@@ -21,7 +21,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             try
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                UnitController controller = new(gISWebAPIConfigurationFileWatcher, new UnitPostgreSQLConverter(null), new AdministrativeAreal2DPostgreSQLConverter(null));
+                UnitController controller = new(gISWebAPIConfigurationFileWatcher, new UnitPostgreSQLConverter(null), new AdministrativeAreal2DPostgreSQLConverter(null), new StatisticalDataCollectionPostgreSQLConverter(null));
 
                 Assert.IsType<BadRequestResult>(await controller.GetItemByIdAsync(null));
                 Assert.IsType<BadRequestResult>(await controller.GetItemByIdAsync(string.Empty));
@@ -30,6 +30,10 @@ namespace DiGi.GIS.WebAPI.xUnit
                 Assert.IsType<BadRequestResult>(await controller.GetMatchAsync(null, AdministrativeArealType.Undefined, null));
                 Assert.IsType<BadRequestResult>(await controller.GetComplianceAsync(null));
                 Assert.IsType<BadRequestResult>(await controller.GetComplianceAsync(AdministrativeArealType.Undefined));
+                Assert.IsType<BadRequestResult>(await controller.GetStatisticalDataCollectionAsync(null, null, null));
+                Assert.IsType<BadRequestResult>(await controller.GetStatisticalDataCollectionAsync(null, AdministrativeArealType.Undefined, null));
+                Assert.IsType<BadRequestResult>(await controller.GetStatisticalDataCollectionAsync(null, null, 0));
+                Assert.IsType<BadRequestResult>(await controller.GetStatisticalDataCollectionAsync(null, null, 1, commandTimeout: -1));
             }
             finally
             {
@@ -53,7 +57,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 ]);
 
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                UnitController controller = new(gISWebAPIConfigurationFileWatcher, new UnitPostgreSQLConverter(null), new AdministrativeAreal2DPostgreSQLConverter(null));
+                UnitController controller = new(gISWebAPIConfigurationFileWatcher, new UnitPostgreSQLConverter(null), new AdministrativeAreal2DPostgreSQLConverter(null), new StatisticalDataCollectionPostgreSQLConverter(null));
 
                 Assert.IsType<UnauthorizedResult>(await controller.UpdateItemsAsync(new JsonArray(), "code"));
             }

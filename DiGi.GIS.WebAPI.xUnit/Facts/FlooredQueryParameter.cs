@@ -19,6 +19,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             (Type Type, string Method, string Parameter, double Minimum, bool Exclusive)[] parameters =
             [
                 // commandTimeout: floor 0 - the action guards commandTimeout < 0 (a value of 0 legitimately disables the timeout).
+                (typeof(AddressPointController), nameof(AddressPointController.GetCountByCountyIdAsync), "commandTimeout", 0, false),
                 (typeof(BuildingController), nameof(BuildingController.GetCountAsync), "commandTimeout", 0, false),
                 (typeof(Building2DController), nameof(Building2DController.GetCountyPartMismatchesAsync), "commandTimeout", 0, false),
                 (typeof(Building2DController), nameof(Building2DController.GetEstimatedCountsByCountyIdsAsync), "commandTimeout", 0, false),
@@ -51,6 +52,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                 (typeof(BuildingModelController), nameof(BuildingModelController.GetLatestCreatedAtByCountyIdAsync), "commandTimeout", 0, false),
                 (typeof(OccupancyDataController), nameof(OccupancyDataController.GetBuilding2DDuplicateReferencesAsync), "commandTimeout", 0, false),
                 (typeof(OccupancyDataController), nameof(OccupancyDataController.GetBuilding2DDuplicatesCountAsync), "commandTimeout", 0, false),
+                (typeof(OccupancyDataController), nameof(OccupancyDataController.GetBuilding2DSnapshotByCountyIdAsync), "commandTimeout", 0, false),
+                (typeof(OccupancyDataController), nameof(OccupancyDataController.GetBuilding2DSubdivisionSnapshotByCountyIdAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetRandomBuilding2DReferenceAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetCountByCountyIdAsync), "commandTimeout", 0, false),
                 (typeof(TerrainController), nameof(TerrainController.GetCountByCountyIdAsync), "commandTimeout", 0, false),
@@ -65,6 +68,11 @@ namespace DiGi.GIS.WebAPI.xUnit
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetEstimatedCoverageFactorAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetEstimatedCoverageFactorsAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetSummariesByCountyIdsAsync), "commandTimeout", 0, false),
+                (typeof(OrtoDatasController), nameof(OrtoDatasController.GetAcquisitionCoveragesByCountyIdsAsync), "commandTimeout", 0, false),
+                (typeof(OpenBuildingController), nameof(OpenBuildingController.GetDatasetsAsync), "commandTimeout", 0, false),
+                (typeof(OpenBuildingController), nameof(OpenBuildingController.GetSummariesByCountyIdsAsync), "commandTimeout", 0, false),
+                (typeof(OrtoAreaController), nameof(OrtoAreaController.ValidationSummaryAsync), "commandTimeout", 0, false),
+                (typeof(UnitController), nameof(UnitController.GetStatisticalDataCollectionAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetQueueSummariesByCountyIdsAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetSubdivisionLinksByCountyIdAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.NextBuilding2DReferencesAsync), "commandTimeout", 0, false),
@@ -123,7 +131,7 @@ namespace DiGi.GIS.WebAPI.xUnit
         }
 
         /// <summary>
-        /// Asserts every <c>commandTimeout</c> parameter on every action of every gis controller carries <see cref="MinimumAttribute"/>(0), and that there are exactly fifty-nine of them - fifty after DiGi-Organization/DiGi.GIS.WebAPI#48, the five year built maintenance actions of DiGi-Organization/DiGi.GIS.WebAPI#50, the filtered row count of DiGi-Organization/DiGi.GIS.WebAPI#52, the area row count of DiGi-Organization/DiGi.GIS.WebAPI#53, the aggregate summaries batch of DiGi-Organization/DiGi.GIS.WebAPI#56, and the estimated building 2D counts of DiGi-Organization/DiGi.GIS.PostgreSQL.UI#32, each floored.
+        /// Asserts every <c>commandTimeout</c> parameter on every action of every gis controller carries <see cref="MinimumAttribute"/>(0), and that there are exactly sixty-seven of them - fifty after DiGi-Organization/DiGi.GIS.WebAPI#48, the five year built maintenance actions of DiGi-Organization/DiGi.GIS.WebAPI#50, the filtered row count of DiGi-Organization/DiGi.GIS.WebAPI#52, the area row count of DiGi-Organization/DiGi.GIS.WebAPI#53, the aggregate summaries batch of DiGi-Organization/DiGi.GIS.WebAPI#56, the estimated building 2D counts of DiGi-Organization/DiGi.GIS.PostgreSQL.UI#32, the address point count of DiGi-Organization/DiGi.GIS.WebAPI#72, the two occupancy snapshots of DiGi-Organization/DiGi.GIS.WebAPI#73 and DiGi-Organization/DiGi.GIS.PostgreSQL#108, the acquisition coverage batch of DiGi-Organization/DiGi.GIS.PostgreSQL#134, and the four paper 01 verification reads (open building register and county summaries, test-area validation summary, BDL values), each floored.
         /// <para>Derived from the assembly rather than from a named list, so a controller added later is swept in instead of left out: the named facts pin the endpoints DiGi-Organization/DiGi.GIS.WebAPI#48 changed, while this one fails on the next one added - a new action whose timeout could reach the database negative, with no floor and no recorded decision to omit one. The count is a tripwire, not a target: it is what forces a decision either way (DiGi-Organization/DiGi.GIS.WebAPI#48).</para>
         /// </summary>
         [Fact]
@@ -164,7 +172,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 }
             }
 
-            Assert.Equal(59, count);
+            Assert.Equal(67, count);
         }
 
         /// <summary>
