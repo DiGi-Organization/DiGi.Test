@@ -4,6 +4,7 @@ using DiGi.Core.Classes;
 using DiGi.EPW.Classes;
 using DiGi.Geometry.Planar.Classes;
 using DiGi.Geometry.Spatial.Classes;
+using DiGi.GIS.Analytical.Solar;
 using DiGi.Solar.Classes;
 using System;
 using System.Collections.Generic;
@@ -140,10 +141,10 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
         /// <summary>
         /// The solver options the controller solves with.
         /// </summary>
-        /// <returns>New options at <see cref="Constants.Default.SolarAngleTolerance"/>.</returns>
+        /// <returns>New options from <see cref="GIS.Analytical.Solar.Create.SolarShadingSolverOptions"/>, the factory the controller calls.</returns>
         private static ShadingSolverOptions SolarFixture_ShadingSolverOptions()
         {
-            return new ShadingSolverOptions() { AngleTolerance = Constants.Default.SolarAngleTolerance };
+            return GIS.Analytical.Solar.Create.SolarShadingSolverOptions();
         }
 
         /// <summary>

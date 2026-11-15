@@ -1,6 +1,7 @@
 using DiGi.Analytical.Building.Classes;
 using DiGi.EPW.Classes;
 using DiGi.Geometry.Spatial.Classes;
+using DiGi.GIS.Analytical.Solar;
 using DiGi.GIS.WebAPI.UI.Classes;
 using DiGi.GIS.WebAPI.UI.Controllers;
 using Microsoft.AspNetCore.WebUtilities;
@@ -61,13 +62,13 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
             List<GIS.Classes.SurfaceSolarRadiation> surfaceSolarRadiations = [];
             foreach (KeyValuePair<string, Vector3D> keyValuePair in normals)
             {
-                surfaceSolarRadiations.Add(new GIS.Classes.SurfaceSolarRadiation(keyValuePair.Key, 20, keyValuePair.Value, 1, 1, 500, 300, 150, 50, 500, 10000, new byte[Constants.Default.SolarReferenceHourCount]));
+                surfaceSolarRadiations.Add(new GIS.Classes.SurfaceSolarRadiation(keyValuePair.Key, 20, keyValuePair.Value, 1, 1, 500, 300, 150, 50, 500, 10000, new byte[GIS.Analytical.Solar.Constants.Default.SolarReferenceHourCount]));
             }
 
             long? buildingModelId = buildingModel.SolarBuildingModelId();
             Assert.NotNull(buildingModelId);
 
-            return new GIS.Classes.BuildingSolarRadiationResult("B7", 1465, buildingModelId.Value, 50, Constants.Default.SolarSolverVersion, GIS.Enums.WeatherSourceType.EPW, weatherSourceId, null, null, "owner@example.com", SolarStoreFixture_StoredAt, surfaceSolarRadiations);
+            return new GIS.Classes.BuildingSolarRadiationResult("B7", 1465, buildingModelId.Value, 50, GIS.Analytical.Solar.Constants.Default.SolarSolverVersion, GIS.Enums.WeatherSourceType.EPW, weatherSourceId, null, null, "owner@example.com", SolarStoreFixture_StoredAt, surfaceSolarRadiations);
         }
 
         /// <summary>

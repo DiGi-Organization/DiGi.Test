@@ -4,6 +4,7 @@ using DiGi.Core.Classes;
 using DiGi.EPW.Classes;
 using DiGi.Geometry.Planar.Classes;
 using DiGi.Geometry.Spatial.Classes;
+using DiGi.GIS.Analytical.Solar;
 using DiGi.GIS.WebAPI.UI.Classes;
 using DiGi.Solar.Classes;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
         /// <summary>
         /// Tests that a caster south of the building shades the south wall and leaves the north wall untouched, by solving the same box twice - alone, and with a 60 m high screen 5 m south of it.
         /// <para>A differential assertion (Coding - Automatic Tests, section 4): the screen is the only difference. It stands behind the north wall's plane, so it can never lie between that wall and the sun, its sky or its ground - the north wall's results must be identical. The south wall loses most of its beam, and since DiGi-Organization/DiGi.GIS.WebAPI.UI#61 also part of its sky diffuse and ground-reflected radiation: the screen blocks part of its sky and, reaching 20 m below ground level, part of its ground. Its open-sky irradiation is unchanged. The screen is added as a shading-only element of the shading model, the kind <c>ToSolar</c> makes of every neighbour.</para>
-        /// <para>Alone, the south wall is unshaded up to the solver's direction grouping: hours whose sun lies within <see cref="Constants.Default.SolarAngleTolerance"/> of each other are solved with one representative direction, so at a grazing hour the representative can fall behind the wall while the hour's own sun is just in front of it, and the box then shades its own wall. Measured, this costs the wall 0.013 of 738 kWh/m²; the bound is 0.1 kWh/m², far below the beam the screen takes.</para>
+        /// <para>Alone, the south wall is unshaded up to the solver's direction grouping: hours whose sun lies within <see cref="GIS.Analytical.Solar.Constants.Default.SolarAngleTolerance"/> of each other are solved with one representative direction, so at a grazing hour the representative can fall behind the wall while the hour's own sun is just in front of it, and the box then shades its own wall. Measured, this costs the wall 0.013 of 738 kWh/m²; the bound is 0.1 kWh/m², far below the beam the screen takes.</para>
         /// <para>Medium test (4.0 s): runs when DIGI_TEST_MAX_DURATION is Medium (the default) or Long.</para>
         /// </summary>
         [MediumFact]

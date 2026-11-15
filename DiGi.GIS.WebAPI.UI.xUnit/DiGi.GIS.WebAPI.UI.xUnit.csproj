@@ -79,6 +79,9 @@
     <Reference Include="DiGi.GIS.Analytical">
       <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.dll</HintPath>
     </Reference>
+    <Reference Include="DiGi.GIS.Analytical.Solar">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.Solar.dll</HintPath>
+    </Reference>
     <Reference Include="DiGi.GIS.PostgreSQL">
       <HintPath>..\..\DiGi.GIS.PostgreSQL\bin\DiGi.GIS.PostgreSQL.dll</HintPath>
     </Reference>

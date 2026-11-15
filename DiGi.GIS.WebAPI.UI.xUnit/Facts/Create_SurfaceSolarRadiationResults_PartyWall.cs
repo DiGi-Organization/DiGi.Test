@@ -1,6 +1,7 @@
 using DiGi.Analytical.Building.Classes;
 using DiGi.EPW.Classes;
 using DiGi.Geometry.Spatial.Classes;
+using DiGi.GIS.Analytical.Solar;
 using DiGi.GIS.WebAPI.UI.Classes;
 using System.Collections.Generic;
 

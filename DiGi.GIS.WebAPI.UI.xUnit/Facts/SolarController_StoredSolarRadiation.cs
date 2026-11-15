@@ -1,5 +1,6 @@
 using DiGi.Analytical.Building.Classes;
 using DiGi.EPW.Classes;
+using DiGi.GIS.Analytical.Solar;
 using DiGi.GIS.WebAPI.UI.Classes;
 using DiGi.GIS.WebAPI.UI.Controllers;
 using DiGi.GIS.WebAPI.UI.ViewModels;
@@ -52,7 +53,7 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
             Assert.Equal(buildingModel.SolarBuildingModelId()!.Value.ToString(CultureInfo.InvariantCulture), query["id"].ToString());
             Assert.Equal("1465", query["countyid"].ToString());
             Assert.Equal(50.0, double.Parse(query["radius"]!, CultureInfo.InvariantCulture));
-            Assert.Equal(Constants.Default.SolarSolverVersion.ToString(CultureInfo.InvariantCulture), query["solverversion"].ToString());
+            Assert.Equal(GIS.Analytical.Solar.Constants.Default.SolarSolverVersion.ToString(CultureInfo.InvariantCulture), query["solverversion"].ToString());
             Assert.False(query.ContainsKey("shadingfactors"));
         }
 
@@ -163,13 +164,13 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
             Assert.Equal(1465, buildingSolarRadiationResult.CountyId);
             Assert.Equal(buildingModel.SolarBuildingModelId(), buildingSolarRadiationResult.BuildingModelId);
             Assert.Equal(Constants.Default.SolarSurroundingRadius, buildingSolarRadiationResult.Radius);
-            Assert.Equal(Constants.Default.SolarSolverVersion, buildingSolarRadiationResult.SolverVersion);
+            Assert.Equal(GIS.Analytical.Solar.Constants.Default.SolarSolverVersion, buildingSolarRadiationResult.SolverVersion);
             Assert.Equal(GIS.Enums.WeatherSourceType.EPW, buildingSolarRadiationResult.WeatherSourceType);
             Assert.Equal(SolarStoreFixture_EPWFileId.ToString(CultureInfo.InvariantCulture), buildingSolarRadiationResult.WeatherSourceId);
             Assert.Null(buildingSolarRadiationResult.UserEmail);
             Assert.Null(buildingSolarRadiationResult.CreatedAt);
             Assert.Equal(5, buildingSolarRadiationResult.SurfaceSolarRadiations!.Count);
-            Assert.All(buildingSolarRadiationResult.SurfaceSolarRadiations, x => Assert.Equal(Constants.Default.SolarReferenceHourCount, x.ShadingFactors?.Length));
+            Assert.All(buildingSolarRadiationResult.SurfaceSolarRadiations, x => Assert.Equal(GIS.Analytical.Solar.Constants.Default.SolarReferenceHourCount, x.ShadingFactors?.Length));
 
             // A refused save never fails the visitor's response.
             ScriptedWebApi scriptedWebApi_Refused = SolarStoreFixture_ScriptedWebApi(buildingModel, ePWFile, null, HttpStatusCode.InternalServerError);

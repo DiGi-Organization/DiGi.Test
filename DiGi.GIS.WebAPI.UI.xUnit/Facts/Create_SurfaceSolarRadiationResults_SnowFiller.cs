@@ -2,6 +2,7 @@ using DiGi.Analytical.Building.Classes;
 using DiGi.EPW;
 using DiGi.EPW.Classes;
 using DiGi.Geometry.Spatial.Classes;
+using DiGi.GIS.Analytical.Solar;
 using DiGi.GIS.WebAPI.UI.Classes;
 using System.Collections.Generic;
 
@@ -32,7 +33,7 @@ namespace DiGi.GIS.WebAPI.UI.xUnit
                     count_Snow++;
                 }
 
-                if (dataRecord.GlobalHorizontalRadiationValue() is float globalHorizontalRadiation && dataRecord.DirectNormalRadiationValue() is not null && dataRecord.DiffuseHorizontalRadiationValue() is not null && Query.SolarReferenceDateTime(dataRecord.DateTime) is not null)
+                if (dataRecord.GlobalHorizontalRadiationValue() is float globalHorizontalRadiation && dataRecord.DirectNormalRadiationValue() is not null && dataRecord.DiffuseHorizontalRadiationValue() is not null && GIS.Analytical.Solar.Query.SolarReferenceDateTime(dataRecord.DateTime) is not null)
                 {
                     // The albedo resolved without snow cover - the decision for a file whose snow depth is a filler.
                     groundIrradiation_Expected += globalHorizontalRadiation * Solar.Query.Albedo(dataRecord.AlbedoValue(), false) * 0.5;

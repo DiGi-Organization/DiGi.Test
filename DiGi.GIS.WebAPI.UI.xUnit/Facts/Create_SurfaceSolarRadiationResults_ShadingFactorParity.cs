@@ -6,6 +6,7 @@ using DiGi.EPW.Classes;
 using DiGi.Geometry.Planar.Classes;
 using DiGi.Geometry.Spatial.Classes;
 using DiGi.Geometry.Spatial.Interfaces;
+using DiGi.GIS.Analytical.Solar;
 using DiGi.GIS.WebAPI.UI.Classes;
 using DiGi.Solar.Classes;
 using DiGi.Solar.Interfaces;
