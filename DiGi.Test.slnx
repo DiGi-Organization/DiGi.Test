@@ -234,6 +234,34 @@
       <BuildDependency Project="../DiGi.GIS/DiGi.GIS/DiGi.GIS.csproj" />
       <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
     </Project>
+    <Project Path="../DiGi.GIS.Analytical/DiGi.GIS.Analytical.Solar/DiGi.GIS.Analytical.Solar.csproj">
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.Solar/DiGi.Analytical.Building.Solar.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building/DiGi.Analytical.Building.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical/DiGi.Analytical.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core.Parameter/DiGi.Core.Parameter.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core.Relation/DiGi.Core.Relation.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry.Object/DiGi.Geometry.Object.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.GIS.Analytical/DiGi.GIS.Analytical/DiGi.GIS.Analytical.csproj" />
+      <BuildDependency Project="../DiGi.GIS/DiGi.GIS/DiGi.GIS.csproj" />
+      <BuildDependency Project="../DiGi.Solar/DiGi.Solar/DiGi.Solar.csproj" />
+      <BuildDependency Project="../DiGi.Weather/DiGi.Weather/DiGi.Weather.csproj" />
+    </Project>
+    <Project Path="DiGi.GIS.Analytical.Solar.xUnit/DiGi.GIS.Analytical.Solar.xUnit.csproj">
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.Solar/DiGi.Analytical.Building.Solar.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building/DiGi.Analytical.Building.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical/DiGi.Analytical.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.EPW/DiGi.EPW/DiGi.EPW.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.GIS.Analytical/DiGi.GIS.Analytical.Solar/DiGi.GIS.Analytical.Solar.csproj" />
+      <BuildDependency Project="../DiGi.GIS.Analytical/DiGi.GIS.Analytical/DiGi.GIS.Analytical.csproj" />
+      <BuildDependency Project="../DiGi.GIS/DiGi.GIS/DiGi.GIS.csproj" />
+      <BuildDependency Project="../DiGi.Solar/DiGi.Solar/DiGi.Solar.csproj" />
+      <BuildDependency Project="../DiGi.Weather/DiGi.Weather/DiGi.Weather.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
     <Project Path="../DiGi.CityGML/DiGi.CityGML/DiGi.CityGML.csproj">
       <BuildDependency Project="../DiGi.Core/DiGi.Core.Parameter/DiGi.Core.Parameter.csproj" />
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
