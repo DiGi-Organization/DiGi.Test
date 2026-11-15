@@ -532,6 +532,16 @@
       <BuildDependency Project="../DiGi.Typology/DiGi.Typology/DiGi.Typology.csproj" />
       <BuildDependency Project="../DiGi.Weather/DiGi.Weather/DiGi.Weather.csproj" />
     </Project>
+    <Project Path="../DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL.Solar/DiGi.GIS.PostgreSQL.Solar.csproj">
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.Solar/DiGi.Analytical.Building.Solar.csproj" />
+      <BuildDependency Project="../DiGi.GIS.Analytical/DiGi.GIS.Analytical.Solar/DiGi.GIS.Analytical.Solar.csproj" />
+      <BuildDependency Project="../DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL.csproj" />
+      <BuildDependency Project="../DiGi.Solar/DiGi.Solar/DiGi.Solar.csproj" />
+    </Project>
+    <Project Path="DiGi.GIS.PostgreSQL.Solar.xUnit/DiGi.GIS.PostgreSQL.Solar.xUnit.csproj">
+      <BuildDependency Project="../DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL.Solar/DiGi.GIS.PostgreSQL.Solar.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
   </Folder>
   <Folder Name="/Python/">
     <Project Path="../DiGi.Python/DiGi.Python/DiGi.Python.csproj">
