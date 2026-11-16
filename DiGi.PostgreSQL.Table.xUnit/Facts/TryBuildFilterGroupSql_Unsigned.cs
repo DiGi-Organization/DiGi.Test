@@ -6,7 +6,7 @@ using Column = DiGi.Core.IO.Table.Classes.Column;
 namespace DiGi.PostgreSQL.Table.xUnit
 {
     /// <summary>
-    /// Facts for <see cref="Query.TryBuildFilterGroupSql{TColumn}"/> on unsigned integer columns (DiGi-Organization/DiGi.PostgreSQL#17).
+    /// Facts for <see cref="Query.TryBuildFilterGroupSql{TColumn}(FilterGroup, List{TColumn}, System.Text.StringBuilder, NpgsqlParameterCollection, ref int)"/> on unsigned integer columns (DiGi-Organization/DiGi.PostgreSQL#17).
     /// <para>Npgsql does not write <see cref="ushort"/>, <see cref="uint"/> or <see cref="ulong"/>, so the bound value must be widened to <see cref="int"/>, <see cref="long"/> or <see cref="decimal"/>.</para>
     /// </summary>
     public partial class Facts

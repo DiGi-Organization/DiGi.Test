@@ -9,7 +9,7 @@ using Column = DiGi.Core.IO.Table.Classes.Column;
 namespace DiGi.PostgreSQL.Table.xUnit
 {
     /// <summary>
-    /// Facts for <see cref="Query.TryBuildFilterGroupSql{TColumn}"/> typed failures (DiGi-Organization/DiGi.PostgreSQL#12).
+    /// Facts for <see cref="Query.TryBuildFilterGroupSql{TColumn}(FilterGroup, List{TColumn}, System.Text.StringBuilder, NpgsqlParameterCollection, ref int)"/> typed failures (DiGi-Organization/DiGi.PostgreSQL#12).
     /// <para>An unknown column and an unconvertible filter value are request-level failures and must throw <see cref="InvalidFilterException"/>, so the caller can distinguish "the request is wrong" from the valid no-match <c>1=0</c> and the empty-result <c>null</c> it previously could not tell apart. On the unmodified code each of these answers <c>false</c> or <c>1=0</c> and never throws.</para>
     /// </summary>
     public partial class Facts
