@@ -172,7 +172,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                 }
             }
 
-            Assert.Equal(67, count);
+            // 68 since gis/buildingsolarradiation/summariesbycountyids (DiGi.GIS.WebAPI#82).
+            Assert.Equal(68, count);
         }
 
         /// <summary>
