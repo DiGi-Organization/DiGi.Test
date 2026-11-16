@@ -78,7 +78,8 @@ namespace DiGi.Analytical.xUnit
 
         /// <summary>
         /// Tests the pane layers of the <see cref="ConstructionFlavour.TypicalAsBuilt"/> window constructions of <see cref="Building.Regulation.Create.ConstructionLibrary_PL"/> (DiGi-Organization/DiGi.Analytical#19).
-        /// <para>Every window construction has <see cref="OpeningConstructionPart.Pane"/> layers, and the PN-EN 673 Ug of the layers alone is within the range stated for its TABULA window name: 5.6 - 5.8 W/(m2K) for single glazing and 1.0 - 1.2 for the 4/16/4 argon low-e unit (Pressglass, "Szklane fiszki cz. 1"), 1.62 ± 0.03 for the 4/12/4 air low-e unit (ift report 11-003309-PR01, type 5), and plausibility ranges for the coupled window and the 7.5 mm double glazing, whose build-ups are DEFAULT. The declared Uw stays the value the cluster overload of <c>Building.Query.ThermalTransmittance</c> returns for a construction without an outline. Every window declares the Uf and Ψg of its frame generation (PN-EN ISO 10077-1 Annex D and Table E.1 through secondary sources), and its description names their source.</para>
+        /// <para>Every window construction has <see cref="OpeningConstructionPart.Pane"/> layers, and the PN-EN 673 Ug of the layers alone is within the range stated for its TABULA window name: 5.6 - 5.8 W/(m2K) for single glazing and 1.0 - 1.2 for the 4/16/4 argon low-e unit (Pressglass, "Szklane fiszki cz. 1"), 1.62 ± 0.03 for the 4/12/4 air low-e unit (ift report 11-003309-PR01, type 5), and plausibility ranges for the coupled window and the 7.5 mm double glazing, whose build-ups are DEFAULT. The declared Uw stays the value the cluster overload of <c>Building.Query.ThermalTransmittance</c> returns for a construction without an outline. Every window declares the Uf and Ψg of its frame generation (PN-EN ISO 10077-1 Annex D and Table E.1 through secondary sources; a PVC window from 2003 on the modern frame and warm-edge values of ITB), and its description names their source.</para>
+        /// <para>For every TypicalAsBuilt set, the PN-EN ISO 10077-1 Uw of the window at the reference size 1.23 x 1.48 m, one light with the frame width of the set's living-room window layout (DiGi-Organization/DiGi.GIS.Analytical#6), is within <c>ConstructionLibrary_PL_WindowTolerance_*</c> of the declared TABULA Uw, and that tolerance exceeds the largest deviation by 2 percentage points at most. The report adds the Uw table, with the Uw of the layout at its own size for information.</para>
         /// <para>The library's materials, rebuilt as the ift report's type 16 (4/12/4, 90 % argon, ε = 0.03 on face 3), give its Ug of 1.28 within ± 0.03, which checks the glass, gas and calculation together against a published EN 673 result. The fact writes Ug per window to <c>reports/ConstructionGlazing.md</c> and reports every failing window at once.</para>
         /// </summary>
         [Fact]
@@ -113,6 +114,7 @@ namespace DiGi.Analytical.xUnit
 
             HashSet<Guid> guids = [];
             HashSet<string> names = [];
+            Dictionary<Guid, double> glazingThermalTransmittances = [];
             List<string> failures = [];
             StringBuilder stringBuilder = new();
             stringBuilder.AppendLine("# Construction glazing (DiGi-Organization/DiGi.Analytical#19)");
@@ -160,6 +162,12 @@ namespace DiGi.Analytical.xUnit
                 Assert.Contains("Pane layers", windowConstruction.Description);
 
                 Assert.True(frames.TryGetValue(name_Tabula, out (double FrameThermalTransmittance, double GlazingLinearThermalTransmittance) frame), name_Tabula);
+                if (name_Tabula.StartsWith("plastic frame", StringComparison.Ordinal) && (name.Contains("(PL.Window.ReEx.06.", StringComparison.Ordinal) || name.Contains("(PL.Window.ReEx.07.", StringComparison.Ordinal)))
+                {
+                    // From 2003 on a PVC window is a modern frame with a warm-edge spacer (ITB, Budujemy Dom 6/2007; Pilkington TGI leaflet).
+                    frame = (1.4, 0.04);
+                }
+
                 if (!windowConstruction.TryGetValue(new EnumParameterDefinition(OpeningConstructionParameter.FrameThermalTransmittance), out double frameThermalTransmittance) || frameThermalTransmittance != frame.FrameThermalTransmittance)
                 {
                     failures.Add(string.Format(CultureInfo.InvariantCulture, "{0}: Uf {1}, expected {2}", name, frameThermalTransmittance, frame.FrameThermalTransmittance));
@@ -175,7 +183,84 @@ namespace DiGi.Analytical.xUnit
                 Assert.True(description.Contains("as reproduced in", StringComparison.Ordinal) || description.Contains("DEFAULT", StringComparison.Ordinal), name);
 
                 stringBuilder.AppendLine(string.Format(CultureInfo.InvariantCulture, "| {0} | {1} | {2:0.000} | {3} - {4} | {5} | {6} | {7} | {8} |", name, Layers(structureLayers), glazingThermalTransmittance, range.Minimum, range.Maximum, range.Source, frameThermalTransmittance, glazingLinearThermalTransmittance, thermalTransmittance_Declared));
+                glazingThermalTransmittances[windowConstruction.Guid] = glazingThermalTransmittance;
             }
+
+            // Uw at the PN-EN ISO 10077-1 reference size, 1.23 x 1.48 m, as one light with the frame width of the set's living-room window
+            // layout (DiGi-Organization/DiGi.GIS.Analytical#6), against the declared TABULA Uw; for information also Uw of that layout at its own size.
+            OpeningSizeLibrary openingSizeLibrary = Building.Regulation.Create.OpeningSizeLibrary_PL();
+            stringBuilder.AppendLine();
+            stringBuilder.AppendLine(string.Format(CultureInfo.InvariantCulture, "## Uw at the reference size\n\nUw = (Ag·Ug + Af·Uf + lg·Ψg) / (Ag + Af) per PN-EN ISO 10077-1 for a 1.23 x 1.48 m window, one light, with the frame width of the set's living-room window layout. Tolerance: |Uw - Uw declared| ≤ max({0} W/(m²K), {1} %). The layout column is Uw of the living-room window at its own size and pane layout, for information.", Building.Regulation.Create.ConstructionLibrary_PL_WindowTolerance_Absolute, Building.Regulation.Create.ConstructionLibrary_PL_WindowTolerance_Relative * 100.0));
+            stringBuilder.AppendLine();
+            stringBuilder.AppendLine("| TABULA building | Window construction | Frame width | F_f | Ug | Uf | Ψg | Uw | Uw declared | Δ | Δ % | Layout | Layout F_f | Layout Uw |");
+            stringBuilder.AppendLine("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|");
+
+            double WindowThermalTransmittance(OpeningSize openingSize, WindowConstruction windowConstruction_Library, double glazingThermalTransmittance)
+            {
+                WindowConstruction? windowConstruction = Building.Regulation.Create.WindowConstruction(openingSize);
+                Assert.NotNull(windowConstruction);
+                Assert.True(windowConstruction_Library.TryGetValue(new EnumParameterDefinition(OpeningConstructionParameter.FrameThermalTransmittance), out double frameThermalTransmittance));
+                Assert.True(windowConstruction_Library.TryGetValue(new EnumParameterDefinition(OpeningConstructionParameter.GlazingLinearThermalTransmittance), out double glazingLinearThermalTransmittance));
+                Assert.True(windowConstruction.SetValue(OpeningConstructionParameter.FrameThermalTransmittance, frameThermalTransmittance));
+                Assert.True(windowConstruction.SetValue(OpeningConstructionParameter.GlazingLinearThermalTransmittance, glazingLinearThermalTransmittance));
+                return Building.Query.ThermalTransmittance(windowConstruction, glazingThermalTransmittance);
+            }
+
+            static double FrameAreaFraction(OpeningSize openingSize)
+            {
+                double area_Glazing = 0;
+                foreach (Geometry.Planar.Classes.Polygon2D polygon2D in Building.Regulation.Query.Panes(openingSize) ?? [])
+                {
+                    area_Glazing += polygon2D.GetArea();
+                }
+
+                return 1.0 - (area_Glazing / (openingSize.Width * openingSize.Height));
+            }
+
+            int count_Sets = 0;
+            double deviation_Maximum = 0;
+            foreach (ConstructionSet constructionSet in constructionLibrary.GetConstructionSets())
+            {
+                if (constructionSet.ConstructionFlavour != ConstructionFlavour.TypicalAsBuilt)
+                {
+                    continue;
+                }
+
+                WindowConstruction windowConstruction = (WindowConstruction)constructionLibrary.GetConstruction(constructionSet, ConstructionRole.Window)!;
+                double glazingThermalTransmittance = glazingThermalTransmittances[windowConstruction.Guid];
+                Assert.True(windowConstruction.TryGetValue(new EnumParameterDefinition(OpeningConstructionParameter.ThermalTransmittance), out double thermalTransmittance_Declared));
+                Assert.True(windowConstruction.TryGetValue(new EnumParameterDefinition(OpeningConstructionParameter.FrameThermalTransmittance), out double frameThermalTransmittance));
+                Assert.True(windowConstruction.TryGetValue(new EnumParameterDefinition(OpeningConstructionParameter.GlazingLinearThermalTransmittance), out double glazingLinearThermalTransmittance));
+
+                DateTimeOffset dateTimeOffset = constructionSet.StartDate == DateTimeOffset.MinValue ? constructionSet.EndDate!.Value.AddDays(-1) : constructionSet.StartDate;
+                OpeningSizeSet? openingSizeSet = openingSizeLibrary.GetOpeningSizeSet(dateTimeOffset, constructionSet.BuildingType);
+                Assert.NotNull(openingSizeSet);
+                OpeningSize? openingSize_Layout = openingSizeSet.GetOpeningSize(OpeningKind.Window, RoomUse.LivingRoom);
+                Assert.NotNull(openingSize_Layout);
+
+                OpeningSize openingSize_Reference = new(OpeningKind.Window, RoomUse.LivingRoom, 1.23, 1.48, null, true, 1, openingSize_Layout.FrameWidth, openingSize_Layout.FrameWidth, null, "PN-EN ISO 10077-1 reference size");
+                double thermalTransmittance = WindowThermalTransmittance(openingSize_Reference, windowConstruction, glazingThermalTransmittance);
+                double thermalTransmittance_Layout = WindowThermalTransmittance(openingSize_Layout, windowConstruction, glazingThermalTransmittance);
+
+                double difference = thermalTransmittance - thermalTransmittance_Declared;
+                double tolerance = Math.Max(Building.Regulation.Create.ConstructionLibrary_PL_WindowTolerance_Absolute, Building.Regulation.Create.ConstructionLibrary_PL_WindowTolerance_Relative * thermalTransmittance_Declared);
+                string source = constructionSet.Source ?? string.Empty;
+                int index = source.IndexOf("TABULA building ", StringComparison.Ordinal);
+                string code = index < 0 ? constructionSet.BuildingType.ToString() : source.Substring(index + 16, source.IndexOf(',', index) - index - 16);
+                if (double.IsNaN(thermalTransmittance) || Math.Abs(difference) > tolerance)
+                {
+                    failures.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} ({2}): Uw {3:0.000}, declared {4}", code, constructionSet.BuildingType, windowConstruction.Name, thermalTransmittance, thermalTransmittance_Declared));
+                }
+
+                stringBuilder.AppendLine(string.Format(CultureInfo.InvariantCulture, "| {0} {1} | {2} | {3} | {4:0.00} | {5:0.000} | {6} | {7} | {8:0.000} | {9} | {10:+0.000;-0.000;0.000} | {11:+0.0;-0.0;0.0} | {12:0.00} x {13:0.00}, {14} column(s){15} | {16:0.00} | {17:0.000} |", code, constructionSet.BuildingType, windowConstruction.Name, openingSize_Layout.FrameWidth, FrameAreaFraction(openingSize_Reference), glazingThermalTransmittance, frameThermalTransmittance, glazingLinearThermalTransmittance, thermalTransmittance, thermalTransmittance_Declared, difference, difference / thermalTransmittance_Declared * 100.0, openingSize_Layout.Width, openingSize_Layout.Height, openingSize_Layout.Columns, openingSize_Layout.TopLightHeight is null ? string.Empty : ", top light", FrameAreaFraction(openingSize_Layout), thermalTransmittance_Layout));
+                count_Sets++;
+                deviation_Maximum = Math.Max(deviation_Maximum, Math.Abs(difference) / thermalTransmittance_Declared);
+            }
+
+            Assert.True(count_Sets > 25, $"{count_Sets} sets");
+
+            // The tolerance is set from the measured deviations and must not be silently wider: it may exceed the largest relative deviation by 2 percentage points at most.
+            Assert.True(Building.Regulation.Create.ConstructionLibrary_PL_WindowTolerance_Relative - deviation_Maximum <= 0.02, string.Format(CultureInfo.InvariantCulture, "largest deviation {0:0.000}, tolerance {1}", deviation_Maximum, Building.Regulation.Create.ConstructionLibrary_PL_WindowTolerance_Relative));
 
             // The ift report's type 16, rebuilt from the library's materials.
             List<IMaterial> materials = constructionRelationCluster.GetValues<IMaterial>() ?? [];
