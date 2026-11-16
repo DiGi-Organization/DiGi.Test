@@ -8,7 +8,7 @@ namespace DiGi.GIS.WebAPI.xUnit
     {
         /// <summary>
         /// Builds the caller filter group carried by the area-scoped parameter facts.
-        /// <para>The DiGi round trip (<c>SerializationCheck</c>) runs without the filter group and the measures: <see cref="FilterGroup"/> is not a serializable object and reloads as null, and an <see cref="AggregateMeasure"/> list fails to reload - both predate the area scope and do not affect the wire, where the body is bound by System.Text.Json, which the binding assertion covers.</para>
+        /// <para>The DiGi round trip (<c>SerializationCheck</c>) runs without the filter group, the measures and the sort conditions: <see cref="FilterGroup"/> is not a serializable object and reloads as null, an <see cref="AggregateMeasure"/> list fails to reload, and a <see cref="SortCondition"/> list reloads its items as null - none affect the wire, where the body is bound by System.Text.Json, which the binding assertion covers.</para>
         /// </summary>
         private static FilterGroup AdministrativeAreal2DScopeParameter_FilterGroup()
         {
@@ -16,14 +16,14 @@ namespace DiGi.GIS.WebAPI.xUnit
         }
 
         /// <summary>
-        /// Verifies the area-scoped <see cref="BuildingDataByFilterGroupParameter"/> (DiGi-Organization/DiGi.GIS.WebAPI#83) binds from a request body, survives the DiGi string round trip on the members that round trip supports, and its copy constructor copies every member, the column list into a new list.
+        /// Verifies the area-scoped <see cref="BuildingDataByFilterGroupParameter"/> (DiGi-Organization/DiGi.GIS.WebAPI#83) binds from a request body, survives the DiGi string round trip on the members that round trip supports, and its copy constructor copies every member, the column and sort lists into new lists (the sort items shared).
         /// </summary>
         [Fact]
         public void BuildingDataByFilterGroupParameter_AdministrativeAreal2DId_CopyAndSerialization()
         {
-            BuildingDataByFilterGroupParameter parameter_Source = new() { FilterGroup = AdministrativeAreal2DScopeParameter_FilterGroup(), ColumnUniqueIds = ["reference", "floor_area"], AdministrativeAreal2DId = 55413 };
+            BuildingDataByFilterGroupParameter parameter_Source = new() { FilterGroup = AdministrativeAreal2DScopeParameter_FilterGroup(), ColumnUniqueIds = ["reference", "floor_area"], AdministrativeAreal2DId = 55413, SortConditions = [new SortCondition() { ColumnUniqueId = "storeys", Descending = true }, new SortCondition() { ColumnUniqueId = "reference" }], Limit = 1 };
 
-            BuildingDataByFilterGroupParameter parameter_RoundTrip = new(parameter_Source) { FilterGroup = null! };
+            BuildingDataByFilterGroupParameter parameter_RoundTrip = new(parameter_Source) { FilterGroup = null!, SortConditions = [] };
             Core.xUnit.Query.SerializationCheck(parameter_RoundTrip);
 
             BuildingDataByFilterGroupParameter? parameter_Bound = System.Text.Json.JsonSerializer.Deserialize<BuildingDataByFilterGroupParameter>(System.Text.Json.JsonSerializer.Serialize(parameter_Source), System.Text.Json.JsonSerializerOptions.Web);
@@ -31,6 +31,12 @@ namespace DiGi.GIS.WebAPI.xUnit
             Assert.Equal(55413, parameter_Bound.AdministrativeAreal2DId);
             Assert.Null(parameter_Bound.CountyId);
             Assert.Equal("church", Assert.Single(parameter_Bound.FilterGroup!.FilterConditions).Value?.ToString());
+            Assert.Equal(2, parameter_Bound.SortConditions!.Count);
+            Assert.Equal("storeys", parameter_Bound.SortConditions[0].ColumnUniqueId);
+            Assert.True(parameter_Bound.SortConditions[0].Descending);
+            Assert.Equal("reference", parameter_Bound.SortConditions[1].ColumnUniqueId);
+            Assert.False(parameter_Bound.SortConditions[1].Descending);
+            Assert.Equal(1, parameter_Bound.Limit);
 
             BuildingDataByFilterGroupParameter parameter_Copy = new(parameter_Source);
             Assert.Same(parameter_Source.FilterGroup, parameter_Copy.FilterGroup);
@@ -38,6 +44,10 @@ namespace DiGi.GIS.WebAPI.xUnit
             Assert.NotSame(parameter_Source.ColumnUniqueIds, parameter_Copy.ColumnUniqueIds);
             Assert.Null(parameter_Copy.CountyId);
             Assert.Equal(55413, parameter_Copy.AdministrativeAreal2DId);
+            Assert.Equal(parameter_Source.SortConditions, parameter_Copy.SortConditions);
+            Assert.NotSame(parameter_Source.SortConditions, parameter_Copy.SortConditions);
+            Assert.Same(parameter_Source.SortConditions![0], parameter_Copy.SortConditions![0]);
+            Assert.Equal(1, parameter_Copy.Limit);
         }
 
         /// <summary>
