@@ -42,8 +42,8 @@ namespace DiGi.Core.xUnit
         [Fact]
         public void TryConvert_JsonElementArrayAndObject_NumericTargets_DoesNotThrow()
         {
-            System.Text.Json.JsonElement jsonElement_Array = System.Text.Json.JsonDocument.Parse("[53429, 53412]").RootElement;
-            System.Text.Json.JsonElement jsonElement_Object = System.Text.Json.JsonDocument.Parse("{\"a\":1}").RootElement;
+            System.Text.Json.JsonElement jsonElement_Array = System.Text.Json.JsonElement.Parse("[53429, 53412]");
+            System.Text.Json.JsonElement jsonElement_Object = System.Text.Json.JsonElement.Parse("{\"a\":1}");
             System.Text.Json.JsonElement[] jsonElements = [jsonElement_Array, jsonElement_Object];
 
             foreach (System.Text.Json.JsonElement jsonElement in jsonElements)
@@ -96,8 +96,8 @@ namespace DiGi.Core.xUnit
         [Fact]
         public void TryConvert_JsonElement_ScalarInputs_Unchanged()
         {
-            System.Text.Json.JsonElement jsonElement_Number = System.Text.Json.JsonDocument.Parse("42").RootElement;
-            System.Text.Json.JsonElement jsonElement_String = System.Text.Json.JsonDocument.Parse("\"42\"").RootElement;
+            System.Text.Json.JsonElement jsonElement_Number = System.Text.Json.JsonElement.Parse("42");
+            System.Text.Json.JsonElement jsonElement_String = System.Text.Json.JsonElement.Parse("\"42\"");
 
             // Number element -> exact numeric values.
             Assert.True(Core.Query.TryConvert(jsonElement_Number, out int? number_Int));
@@ -120,7 +120,7 @@ namespace DiGi.Core.xUnit
             Assert.Equal(42.0, string_Double);
 
             // Array element still reaches the enumerable target (the short-circuit must not break this).
-            System.Text.Json.JsonElement jsonElement_Array = System.Text.Json.JsonDocument.Parse("[53429, 53412]").RootElement;
+            System.Text.Json.JsonElement jsonElement_Array = System.Text.Json.JsonElement.Parse("[53429, 53412]");
             Assert.True(Core.Query.TryConvert(jsonElement_Array, out object? list_Result, typeof(List<int>)));
             Assert.Equal([53429, 53412], (List<int>)list_Result!);
 
@@ -140,13 +140,13 @@ namespace DiGi.Core.xUnit
         {
             // One representative JsonElement per ValueKind.
             System.Text.Json.JsonElement jsonElement_Undefined = default;
-            System.Text.Json.JsonElement jsonElement_Null = System.Text.Json.JsonDocument.Parse("null").RootElement;
-            System.Text.Json.JsonElement jsonElement_String = System.Text.Json.JsonDocument.Parse("\"42\"").RootElement;
-            System.Text.Json.JsonElement jsonElement_Number = System.Text.Json.JsonDocument.Parse("42").RootElement;
-            System.Text.Json.JsonElement jsonElement_True = System.Text.Json.JsonDocument.Parse("true").RootElement;
-            System.Text.Json.JsonElement jsonElement_False = System.Text.Json.JsonDocument.Parse("false").RootElement;
-            System.Text.Json.JsonElement jsonElement_Object = System.Text.Json.JsonDocument.Parse("{\"a\":1}").RootElement;
-            System.Text.Json.JsonElement jsonElement_Array = System.Text.Json.JsonDocument.Parse("[1, 2]").RootElement;
+            System.Text.Json.JsonElement jsonElement_Null = System.Text.Json.JsonElement.Parse("null");
+            System.Text.Json.JsonElement jsonElement_String = System.Text.Json.JsonElement.Parse("\"42\"");
+            System.Text.Json.JsonElement jsonElement_Number = System.Text.Json.JsonElement.Parse("42");
+            System.Text.Json.JsonElement jsonElement_True = System.Text.Json.JsonElement.Parse("true");
+            System.Text.Json.JsonElement jsonElement_False = System.Text.Json.JsonElement.Parse("false");
+            System.Text.Json.JsonElement jsonElement_Object = System.Text.Json.JsonElement.Parse("{\"a\":1}");
+            System.Text.Json.JsonElement jsonElement_Array = System.Text.Json.JsonElement.Parse("[1, 2]");
 
             System.Text.Json.JsonElement[] jsonElements = [jsonElement_Undefined, jsonElement_Null, jsonElement_String, jsonElement_Number, jsonElement_True, jsonElement_False, jsonElement_Object, jsonElement_Array];
 

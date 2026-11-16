@@ -52,6 +52,7 @@ namespace DiGi.WebAPI.WindowsService.xUnit
         {
             OpenApiDocument openApiDocument = SchemaGeneratorFixture_Document(
                 [
+                    typeof(AddressPointController),
                     typeof(AdministrativeAreal2DController),
                     typeof(BuildingController),
                     typeof(Building2DController),
@@ -185,14 +186,21 @@ namespace DiGi.WebAPI.WindowsService.xUnit
             Assert.Equal(DiGi.GIS.WebAPI.Constants.OrtoDatas.MaximumSampleCount.ToString(CultureInfo.InvariantCulture), GisDocument_Maximum(openApiOperation_SubdivisionLinks, "samplecount"));
             Assert.Equal("0", GisDocument_Minimum(openApiOperation_SubdivisionLinks, "commandtimeout"));
 
+            // the address point count of #72 - the gis controller whose floored commandtimeout this fixture only
+            // reaches once the controller is listed beside the other gis controllers.
+            OpenApiOperation openApiOperation_AddressPointCount = GisDocument_Operation(openApiDocument, "/gis/addresspoint/countbycountyid", HttpMethod.Get);
+            Assert.Equal("0", GisDocument_Minimum(openApiOperation_AddressPointCount, "commandtimeout"));
+            Assert.Equal("1", GisDocument_Minimum(openApiOperation_AddressPointCount, "countyid"));
+
             // The exhaustive form of the assertions above: every commandtimeout the public document carries,
-            // floored at 0 with no maximum - fifty-four of them. The fifty of #48 plus predictedyearbuiltruns of
-            // #50, plus countbyfiltergroup of #52, countbyadministrativeareal2did of #53, and aggregate summaries (batch) of #56; the four sibling
+            // floored at 0 with no maximum - fifty-nine of them. The fifty of #48 plus predictedyearbuiltruns of
+            // #50, plus countbyfiltergroup of #52, countbyadministrativeareal2did of #53, and aggregate summaries (batch) of #56, then estimatedcountsbycountyids of
+            // DiGi.GIS.PostgreSQL.UI#32, addresspoint/countbycountyid of #72, and the occupancy snapshots of #73 and DiGi.GIS.PostgreSQL#108; the four sibling
             // maintenance endpoints of #50 are key-gated and hidden (IgnoreApi inherited) and so never reach the
-            // public document. That is why this served count trails the reflection sweep's fifty-eight (the whole
+            // public document. That is why this served count trails the reflection sweep's sixty-three (the whole
             // assembly, hidden endpoints included) - a tripwire, not a target: an endpoint added to the public
             // document or stripped of its floor fails here instead of passing unasserted
-            // (DiGi.GIS.WebAPI#48, #50, #52, #53, #56).
+            // (DiGi.GIS.WebAPI#48, #50, #52, #53, #56, #72, #73, DiGi.GIS.PostgreSQL#108).
             int commandTimeouts = 0;
             foreach (IOpenApiPathItem openApiPathItem in openApiDocument.Paths.Values)
             {
@@ -226,7 +234,7 @@ namespace DiGi.WebAPI.WindowsService.xUnit
                 }
             }
 
-            Assert.Equal(54, commandTimeouts);
+            Assert.Equal(59, commandTimeouts);
         }
 
         private static OpenApiOperation GisDocument_Operation(OpenApiDocument openApiDocument, string path, HttpMethod httpMethod)
