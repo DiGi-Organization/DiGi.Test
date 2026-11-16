@@ -20,7 +20,7 @@ namespace DiGi.Analytical.xUnit
     {
         /// <summary>
         /// Tests the <see cref="ConstructionFlavour.TypicalAsBuilt"/> sets of <see cref="Building.Regulation.Create.ConstructionLibrary_PL"/> against the TABULA web tool values (DiGi-Organization/DiGi.Analytical#15).
-        /// <para>Spot values are checked on both sides of the 1945/1946 and 2008/2009 period boundaries, an apartment block before 1967 must take the multi-family constructions, and every set must hold exactly the ten roles TABULA covers plus the DEFAULT InternalWall, PartyWall and IntermediateFloor (DiGi-Organization/DiGi.Analytical#18).</para>
+        /// <para>Spot values are checked on both sides of the 1945/1946 and 2008/2009 period boundaries, an apartment block before 1967 must take the multi-family constructions, and every set must hold exactly the ten roles TABULA covers plus the DEFAULT InternalWall, PartyWall and IntermediateFloor (DiGi-Organization/DiGi.Analytical#18), DoorToUnheatedSpace served by the external door and a DEFAULT GarageDoor with a cited U (DiGi-Organization/DiGi.Analytical#19). No Regulation set has a GarageDoor, and each says so.</para>
         /// </summary>
         [Fact]
         public void Create_ConstructionLibrary_PL_TypicalAsBuilt()
@@ -55,6 +55,10 @@ namespace DiGi.Analytical.xUnit
                 (Date(2009, 1, 1), BuildingType.SingleFamily, ConstructionRole.Window, OpeningConstructionParameter.ThermalTransmittance, 1.1),
                 (Date(2009, 1, 1), BuildingType.SingleFamily, ConstructionRole.Window, OpeningConstructionParameter.TotalSolarEnergyTransmittance, 0.5),
                 (Date(2025, 1, 1), BuildingType.MultiFamily, ConstructionRole.StaircaseEntranceDoor, OpeningConstructionParameter.ThermalTransmittance, 1.4),
+                (Date(1945, 12, 31), BuildingType.SingleFamily, ConstructionRole.DoorToUnheatedSpace, OpeningConstructionParameter.ThermalTransmittance, 5.1),
+                (Date(2025, 1, 1), BuildingType.MultiFamily, ConstructionRole.DoorToUnheatedSpace, OpeningConstructionParameter.ThermalTransmittance, 1.4),
+                (Date(2002, 12, 31), BuildingType.SingleFamily, ConstructionRole.GarageDoor, OpeningConstructionParameter.ThermalTransmittance, 6.53),
+                (Date(2003, 1, 1), BuildingType.SingleFamily, ConstructionRole.GarageDoor, OpeningConstructionParameter.ThermalTransmittance, 1.76),
             ];
 
             foreach ((DateTimeOffset dateTimeOffset, BuildingType buildingType, ConstructionRole constructionRole, Enum @enum, double value) in expecteds)
@@ -70,7 +74,15 @@ namespace DiGi.Analytical.xUnit
             Assert.IsType<FloorConstruction>(constructionLibrary.GetConstruction(constructionSet_SingleFamily, ConstructionRole.GroundFloor));
             Assert.Null((constructionLibrary.GetConstruction(constructionSet_SingleFamily, ConstructionRole.Window) as WindowConstruction)?.Geometry);
             Assert.IsType<WallConstruction>(constructionLibrary.GetConstruction(constructionSet_SingleFamily, ConstructionRole.PartyWall));
-            Assert.Null(constructionLibrary.GetConstruction(constructionSet_SingleFamily, ConstructionRole.GarageDoor));
+
+            // TABULA has neither door (DiGi-Organization/DiGi.Analytical#19): the external door serves DoorToUnheatedSpace, and GarageDoor is a DEFAULT door with a cited U.
+            Assert.True(Core.Query.Equals(constructionSet_SingleFamily!.GetConstructionReference(ConstructionRole.ExternalDoor), constructionSet_SingleFamily.GetConstructionReference(ConstructionRole.DoorToUnheatedSpace)));
+            DoorConstruction? doorConstruction_Garage = constructionLibrary.GetConstruction(constructionSet_SingleFamily, ConstructionRole.GarageDoor) as DoorConstruction;
+            Assert.NotNull(doorConstruction_Garage);
+            Assert.Contains("DEFAULT", doorConstruction_Garage.Description);
+            Assert.Contains("WAC 51-11C-610714", doorConstruction_Garage.Description);
+            Assert.Contains("DoorToUnheatedSpace", constructionSet_SingleFamily.Source);
+            Assert.Contains("GarageDoor", constructionSet_SingleFamily.Source);
 
             // TABULA has no apartment block before 1967: the multi-family constructions stand in for it.
             ConstructionSet? constructionSet_ApartmentBlock = constructionLibrary.GetConstructionSet(Date(1950, 1, 1), BuildingType.ApartmentBlock, ClimateZone.III, ConstructionFlavour.TypicalAsBuilt);
@@ -88,6 +100,7 @@ namespace DiGi.Analytical.xUnit
                 ConstructionRole.ExternalWall, ConstructionRole.Roof, ConstructionRole.FlatRoof, ConstructionRole.GroundFloor, ConstructionRole.FloorOverUnheated,
                 ConstructionRole.Window, ConstructionRole.RoofWindow, ConstructionRole.BalconyDoor, ConstructionRole.ExternalDoor, ConstructionRole.StaircaseEntranceDoor,
                 ConstructionRole.InternalWall, ConstructionRole.PartyWall, ConstructionRole.IntermediateFloor,
+                ConstructionRole.DoorToUnheatedSpace, ConstructionRole.GarageDoor,
             ];
 
             int count = 0;
@@ -108,6 +121,18 @@ namespace DiGi.Analytical.xUnit
             }
 
             Assert.Equal(7 * 4, count);
+
+            // No stage limits a garage door, so no Regulation set has one, and each says so (DiGi-Organization/DiGi.Analytical#19).
+            foreach (ConstructionSet constructionSet in constructionLibrary.GetConstructionSets())
+            {
+                if (constructionSet.ConstructionFlavour != ConstructionFlavour.Regulation)
+                {
+                    continue;
+                }
+
+                Assert.Null(constructionLibrary.GetConstruction(constructionSet, ConstructionRole.GarageDoor));
+                Assert.Contains("GarageDoor", constructionSet.Source);
+            }
         }
 
         /// <summary>
