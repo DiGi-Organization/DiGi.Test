@@ -43,6 +43,12 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             // OrtoDatasTask requires gISWebAPIManager and must be excluded when it is null
             Assert.DoesNotContain(visualBackgroundTasks_Server, x => x.TypeName == typeof(OrtoDatasTask).Name);
 
+            // The solar urban-context tasks (DiGi.GIS.PostgreSQL.UI#44) are server tasks: they read and write the
+            // database directly and need no WebAPI manager.
+            Assert.Contains(visualBackgroundTasks_Server, x => x.TypeName == typeof(UIPostgreSQLBuildingSolarRadiationSolveTask).Name);
+            Assert.Contains(visualBackgroundTasks_Server, x => x.TypeName == typeof(UIPostgreSQLBuildingDataSolarRadiationUpdateTask).Name);
+            Assert.Contains(visualBackgroundTasks_Server, x => x.TypeName == typeof(UIPostgreSQLBuildingSolarRadiationContextExportTask).Name);
+
             // Client mode with null WebAPI manager should return empty list
             List<IVisualBackgroundTask>? visualBackgroundTasks_Client = Create.VisualBackgroundTasks(gISPostgreSQLConverterManager, null, null, Mode.Client);
             Assert.NotNull(visualBackgroundTasks_Client);

@@ -40,6 +40,9 @@
          netstandard2.0 asset, which defines the interface instead of forwarding it to the framework, and
          every reader call fails with MissingMethodException. -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.9" />
+    <!-- SolarCalculator is a NuGet dependency of DiGi.Solar, reached through the DiGi.GIS.PostgreSQL.Solar HintPath
+         below; the tray registers the batch solar radiation solve (DiGi.GIS.PostgreSQL#136). -->
+    <PackageReference Include="SolarCalculator" Version="3.6.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -99,6 +102,23 @@
     </Reference>
     <Reference Include="DiGi.GIS.PostgreSQL.UI">
       <HintPath>..\..\DiGi.GIS.PostgreSQL.UI\bin\DiGi.GIS.PostgreSQL.UI.dll</HintPath>
+    </Reference>
+    <!-- The batch solar radiation solve and its closure (DiGi.GIS.PostgreSQL#136); a HintPath does not carry the
+         assembly references of DiGi.GIS.PostgreSQL.UI onward. -->
+    <Reference Include="DiGi.Analytical.Building.Solar">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.Solar.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.Analytical.Solar">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.Solar.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.PostgreSQL.Solar">
+      <HintPath>..\..\DiGi.GIS.PostgreSQL\bin\DiGi.GIS.PostgreSQL.Solar.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Solar">
+      <HintPath>..\..\DiGi.Solar\bin\DiGi.Solar.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Weather">
+      <HintPath>..\..\DiGi.Weather\bin\DiGi.Weather.dll</HintPath>
     </Reference>
     <!-- Needed by ExportPredictionImages_ByteParity for DiGi.GIS.UI.Modify.WriteImages, the file-based export pipeline it compares against. -->
     <Reference Include="DiGi.GIS.UI">
