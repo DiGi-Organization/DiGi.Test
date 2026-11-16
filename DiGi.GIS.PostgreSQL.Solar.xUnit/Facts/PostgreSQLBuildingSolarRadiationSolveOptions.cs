@@ -6,7 +6,7 @@ namespace DiGi.GIS.PostgreSQL.Solar.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Verifies the defaults of the batch solve options: every county, every pending building (no cap), the isolated building and the 50 m and 100 m neighbour radii, resuming over stored results, the viewer's background-job ceilings (400 receivers, 32 000 caster triangles), 250 m tiles of at most 100 buildings and a 600 s statement timeout (DiGi.GIS.PostgreSQL#136).
+        /// Verifies the defaults of the batch solve options: every county, every pending building (no cap), the isolated building and the 50 m and 100 m neighbour radii, resuming over stored results, the viewer's background-job ceilings (400 receivers, 32 000 caster triangles), 250 m tiles of at most 100 buildings and a 600 s statement timeout (DiGi.GIS.PostgreSQL#136), and an automatic degree of parallelism (#139).
         /// </summary>
         [Fact]
         public void PostgreSQLBuildingSolarRadiationSolveOptions_Defaults()
@@ -22,6 +22,7 @@ namespace DiGi.GIS.PostgreSQL.Solar.xUnit
             Assert.Equal(250, postgreSQLBuildingSolarRadiationSolveOptions.TileSize);
             Assert.Equal(100, postgreSQLBuildingSolarRadiationSolveOptions.BatchSize);
             Assert.Equal(600, postgreSQLBuildingSolarRadiationSolveOptions.CommandTimeout);
+            Assert.Equal(0, postgreSQLBuildingSolarRadiationSolveOptions.MaxDegreeOfParallelism);
         }
 
         /// <summary>
@@ -37,6 +38,7 @@ namespace DiGi.GIS.PostgreSQL.Solar.xUnit
                 CasterTriangleCountMax = 64_000,
                 CommandTimeout = 300,
                 CountyIds = [1465, 1432],
+                MaxDegreeOfParallelism = 6,
                 Radii = [0, 50, 200],
                 ReceiverCountMax = 250,
                 SkipExisting = false,
@@ -50,12 +52,14 @@ namespace DiGi.GIS.PostgreSQL.Solar.xUnit
             Assert.Equal(150, postgreSQLBuildingSolarRadiationSolveOptions_Json.TileSize);
             Assert.False(postgreSQLBuildingSolarRadiationSolveOptions_Json.SkipExisting);
             Assert.Equal(500, postgreSQLBuildingSolarRadiationSolveOptions_Json.BuildingCountMax);
+            Assert.Equal(6, postgreSQLBuildingSolarRadiationSolveOptions_Json.MaxDegreeOfParallelism);
 
             PostgreSQLBuildingSolarRadiationSolveOptions postgreSQLBuildingSolarRadiationSolveOptions_Clone = new(postgreSQLBuildingSolarRadiationSolveOptions);
             Assert.Equal(40, postgreSQLBuildingSolarRadiationSolveOptions_Clone.BatchSize);
             Assert.Equal(500, postgreSQLBuildingSolarRadiationSolveOptions_Clone.BuildingCountMax);
             Assert.Equal(64_000, postgreSQLBuildingSolarRadiationSolveOptions_Clone.CasterTriangleCountMax);
             Assert.Equal(300, postgreSQLBuildingSolarRadiationSolveOptions_Clone.CommandTimeout);
+            Assert.Equal(6, postgreSQLBuildingSolarRadiationSolveOptions_Clone.MaxDegreeOfParallelism);
             Assert.Equal(250, postgreSQLBuildingSolarRadiationSolveOptions_Clone.ReceiverCountMax);
             Assert.False(postgreSQLBuildingSolarRadiationSolveOptions_Clone.SkipExisting);
             Assert.Equal(150, postgreSQLBuildingSolarRadiationSolveOptions_Clone.TileSize);

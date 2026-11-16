@@ -19,6 +19,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <!-- DiGi.Geometry is referenced by HintPath, so its NuGet dependencies do not flow to the test host. -->
+    <PackageReference Include="QuikGraph" Version="2.5.0" />
+    <!-- SolarCalculator is a NuGet dependency of DiGi.Solar (referenced via HintPath), so it must be re-added here to reach the test host output. -->
+    <PackageReference Include="SolarCalculator" Version="3.6.0" />
+    <!-- ProjNET4GeoAPI is a NuGet dependency of DiGi.GIS (referenced via HintPath); ToEPSG4326 throws FileNotFoundException without it. -->
+    <PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
@@ -32,8 +38,47 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="DiGi.Analytical">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Analytical.Building">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Analytical.Building.Solar">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.Solar.dll</HintPath>
+    </Reference>
     <Reference Include="DiGi.Core">
       <HintPath>..\..\DiGi.Core\bin\DiGi.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Core.Parameter">
+      <HintPath>..\..\DiGi.Core\bin\DiGi.Core.Parameter.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Core.Relation">
+      <HintPath>..\..\DiGi.Core\bin\DiGi.Core.Relation.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.EPW">
+      <HintPath>..\..\DiGi.EPW\bin\DiGi.EPW.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Geometry">
+      <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Geometry.Object">
+      <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.Object.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS">
+      <HintPath>..\..\DiGi.GIS\bin\DiGi.GIS.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.Analytical">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.Analytical.Solar">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.Solar.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Solar">
+      <HintPath>..\..\DiGi.Solar\bin\DiGi.Solar.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Weather">
+      <HintPath>..\..\DiGi.Weather\bin\DiGi.Weather.dll</HintPath>
     </Reference>
   </ItemGroup>
 
