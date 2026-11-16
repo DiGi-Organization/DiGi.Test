@@ -257,5 +257,69 @@ namespace DiGi.Analytical.xUnit
             Assert.Equal(guid_StructureLayer, structureLayer_Created.Guid);
             Assert.Equal(0, structureLayer_Created.Index);
         }
+
+        /// <summary>
+        /// Tests the identifier constructors <c>TransparentMaterial(Guid, string?)</c> and <c>FluidMaterial(Guid, string?)</c> and the identifier overload of the opening-part <c>Create.StructureLayer</c> (DiGi-Organization/DiGi.Analytical#19): each identifier is the one given, the copy constructor and a JSON round trip keep it, and pane and frame layers keep their own index sequences.
+        /// </summary>
+        [Fact]
+        public void TransparentMaterial_FluidMaterial_StructureLayer_Guid()
+        {
+            Guid guid_Glass = Core.Create.Guid("Test.Material.FloatGlass");
+            TransparentMaterial transparentMaterial = new(guid_Glass, "Float glass") { Conductivity = 1.0, Emissivity = new SurfaceValue(0.837, 0.837), SolarTransmittance = 0.83, LightTransmittance = 0.90, Description = "Test" };
+            Assert.Equal(guid_Glass, transparentMaterial.Guid);
+            Assert.Equal("Float glass", transparentMaterial.Name);
+            Assert.Equal(1.0, transparentMaterial.Conductivity);
+            TransparentMaterial transparentMaterial_Copy = new(transparentMaterial);
+            Assert.Equal(guid_Glass, transparentMaterial_Copy.Guid);
+            Assert.Equal("Float glass", transparentMaterial_Copy.Name);
+            Assert.Equal(0.83, transparentMaterial_Copy.SolarTransmittance);
+            Assert.Equal(0.90, transparentMaterial_Copy.LightTransmittance);
+            Assert.Equal(0.837, transparentMaterial_Copy.Emissivity?.Internal);
+            Core.xUnit.Query.SerializationCheck(transparentMaterial);
+
+            Guid guid_Argon = Core.Create.Guid("Test.Material.Argon");
+            FluidMaterial fluidMaterial = new(guid_Argon, "Argon") { Conductivity = 0.01684, Density = 1.699, DynamicViscosity = 2.164e-5, SpecificHeat = 519.0, MolarMass = 39.948 };
+            Assert.Equal(guid_Argon, fluidMaterial.Guid);
+            Assert.Equal("Argon", fluidMaterial.Name);
+            FluidMaterial fluidMaterial_Copy = new(fluidMaterial);
+            Assert.Equal(guid_Argon, fluidMaterial_Copy.Guid);
+            Assert.Equal("Argon", fluidMaterial_Copy.Name);
+            Assert.Equal(0.01684, fluidMaterial_Copy.Conductivity);
+            Assert.Equal(39.948, fluidMaterial_Copy.MolarMass);
+            Core.xUnit.Query.SerializationCheck(fluidMaterial);
+
+            OpaqueMaterial opaqueMaterial = new(Core.Create.Guid("Test.Material.Softwood"), "Softwood") { Conductivity = 0.16 };
+            WindowConstruction windowConstruction = new("Window", null);
+            ConstructionRelationCluster constructionRelationCluster = new([windowConstruction, transparentMaterial, fluidMaterial, opaqueMaterial]);
+
+            List<Guid> guids_Pane = [Core.Create.Guid("Test.Window.Pane.0"), Core.Create.Guid("Test.Window.Pane.1"), Core.Create.Guid("Test.Window.Pane.2")];
+            Assert.NotNull(Building.Create.StructureLayer(constructionRelationCluster, windowConstruction, OpeningConstructionPart.Pane, transparentMaterial, 0.004, guids_Pane[0]));
+            Assert.NotNull(Building.Create.StructureLayer(constructionRelationCluster, windowConstruction, OpeningConstructionPart.Pane, fluidMaterial, 0.016, guids_Pane[1]));
+            Assert.NotNull(Building.Create.StructureLayer(constructionRelationCluster, windowConstruction, OpeningConstructionPart.Pane, transparentMaterial, 0.004, guids_Pane[2]));
+
+            Guid guid_Frame = Core.Create.Guid("Test.Window.Frame.0");
+            StructureLayer? structureLayer_Frame = Building.Create.StructureLayer(constructionRelationCluster, windowConstruction, OpeningConstructionPart.Frame, opaqueMaterial, 0.068, guid_Frame);
+            Assert.NotNull(structureLayer_Frame);
+            Assert.Equal(guid_Frame, structureLayer_Frame.Guid);
+            Assert.Equal(0, structureLayer_Frame.Index);
+
+            List<IStructureLayer>? structureLayers_Pane = constructionRelationCluster.GetStructureLayers(windowConstruction, OpeningConstructionPart.Pane);
+            Assert.NotNull(structureLayers_Pane);
+            Assert.Equal(3, structureLayers_Pane.Count);
+            structureLayers_Pane.Sort((x, y) => x.Index.CompareTo(y.Index));
+            for (int i = 0; i < guids_Pane.Count; i++)
+            {
+                Assert.Equal(guids_Pane[i], structureLayers_Pane[i].Guid);
+                Assert.Equal(i, structureLayers_Pane[i].Index);
+            }
+
+            Assert.Null(Building.Create.StructureLayer(constructionRelationCluster, windowConstruction, OpeningConstructionPart.Pane, new TransparentMaterial("Not in the cluster"), 0.004, Core.Create.Guid("Test.Window.Pane.3")));
+
+            // The overload without an identifier still creates a fresh one.
+            StructureLayer? structureLayer_Random = Building.Create.StructureLayer(constructionRelationCluster, windowConstruction, OpeningConstructionPart.Frame, opaqueMaterial, 0.01);
+            Assert.NotNull(structureLayer_Random);
+            Assert.NotEqual(guid_Frame, structureLayer_Random.Guid);
+            Assert.Equal(1, structureLayer_Random.Index);
+        }
     }
 }
