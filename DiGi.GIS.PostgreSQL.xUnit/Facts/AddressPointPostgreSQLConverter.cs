@@ -150,7 +150,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(1L, await ScalarAsync(npgsqlConnection, $"SELECT count(*) FROM {Constants.TableName.AddressPoint} WHERE reference_id = 'XUNIT-ADDRESS-1';"));
 
                 // Skipped input and null arguments
-                Assert.Equal(0L, await addressPointPostgreSQLConverter.UpdateAsync(countyId_AddressPoint_A, [null, new AddressPointMatch(null, AddressPointMatchType.Unmatched, null, null, null)]));
+                Assert.Equal(0L, await addressPointPostgreSQLConverter.UpdateAsync(countyId_AddressPoint_A, [null, new AddressPointMatch(null, AddressPointMatchType.Unmatched, null, null, null, null)]));
                 Assert.Null(await AddressPointPostgreSQLConverter.UpdateAsync(null, countyId_AddressPoint_A, addressPointMatches_A));
                 Assert.Null(await AddressPointPostgreSQLConverter.GetAddressPointMatchesByReferencesAsync(npgsqlConnection, null));
 
@@ -167,8 +167,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             {
                 AddressPoint addressPoint = new(new Point2D(-9999999, -9999999), streetName, null, houseNumber, localityName, null, null, referenceId, version);
                 return reference is null
-                    ? new AddressPointMatch(addressPoint, AddressPointMatchType.Unmatched, null, null, null)
-                    : new AddressPointMatch(addressPoint, AddressPointMatchType.Inside, reference, Guid.NewGuid(), 0.0);
+                    ? new AddressPointMatch(addressPoint, AddressPointMatchType.Unmatched, null, null, null, null)
+                    : new AddressPointMatch(addressPoint, AddressPointMatchType.Inside, reference, Guid.NewGuid(), 0.0, null);
             }
         }
     }

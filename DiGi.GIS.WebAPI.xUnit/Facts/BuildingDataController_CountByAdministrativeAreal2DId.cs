@@ -70,7 +70,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             try
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 Assert.IsType<BadRequestResult>(await controller.GetCountByAdministrativeAreal2DIdAsync(null!, 600));
                 Assert.IsType<BadRequestResult>(await controller.GetCountByAdministrativeAreal2DIdAsync(new BuildingDataCountByAdministrativeAreal2DIdParameter(), 600));
@@ -437,7 +437,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             try
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 List<Func<int?, int?, Task<IActionResult>>> actions =
                 [

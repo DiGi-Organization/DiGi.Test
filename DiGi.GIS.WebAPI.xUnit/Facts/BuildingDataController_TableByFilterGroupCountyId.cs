@@ -156,7 +156,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                     watcher,
                     scratch,
                     new PostgreSQL.Classes.Building2DPostgreSQLConverter(null),
-                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null),
+                    new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 // The fixture is live before the push, so a push that fails after the table exists still cleans up what it wrote.
                 TableByFilterGroupCountyFixture fixture = new(connectionData, path_Watcher, scratch.TableName, watcher, controller);

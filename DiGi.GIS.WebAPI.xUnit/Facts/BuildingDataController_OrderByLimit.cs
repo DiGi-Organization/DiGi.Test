@@ -27,7 +27,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                     gISWebAPIConfigurationFileWatcher,
                     new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null),
                     new PostgreSQL.Classes.Building2DPostgreSQLConverter(null),
-                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null),
+                    new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 foreach (int int_Limit in new int[] { 0, 1001 })
                 {

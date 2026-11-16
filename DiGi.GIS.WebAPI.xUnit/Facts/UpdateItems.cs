@@ -64,7 +64,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 AssertInternalServerError(await yearBuiltDataController.UpdateItemsByCountyIdsAsync(JsonArray(new GIS.Classes.YearBuiltData("reference")), [1]));
                 AssertLookupNotRun(await yearBuiltDataController.UpdateItemsByCountyIdsAsync(JsonArray(new GIS.Classes.YearBuiltData("reference")), [1]));
 
-                BuildingDataController buildingDataController = new(GISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController buildingDataController = new(GISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
                 Table table = new();
                 Column? column_Reference = table.AddColumn("Reference", typeof(string));
                 Column? column_CountyId = table.AddColumn("County Id", typeof(int));
@@ -121,7 +121,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 BuildingModelController buildingModelController = new(GISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingModelPostgreSQLConverter(null, BuildingModelDetailLevel.Component), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
                 Assert.IsType<NoContentResult>(await buildingModelController.UpdateItemsByCountyIdsAsync(jsonArray, [1]));
 
-                BuildingDataController buildingDataController = new(GISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController buildingDataController = new(GISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
                 Assert.IsType<NoContentResult>(await buildingDataController.UpdateItemsByCountyIdsAsync(null, [1]));
                 Assert.IsType<NoContentResult>(await buildingDataController.UpdateItemsByCountyIdsAsync(new JsonObject(), [1]));
             }

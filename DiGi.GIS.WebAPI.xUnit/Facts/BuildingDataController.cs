@@ -21,7 +21,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             try
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 Assert.IsType<BadRequestResult>(await controller.UpdateItemsByCountyIdsAsync(new JsonObject(), null));
                 Assert.IsType<BadRequestResult>(await controller.UpdateItemsByCountyIdsAsync(new JsonObject(), []));
@@ -53,7 +53,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 ]);
 
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 Assert.IsType<UnauthorizedResult>(await controller.UpdateItemsByCountyIdsAsync(new JsonObject(), [1]));
             }
@@ -74,7 +74,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             try
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 Core.IO.Table.Classes.Table table_NoReference = new();
                 table_NoReference.AddColumn("Other", typeof(string));
@@ -127,7 +127,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                 BuildingDataController controller = new(
                     gISWebAPIConfigurationFileWatcher,
                     new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(new DiGi.PostgreSQL.Classes.ConnectionData("127.0.0.1", "user", "pass", "db", 1)),
-                    new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                    new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null),
+                    new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
                 controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
                 ObjectResult objectResult = Assert.IsType<ObjectResult>(await controller.GetCategoriesAsync());
@@ -184,7 +185,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             try
             {
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path);
-                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null), new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 BuildingDataCountByFilterGroupParameter parameter = new() { CountyId = 10365 };
 

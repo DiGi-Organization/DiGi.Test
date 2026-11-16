@@ -64,7 +64,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 Assert.True(await scratchBuildingDataPostgreSQLConverter.PushAsync(table));
 
                 using GISWebAPIConfigurationFileWatcher gISWebAPIConfigurationFileWatcher = new(path_Watcher);
-                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, scratchBuildingDataPostgreSQLConverter, new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                BuildingDataController controller = new(gISWebAPIConfigurationFileWatcher, scratchBuildingDataPostgreSQLConverter, new PostgreSQL.Classes.Building2DPostgreSQLConverter(null), new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null), new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 // Physical order, following the header.
                 HashSet<string> references = [];

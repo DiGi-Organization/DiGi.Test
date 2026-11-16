@@ -113,8 +113,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             {
                 AddressPoint addressPoint = new(new Point2D(-9999999, -9999999), "Skrzyzowanie", null, "1", "Testowo", null, null, referenceId, version);
                 return addressPointMatchType == AddressPointMatchType.Unmatched
-                    ? new AddressPointMatch(addressPoint, addressPointMatchType, null, null, null)
-                    : new AddressPointMatch(addressPoint, addressPointMatchType, buildingReference, Guid.NewGuid(), addressPointMatchType == AddressPointMatchType.Inside ? 0.0 : 5.0);
+                    ? new AddressPointMatch(addressPoint, addressPointMatchType, null, null, null, null)
+                    : new AddressPointMatch(addressPoint, addressPointMatchType, buildingReference, Guid.NewGuid(), addressPointMatchType == AddressPointMatchType.Inside ? 0.0 : 5.0, null);
             }
         }
     }

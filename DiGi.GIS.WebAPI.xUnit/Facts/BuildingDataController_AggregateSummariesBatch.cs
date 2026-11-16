@@ -35,7 +35,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                     gISWebAPIConfigurationFileWatcher,
                     new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(null),
                     new PostgreSQL.Classes.Building2DPostgreSQLConverter(null),
-                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null),
+                    new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 Assert.IsType<BadRequestResult>(await controller.GetAggregateSummariesAsync(new AggregateSummariesRequestParameter { Measures = [] }));
 
@@ -257,7 +258,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                     gISWebAPIConfigurationFileWatcher,
                     new PostgreSQL.Classes.BuildingDataPostgreSQLConverter(new ConnectionData("127.0.0.1", "user", "pass", "db", 1)),
                     new PostgreSQL.Classes.Building2DPostgreSQLConverter(null),
-                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null),
+                    new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
                 controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
                 ObjectResult objectResult = Assert.IsType<ObjectResult>(await controller.GetAggregateSummariesAsync(new AggregateSummariesRequestParameter
@@ -401,7 +403,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                     watcher,
                     scratchBuildingDataPostgreSQLConverter,
                     new PostgreSQL.Classes.Building2DPostgreSQLConverter(null),
-                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null));
+                    new PostgreSQL.Classes.AdministrativeAreal2DPostgreSQLConverter(null),
+                    new PostgreSQL.Classes.AddressPointPostgreSQLConverter(null));
 
                 // The fixture is live before the push, so a push that fails after the table exists still cleans up
                 // what it wrote (and the fact fails loudly rather than skipping over a half-written base).
