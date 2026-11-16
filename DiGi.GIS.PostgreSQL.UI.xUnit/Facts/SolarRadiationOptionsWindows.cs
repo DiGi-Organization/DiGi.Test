@@ -16,7 +16,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Verifies that the solar radiation solve options window builds without a database or a running application, fills its controls from the options it is given and works on a copy of them (DiGi.GIS.PostgreSQL.UI#44).
+        /// Verifies that the solar radiation solve options window builds without a database or a running application, fills its controls from the options it is given - an unset building limit as an empty box - and works on a copy of them (DiGi.GIS.PostgreSQL.UI#44, #45).
         /// <para>The window is the only way a solve is scoped, and an unscoped solve is the whole country once per radius. A multi-part county is included because its pieces are told apart only by the identifier the naming callback appends; radius 0 because it is the isolated building, the reference every shortfall is measured against.</para>
         /// </summary>
         [Fact]
@@ -31,13 +31,16 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 TileSize = 125,
                 ReceiverCountMax = 300,
                 CasterTriangleCountMax = 64_000,
-                CommandTimeout = 900
+                CommandTimeout = 900,
+                BuildingCountMax = 500
             };
 
             List<double>? radii = null;
             List<AdministrativeAreal2DReference>? administrativeAreal2DReferences_Selected = null;
             bool? skipExisting = null;
             string? tileSize = null;
+            string? buildingCountMax_Set = null;
+            string? buildingCountMax_Unset = null;
             PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Held = null;
 
             Exception? exception = RunSTA(() =>
@@ -48,9 +51,13 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 administrativeAreal2DReferences_Selected = postgreSQLBuildingSolarRadiationSolveOptionsWindow.ListBoxControl_Counties.GetItems<AdministrativeAreal2DReference>();
                 skipExisting = postgreSQLBuildingSolarRadiationSolveOptionsWindow.CheckBox_SkipExisting.IsChecked;
                 tileSize = postgreSQLBuildingSolarRadiationSolveOptionsWindow.TextBoxControl_TileSize.Value;
+                buildingCountMax_Set = postgreSQLBuildingSolarRadiationSolveOptionsWindow.TextBoxControl_BuildingCountMax.Value;
 
                 postgreSQLBuildingSolarRadiationSolveOptions_Held = postgreSQLBuildingSolarRadiationSolveOptionsWindow.PostgreSQLBuildingSolarRadiationSolveOptions;
                 postgreSQLBuildingSolarRadiationSolveOptions_Held.CommandTimeout = 30;
+                postgreSQLBuildingSolarRadiationSolveOptions_Held.BuildingCountMax = null;
+
+                buildingCountMax_Unset = new PostgreSQLBuildingSolarRadiationSolveOptionsWindow(null, SolarRadiationOptionsWindowCounties()).TextBoxControl_BuildingCountMax.Value;
             });
 
             Assert.Null(exception);
@@ -65,10 +72,15 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             Assert.False(skipExisting);
             Assert.Equal(125.0.ToString(System.Globalization.CultureInfo.CurrentCulture), tileSize);
 
+            // The building limit: a value as itself, no limit as an empty box rather than 0.
+            Assert.Equal(500.ToString(System.Globalization.CultureInfo.CurrentCulture), buildingCountMax_Set);
+            Assert.Equal(string.Empty, buildingCountMax_Unset);
+
             // A cancelled dialog has to leave the caller's options alone, which only holds for a copy.
             Assert.NotNull(postgreSQLBuildingSolarRadiationSolveOptions_Held);
             Assert.False(ReferenceEquals(postgreSQLBuildingSolarRadiationSolveOptions, postgreSQLBuildingSolarRadiationSolveOptions_Held));
             Assert.Equal(900, postgreSQLBuildingSolarRadiationSolveOptions.CommandTimeout);
+            Assert.Equal(500, postgreSQLBuildingSolarRadiationSolveOptions.BuildingCountMax);
         }
 
         /// <summary>
