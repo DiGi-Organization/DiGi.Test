@@ -16,7 +16,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Verifies that the solar radiation solve options window builds without a database or a running application, fills its controls from the options it is given - an unset building limit as an empty box - and works on a copy of them (DiGi.GIS.PostgreSQL.UI#44, #45).
+        /// Verifies that the solar radiation solve options window builds without a database or a running application, fills its controls from the options it is given - an unset building limit as an empty box - the degree of parallelism as itself and its automatic default as 0 - and works on a copy of them (DiGi.GIS.PostgreSQL.UI#44, #45, #46).
         /// <para>The window is the only way a solve is scoped, and an unscoped solve is the whole country once per radius. A multi-part county is included because its pieces are told apart only by the identifier the naming callback appends; radius 0 because it is the isolated building, the reference every shortfall is measured against.</para>
         /// </summary>
         [Fact]
@@ -32,7 +32,8 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 ReceiverCountMax = 300,
                 CasterTriangleCountMax = 64_000,
                 CommandTimeout = 900,
-                BuildingCountMax = 500
+                BuildingCountMax = 500,
+                MaxDegreeOfParallelism = 6
             };
 
             List<double>? radii = null;
@@ -41,6 +42,8 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             string? tileSize = null;
             string? buildingCountMax_Set = null;
             string? buildingCountMax_Unset = null;
+            string? maxDegreeOfParallelism_Set = null;
+            string? maxDegreeOfParallelism_Default = null;
             PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Held = null;
 
             Exception? exception = RunSTA(() =>
@@ -52,12 +55,15 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 skipExisting = postgreSQLBuildingSolarRadiationSolveOptionsWindow.CheckBox_SkipExisting.IsChecked;
                 tileSize = postgreSQLBuildingSolarRadiationSolveOptionsWindow.TextBoxControl_TileSize.Value;
                 buildingCountMax_Set = postgreSQLBuildingSolarRadiationSolveOptionsWindow.TextBoxControl_BuildingCountMax.Value;
+                maxDegreeOfParallelism_Set = postgreSQLBuildingSolarRadiationSolveOptionsWindow.TextBoxControl_MaxDegreeOfParallelism.Value;
 
                 postgreSQLBuildingSolarRadiationSolveOptions_Held = postgreSQLBuildingSolarRadiationSolveOptionsWindow.PostgreSQLBuildingSolarRadiationSolveOptions;
                 postgreSQLBuildingSolarRadiationSolveOptions_Held.CommandTimeout = 30;
                 postgreSQLBuildingSolarRadiationSolveOptions_Held.BuildingCountMax = null;
 
-                buildingCountMax_Unset = new PostgreSQLBuildingSolarRadiationSolveOptionsWindow(null, SolarRadiationOptionsWindowCounties()).TextBoxControl_BuildingCountMax.Value;
+                PostgreSQLBuildingSolarRadiationSolveOptionsWindow postgreSQLBuildingSolarRadiationSolveOptionsWindow_Default = new(null, SolarRadiationOptionsWindowCounties());
+                buildingCountMax_Unset = postgreSQLBuildingSolarRadiationSolveOptionsWindow_Default.TextBoxControl_BuildingCountMax.Value;
+                maxDegreeOfParallelism_Default = postgreSQLBuildingSolarRadiationSolveOptionsWindow_Default.TextBoxControl_MaxDegreeOfParallelism.Value;
             });
 
             Assert.Null(exception);
@@ -75,6 +81,10 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             // The building limit: a value as itself, no limit as an empty box rather than 0.
             Assert.Equal(500.ToString(System.Globalization.CultureInfo.CurrentCulture), buildingCountMax_Set);
             Assert.Equal(string.Empty, buildingCountMax_Unset);
+
+            // The degree of parallelism: a value as itself, the automatic default as 0.
+            Assert.Equal(6.ToString(System.Globalization.CultureInfo.CurrentCulture), maxDegreeOfParallelism_Set);
+            Assert.Equal(0.ToString(System.Globalization.CultureInfo.CurrentCulture), maxDegreeOfParallelism_Default);
 
             // A cancelled dialog has to leave the caller's options alone, which only holds for a copy.
             Assert.NotNull(postgreSQLBuildingSolarRadiationSolveOptions_Held);
