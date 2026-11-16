@@ -25,6 +25,11 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         private const int countyId_SolarRadiation_Size = 990303;
 
         /// <summary>
+        /// The scratch county part of the building solar radiation summary fact.
+        /// </summary>
+        private const int countyId_SolarRadiation_Summary = 990304;
+
+        /// <summary>
         /// The number of hours of the solar reference year, the length of every surface's shading factors.
         /// </summary>
         private const int hourCount_SolarReferenceYear = 8760;
@@ -40,7 +45,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.NotNull(npgsqlConnection);
             await npgsqlConnection.OpenAsync();
 
-            foreach (int countyId in new int[] { countyId_SolarRadiation_A, countyId_SolarRadiation_B, countyId_SolarRadiation_Size })
+            foreach (int countyId in new int[] { countyId_SolarRadiation_A, countyId_SolarRadiation_B, countyId_SolarRadiation_Size, countyId_SolarRadiation_Summary })
             {
                 await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS {Constants.TableName.BuildingSolarRadiation}_{countyId};");
             }
