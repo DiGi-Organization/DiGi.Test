@@ -78,7 +78,7 @@ namespace DiGi.Analytical.xUnit
 
         /// <summary>
         /// Tests the pane layers of the <see cref="ConstructionFlavour.TypicalAsBuilt"/> window constructions of <see cref="Building.Regulation.Create.ConstructionLibrary_PL"/> (DiGi-Organization/DiGi.Analytical#19).
-        /// <para>Every window construction has <see cref="OpeningConstructionPart.Pane"/> layers, and the PN-EN 673 Ug of the layers alone is within the range stated for its TABULA window name: 5.6 - 5.8 W/(m2K) for single glazing and 1.0 - 1.2 for the 4/16/4 argon low-e unit (Pressglass, "Szklane fiszki cz. 1"), 1.62 ± 0.03 for the 4/12/4 air low-e unit (ift report 11-003309-PR01, type 5), and plausibility ranges for the coupled window and the 7.5 mm double glazing, whose build-ups are DEFAULT. The declared Uw stays the value the cluster overload of <c>Building.Query.ThermalTransmittance</c> returns for a construction without an outline.</para>
+        /// <para>Every window construction has <see cref="OpeningConstructionPart.Pane"/> layers, and the PN-EN 673 Ug of the layers alone is within the range stated for its TABULA window name: 5.6 - 5.8 W/(m2K) for single glazing and 1.0 - 1.2 for the 4/16/4 argon low-e unit (Pressglass, "Szklane fiszki cz. 1"), 1.62 ± 0.03 for the 4/12/4 air low-e unit (ift report 11-003309-PR01, type 5), and plausibility ranges for the coupled window and the 7.5 mm double glazing, whose build-ups are DEFAULT. The declared Uw stays the value the cluster overload of <c>Building.Query.ThermalTransmittance</c> returns for a construction without an outline. Every window declares the Uf and Ψg of its frame generation (PN-EN ISO 10077-1 Annex D and Table E.1 through secondary sources), and its description names their source.</para>
         /// <para>The library's materials, rebuilt as the ift report's type 16 (4/12/4, 90 % argon, ε = 0.03 on face 3), give its Ug of 1.28 within ± 0.03, which checks the glass, gas and calculation together against a published EN 673 result. The fact writes Ug per window to <c>reports/ConstructionGlazing.md</c> and reports every failing window at once.</para>
         /// </summary>
         [Fact]
@@ -96,6 +96,16 @@ namespace DiGi.Analytical.xUnit
                 ["plastic frame, glass unit ( (one cell gas filled)"] = (1.0, 1.2, "Pressglass, ift type 16"),
             };
 
+            // The declared Uf [W/(m2K)] and Ψg [W/(mK)] per TABULA window name: PN-EN ISO 10077-1 Annex D and Table E.1 through their secondary sources.
+            Dictionary<string, (double FrameThermalTransmittance, double GlazingLinearThermalTransmittance)> frames = new(StringComparer.Ordinal)
+            {
+                ["single glazed, wood frame"] = (2.0, 0.0),
+                ["French window"] = (1.8, 0.0),
+                ["wood frame, double glazed air filled (7,5 mm gap)"] = (1.9, 0.04),
+                ["plastic frame, glass unit (one cell)"] = (2.0, 0.06),
+                ["plastic frame, glass unit ( (one cell gas filled)"] = (2.0, 0.06),
+            };
+
             string Layers(List<IStructureLayer> structureLayers)
             {
                 return string.Join(" / ", structureLayers.ConvertAll(x => string.Format(CultureInfo.InvariantCulture, "{0} {1}", constructionRelationCluster.GetMaterial(x)?.Name, Math.Round(x.Thickness * 1000.0, 1))));
@@ -109,8 +119,8 @@ namespace DiGi.Analytical.xUnit
             stringBuilder.AppendLine();
             stringBuilder.AppendLine(string.Format(CultureInfo.InvariantCulture, "Library {0}. Ug per PN-EN 673 from the pane layers alone: vertical glazing, Tm = 283 K, ΔT = 15 K. Layers outside to inside, thickness in mm.", Building.Regulation.Create.ConstructionLibrary_PL_Version));
             stringBuilder.AppendLine();
-            stringBuilder.AppendLine("| Window construction | Pane layers | Ug | Range | Range source | Uw declared |");
-            stringBuilder.AppendLine("|---|---|---|---|---|---|");
+            stringBuilder.AppendLine("| Window construction | Pane layers | Ug | Range | Range source | Uf | Ψg | Uw declared |");
+            stringBuilder.AppendLine("|---|---|---|---|---|---|---|---|");
 
             foreach (ConstructionSet constructionSet in constructionLibrary.GetConstructionSets())
             {
@@ -149,7 +159,22 @@ namespace DiGi.Analytical.xUnit
                 Assert.Equal(thermalTransmittance_Declared, Building.Query.ThermalTransmittance(constructionRelationCluster, windowConstruction));
                 Assert.Contains("Pane layers", windowConstruction.Description);
 
-                stringBuilder.AppendLine(string.Format(CultureInfo.InvariantCulture, "| {0} | {1} | {2:0.000} | {3} - {4} | {5} | {6} |", name, Layers(structureLayers), glazingThermalTransmittance, range.Minimum, range.Maximum, range.Source, thermalTransmittance_Declared));
+                Assert.True(frames.TryGetValue(name_Tabula, out (double FrameThermalTransmittance, double GlazingLinearThermalTransmittance) frame), name_Tabula);
+                if (!windowConstruction.TryGetValue(new EnumParameterDefinition(OpeningConstructionParameter.FrameThermalTransmittance), out double frameThermalTransmittance) || frameThermalTransmittance != frame.FrameThermalTransmittance)
+                {
+                    failures.Add(string.Format(CultureInfo.InvariantCulture, "{0}: Uf {1}, expected {2}", name, frameThermalTransmittance, frame.FrameThermalTransmittance));
+                }
+
+                if (!windowConstruction.TryGetValue(new EnumParameterDefinition(OpeningConstructionParameter.GlazingLinearThermalTransmittance), out double glazingLinearThermalTransmittance) || glazingLinearThermalTransmittance != frame.GlazingLinearThermalTransmittance)
+                {
+                    failures.Add(string.Format(CultureInfo.InvariantCulture, "{0}: Ψg {1}, expected {2}", name, glazingLinearThermalTransmittance, frame.GlazingLinearThermalTransmittance));
+                }
+
+                string description = windowConstruction.Description ?? string.Empty;
+                Assert.Contains("Frame ", description);
+                Assert.True(description.Contains("as reproduced in", StringComparison.Ordinal) || description.Contains("DEFAULT", StringComparison.Ordinal), name);
+
+                stringBuilder.AppendLine(string.Format(CultureInfo.InvariantCulture, "| {0} | {1} | {2:0.000} | {3} - {4} | {5} | {6} | {7} | {8} |", name, Layers(structureLayers), glazingThermalTransmittance, range.Minimum, range.Maximum, range.Source, frameThermalTransmittance, glazingLinearThermalTransmittance, thermalTransmittance_Declared));
             }
 
             // The ift report's type 16, rebuilt from the library's materials.
