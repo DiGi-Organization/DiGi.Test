@@ -325,9 +325,10 @@ namespace DiGi.GIS.Analytical.xUnit
                 values.Add((administrativeDivision.Name ?? string.Empty, (polygonalFace2D?.GetArea() ?? 0) / 1e6, climateZone));
             }
 
-            // The code count is not asserted: on 2026-11-17 the objects held 379 codes, because the object of nakielski (id 6027) carries
-            // Code 1004, the code of łęczycki, while its code column is 0410 (DiGi-Organization/DiGi.GIS.PostgreSQL#142). Every county name
-            // filed under a code is listed, so such a row shows it.
+            // 380 codes: an object whose Code disagrees with its row merges two counties under one code, as nakielski (id 6027) did under
+            // 1004 until DiGi-Organization/DiGi.GIS.PostgreSQL#142. Every county name filed under a code is listed, so such a row would show it.
+            Assert.Equal(380, dictionary.Count);
+
             StringBuilder stringBuilder = new();
             stringBuilder.Append("| Code | County | Parts | Zone |\n|---|---|---|---|\n");
             foreach (KeyValuePair<string, List<(string Name, double Area, Regulation.Enums.ClimateZone ClimateZone)>> keyValuePair in dictionary)
