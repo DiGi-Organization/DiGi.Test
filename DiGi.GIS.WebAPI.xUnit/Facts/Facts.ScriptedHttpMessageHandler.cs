@@ -50,6 +50,11 @@ namespace DiGi.GIS.WebAPI.xUnit
             /// </summary>
             public ConcurrentQueue<(string PathAndQuery, string? Body)> Requests { get; } = new();
 
+            /// <summary>
+            /// Gets the <c>Authorization</c> header of every request answered, in the order of <see cref="Requests"/>; null for a request without one.
+            /// </summary>
+            public ConcurrentQueue<string?> Authorizations { get; } = new();
+
             /// <inheritdoc />
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
@@ -75,6 +80,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 }
 
                 Requests.Enqueue((request.RequestUri?.PathAndQuery ?? string.Empty, body));
+                Authorizations.Enqueue(request.Headers.Authorization?.ToString());
 
                 return response(path, count);
             }
