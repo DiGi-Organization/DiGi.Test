@@ -129,6 +129,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(2, (int)UpdateRejectionReason.CountyUnresolved);
             Assert.Equal(3, (int)UpdateRejectionReason.PartitionUnavailable);
             Assert.Equal(4, (int)UpdateRejectionReason.MissingCounty);
+            Assert.Equal(5, (int)UpdateRejectionReason.GeometryRejected);
+            Assert.Equal(6, (int)UpdateRejectionReason.NoImages);
         }
 
         /// <summary>
