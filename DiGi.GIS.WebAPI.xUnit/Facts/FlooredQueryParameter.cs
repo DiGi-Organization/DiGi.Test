@@ -85,6 +85,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 (typeof(BuildingModelController), nameof(BuildingModelController.GetItemsByCountyIdAsync), "commandTimeout", 0, false),
                 (typeof(EPWFileController), nameof(EPWFileController.GetEPWFileByIdAsync), "commandTimeout", 0, false),
                 (typeof(EPWFileController), nameof(EPWFileController.GetEPWFileLocationsAsync), "commandTimeout", 0, false),
+                (typeof(BuildingSolarRadiationController), nameof(BuildingSolarRadiationController.SetSolarRadiationsAsync), "commandTimeout", 0, false),
 
                 // the keyset page of buildingmodel/itemsbycountyid guards idAfter < 0 and limit <= 0 (DiGi.GIS.WebAPI#93).
                 (typeof(BuildingModelController), nameof(BuildingModelController.GetItemsByCountyIdAsync), "idAfter", 0, false),
@@ -141,7 +142,7 @@ namespace DiGi.GIS.WebAPI.xUnit
         }
 
         /// <summary>
-        /// Asserts every <c>commandTimeout</c> parameter on every action of every gis controller carries <see cref="MinimumAttribute"/>(0), and that there are exactly seventy-two of them - fifty after DiGi-Organization/DiGi.GIS.WebAPI#48, the five year built maintenance actions of DiGi-Organization/DiGi.GIS.WebAPI#50, the filtered row count of DiGi-Organization/DiGi.GIS.WebAPI#52, the area row count of DiGi-Organization/DiGi.GIS.WebAPI#53, the aggregate summaries batch of DiGi-Organization/DiGi.GIS.WebAPI#56, the estimated building 2D counts of DiGi-Organization/DiGi.GIS.PostgreSQL.UI#32, the address point count of DiGi-Organization/DiGi.GIS.WebAPI#72, the two occupancy snapshots of DiGi-Organization/DiGi.GIS.WebAPI#73 and DiGi-Organization/DiGi.GIS.PostgreSQL#108, the acquisition coverage batch of DiGi-Organization/DiGi.GIS.PostgreSQL#134, the four paper 01 verification reads (open building register and county summaries, test-area validation summary, BDL values), the solar radiation county summaries of DiGi-Organization/DiGi.GIS.WebAPI#82, the one-call address read of DiGi-Organization/DiGi.GIS.WebAPI#85, and the three solar solve reads of DiGi-Organization/DiGi.GIS.WebAPI#93, each floored.
+        /// Asserts every <c>commandTimeout</c> parameter on every action of every gis controller carries <see cref="MinimumAttribute"/>(0), and that there are exactly seventy-three of them - fifty after DiGi-Organization/DiGi.GIS.WebAPI#48, the five year built maintenance actions of DiGi-Organization/DiGi.GIS.WebAPI#50, the filtered row count of DiGi-Organization/DiGi.GIS.WebAPI#52, the area row count of DiGi-Organization/DiGi.GIS.WebAPI#53, the aggregate summaries batch of DiGi-Organization/DiGi.GIS.WebAPI#56, the estimated building 2D counts of DiGi-Organization/DiGi.GIS.PostgreSQL.UI#32, the address point count of DiGi-Organization/DiGi.GIS.WebAPI#72, the two occupancy snapshots of DiGi-Organization/DiGi.GIS.WebAPI#73 and DiGi-Organization/DiGi.GIS.PostgreSQL#108, the acquisition coverage batch of DiGi-Organization/DiGi.GIS.PostgreSQL#134, the four paper 01 verification reads (open building register and county summaries, test-area validation summary, BDL values), the solar radiation county summaries of DiGi-Organization/DiGi.GIS.WebAPI#82, the one-call address read of DiGi-Organization/DiGi.GIS.WebAPI#85, and the three solar solve reads and the batch solar radiation write of DiGi-Organization/DiGi.GIS.WebAPI#93, each floored.
         /// <para>Derived from the assembly rather than from a named list, so a controller added later is swept in instead of left out: the named facts pin the endpoints DiGi-Organization/DiGi.GIS.WebAPI#48 changed, while this one fails on the next one added - a new action whose timeout could reach the database negative, with no floor and no recorded decision to omit one. The count is a tripwire, not a target: it is what forces a decision either way (DiGi-Organization/DiGi.GIS.WebAPI#48).</para>
         /// </summary>
         [Fact]
@@ -182,8 +183,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                 }
             }
 
-            // 72 since the solar solve reads of DiGi.GIS.WebAPI#93 (buildingmodel/itemsbycountyid, epwfile/itembyid, epwfile/locations).
-            Assert.Equal(72, count);
+            // 73 since the solar solve endpoints of DiGi.GIS.WebAPI#93 (buildingmodel/itemsbycountyid, epwfile/itembyid, epwfile/locations, buildingsolarradiation/setsolarradiations).
+            Assert.Equal(73, count);
         }
 
         /// <summary>
