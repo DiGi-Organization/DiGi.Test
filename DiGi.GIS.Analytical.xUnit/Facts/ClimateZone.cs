@@ -325,8 +325,9 @@ namespace DiGi.GIS.Analytical.xUnit
                 values.Add((administrativeDivision.Name ?? string.Empty, (polygonalFace2D?.GetArea() ?? 0) / 1e6, climateZone));
             }
 
-            // The code count is not asserted: on 2026-11-17 the production rows held 379 codes, because the nakielski county is stored
-            // under 1004, the code of łęczycki, instead of 0410. Every county name filed under a code is listed, so such a row shows it.
+            // The code count is not asserted: on 2026-11-17 the objects held 379 codes, because the object of nakielski (id 6027) carries
+            // Code 1004, the code of łęczycki, while its code column is 0410 (DiGi-Organization/DiGi.GIS.PostgreSQL#142). Every county name
+            // filed under a code is listed, so such a row shows it.
             StringBuilder stringBuilder = new();
             stringBuilder.Append("| Code | County | Parts | Zone |\n|---|---|---|---|\n");
             foreach (KeyValuePair<string, List<(string Name, double Area, Regulation.Enums.ClimateZone ClimateZone)>> keyValuePair in dictionary)

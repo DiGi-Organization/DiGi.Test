@@ -20,7 +20,7 @@ namespace DiGi.Analytical.xUnit
     {
         /// <summary>
         /// Tests the <see cref="ConstructionFlavour.TypicalAsBuilt"/> sets of <see cref="Building.Regulation.Create.ConstructionLibrary_PL"/> against the TABULA web tool values (DiGi-Organization/DiGi.Analytical#15).
-        /// <para>Spot values are checked on both sides of the 1945/1946 and 2008/2009 period boundaries, an apartment block before 1967 must take the multi-family constructions, and every set must hold exactly the ten roles TABULA covers plus the DEFAULT InternalWall, PartyWall and IntermediateFloor (DiGi-Organization/DiGi.Analytical#18), DoorToUnheatedSpace served by the external door and a DEFAULT GarageDoor with a cited U (DiGi-Organization/DiGi.Analytical#19). No Regulation set has a GarageDoor, and each says so.</para>
+        /// <para>Spot values are checked on both sides of the 1945/1946 and 2008/2009 period boundaries, an apartment block before 1967 must take the multi-family constructions, and every set must hold exactly the ten roles TABULA covers plus the DEFAULT InternalWall, PartyWall and IntermediateFloor (DiGi-Organization/DiGi.Analytical#18), DoorToUnheatedSpace served by the external door and a DEFAULT GarageDoor with a cited U (DiGi-Organization/DiGi.Analytical#19). No Regulation set has a GarageDoor, and each says so. Every set of either flavour names in its source each role it leaves empty (DiGi-Organization/DiGi.Analytical#16).</para>
         /// </summary>
         [Fact]
         public void Create_ConstructionLibrary_PL_TypicalAsBuilt()
@@ -132,6 +132,19 @@ namespace DiGi.Analytical.xUnit
 
                 Assert.Null(constructionLibrary.GetConstruction(constructionSet, ConstructionRole.GarageDoor));
                 Assert.Contains("GarageDoor", constructionSet.Source);
+            }
+
+            // Every key has every role filled, or its set names the gap in its source (DiGi-Organization/DiGi.Analytical#16).
+            foreach (ConstructionSet constructionSet in constructionLibrary.GetConstructionSets())
+            {
+                HashSet<ConstructionRole> constructionRoles = [.. constructionSet.GetConstructionRoles()];
+                foreach (ConstructionRole constructionRole in Enum.GetValues<ConstructionRole>())
+                {
+                    if (constructionRole != ConstructionRole.Undefined && !constructionRoles.Contains(constructionRole))
+                    {
+                        Assert.True(constructionSet.Source?.Contains(constructionRole.ToString()) == true, $"{constructionSet.ConstructionFlavour} {constructionSet.BuildingType} {constructionSet.StartDate:yyyy-MM-dd} {constructionSet.ClimateZone}: {constructionRole} is neither filled nor named in the source");
+                    }
+                }
             }
         }
 
