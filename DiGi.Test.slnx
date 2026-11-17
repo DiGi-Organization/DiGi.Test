@@ -707,6 +707,12 @@
       <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
     </Project>
   </Folder>
+  <Folder Name="/UI/">
+    <Project Path="../DiGi.UI.Windows/DiGi.UI.Windows/DiGi.UI.Windows.csproj" />
+    <Project Path="DiGi.UI.Windows.xUnit/DiGi.UI.Windows.xUnit.csproj">
+      <BuildDependency Project="../DiGi.UI.Windows/DiGi.UI.Windows/DiGi.UI.Windows.csproj" />
+    </Project>
+  </Folder>
   <Folder Name="/Unit/">
     <Project Path="../DiGi.Unit/DiGi.Unit/DiGi.Unit.csproj">
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
