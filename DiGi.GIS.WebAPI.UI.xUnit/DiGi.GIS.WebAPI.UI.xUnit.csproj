@@ -85,6 +85,12 @@
     <Reference Include="DiGi.GIS.PostgreSQL">
       <HintPath>..\..\DiGi.GIS.PostgreSQL\bin\DiGi.GIS.PostgreSQL.dll</HintPath>
     </Reference>
+    <Reference Include="DiGi.Harness">
+      <HintPath>..\..\DiGi.Harness\bin\DiGi.Harness.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Harness.WebAPI">
+      <HintPath>..\..\DiGi.Harness.WebAPI\bin\DiGi.Harness.WebAPI.dll</HintPath>
+    </Reference>
     <Reference Include="DiGi.GIS.WebAPI.UI">
       <HintPath>..\..\DiGi.GIS.WebAPI.UI\bin\DiGi.GIS.WebAPI.UI.dll</HintPath>
     </Reference>

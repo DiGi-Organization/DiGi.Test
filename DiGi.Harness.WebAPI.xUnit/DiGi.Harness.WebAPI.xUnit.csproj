@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+
+		<OutputPath>..\bin\$(MSBuildProjectName)\</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<Nullable>enable</Nullable>
+
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="10.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+		<!-- Serilog.Sinks.File is a NuGet dependency of DiGi.Serilog (referenced via HintPath by DiGi.Harness and DiGi.Harness.WebAPI), so it is re-declared here. -->
+		<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+		<PackageReference Include="xunit" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\DiGi.Harness\DiGi.Harness\DiGi.Harness.csproj" />
+		<ProjectReference Include="..\..\DiGi.Harness.WebAPI\DiGi.Harness.WebAPI\DiGi.Harness.WebAPI.csproj" />
+		<ProjectReference Include="..\DiGi.Core.xUnit\DiGi.Core.xUnit.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="DiGi.Serilog">
+			<HintPath>..\..\DiGi.Serilog\bin\DiGi.Serilog.dll</HintPath>
+		</Reference>
+		<Reference Include="DiGi.WebAPI">
+			<HintPath>..\..\DiGi.WebAPI\bin\DiGi.WebAPI.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
+
+</Project>

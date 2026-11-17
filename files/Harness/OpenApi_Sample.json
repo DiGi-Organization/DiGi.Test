@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.4",
+  "info": { "title": "Sample", "version": "1" },
+  "paths": {
+    "/gis/county/id": {
+      "get": {
+        "summary": "Finds the id of a county by name. Ignores case and diacritics.",
+        "parameters": [
+          { "name": "name", "in": "query", "required": true, "schema": { "type": "string", "example": "Kraków" } }
+        ],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "integer" } } } } }
+      }
+    },
+    "/gis/county/count": {
+      "get": {
+        "summary": "Counts the counties.",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/gis/building/{reference}": {
+      "get": {
+        "summary": "Returns one building.",
+        "parameters": [
+          { "$ref": "#/components/parameters/Reference" }
+        ],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Building" } } } } }
+      }
+    },
+    "/gis/building/itemsbyreferences": {
+      "post": {
+        "summary": "Returns the buildings with the given references.\r\nThe order follows the request.",
+        "parameters": [
+          { "name": "countyids", "in": "query", "schema": { "type": "array", "items": { "type": "integer" } } }
+        ],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Reference" } } } } },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/gis/building/delete": {
+      "post": {
+        "summary": "Deletes buildings.",
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Reference" } } } },
+        "responses": { "200": { "description": "OK" } }
+      },
+      "delete": {
+        "summary": "Deletes one building.",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/user/me": {
+      "get": {
+        "summary": "Returns the signed-in user.",
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "Reference": { "name": "reference", "in": "path", "required": true, "schema": { "type": "string" } }
+    },
+    "schemas": {
+      "Reference": { "type": "object", "properties": { "Value": { "type": "string" } } },
+      "Building": { "type": "object", "properties": { "Reference": { "$ref": "#/components/schemas/Reference" }, "Storeys": { "type": "integer", "example": 3 } } }
+    }
+  }
+}

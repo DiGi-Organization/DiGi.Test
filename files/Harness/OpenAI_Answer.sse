@@ -1,0 +1,10 @@
+: keep-alive comment
+
+data: {"id":"chatcmpl-2","object":"chat.completion.chunk","model":"qwen3","choices":[{"index":0,"delta":{"role":"assistant","content":"There are "},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-2","object":"chat.completion.chunk","model":"qwen3","choices":[{"index":0,"delta":{"content":"7 counties."},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-2","object":"chat.completion.chunk","model":"qwen3","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":120,"completion_tokens":8,"total_tokens":128}}
+
+data: [DONE]
+

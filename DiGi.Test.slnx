@@ -397,6 +397,26 @@
       <BuildDependency Project="../DiGi.GLTF/DiGi.GLTF/DiGi.GLTF.csproj" />
     </Project>
   </Folder>
+  <Folder Name="/Harness/">
+    <Project Path="../DiGi.Harness.WebAPI/DiGi.Harness.WebAPI/DiGi.Harness.WebAPI.csproj">
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Harness/DiGi.Harness/DiGi.Harness.csproj" />
+    </Project>
+    <Project Path="../DiGi.Harness/DiGi.Harness/DiGi.Harness.csproj">
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+    </Project>
+    <Project Path="DiGi.Harness.WebAPI.xUnit/DiGi.Harness.WebAPI.xUnit.csproj">
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Harness.WebAPI/DiGi.Harness.WebAPI/DiGi.Harness.WebAPI.csproj" />
+      <BuildDependency Project="../DiGi.Harness/DiGi.Harness/DiGi.Harness.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
+    <Project Path="DiGi.Harness.xUnit/DiGi.Harness.xUnit.csproj">
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.Harness/DiGi.Harness/DiGi.Harness.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
+  </Folder>
   <Folder Name="/Laya/">
     <Project Path="../DiGi.Laya/DiGi.Laya/DiGi.Laya.csproj">
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
