@@ -44,7 +44,7 @@ namespace DiGi.GIS.WebAPI.xUnit
         }
 
         /// <summary>
-        /// Verifies that the read answers 400 for each missing or invalid parameter - no id, no county, no or a non-positive or non-finite radius, no solver version - and never reaches the database (the converter has no connection).
+        /// Verifies that the read answers 400 for each missing or invalid parameter - no id, no county, no or a negative or non-finite radius, no solver version - and never reaches the database (the converter has no connection). Radius 0, the isolated building, is a valid key since DiGi.GIS.WebAPI#93.
         /// <para>Reference: DiGi.GIS.WebAPI#67.</para>
         /// </summary>
         [Fact]
@@ -57,7 +57,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             Assert.IsType<BadRequestResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(0, 1, 50, 1, null));
             Assert.IsType<BadRequestResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(7, null, 50, 1, null));
             Assert.IsType<BadRequestResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(7, 1, null, 1, null));
-            Assert.IsType<BadRequestResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(7, 1, 0, 1, null));
+            Assert.IsType<BadRequestResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(7, 1, -0.1, 1, null));
             Assert.IsType<BadRequestResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(7, 1, double.NaN, 1, null));
             Assert.IsType<BadRequestResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(7, 1, 50, null, null));
         }

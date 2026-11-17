@@ -93,6 +93,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 [ScratchBatchSolarRadiationResult(countyId_SolarRadiation, "XUNIT-SR-B1", 990311101L).ToJsonObject(), ScratchSurfaceSolarRadiation(Constants.SolarRadiation.HourCount).ToJsonObject()],
                 [ScratchBatchSolarRadiationResult(countyId_SolarRadiation, "XUNIT-SR-B1", 990311101L).ToJsonObject(), ScratchBatchSolarRadiationResult(countyId_SolarRadiation, null, 990311102L).ToJsonObject()],
                 [ScratchBatchSolarRadiationResult(countyId_SolarRadiation, "XUNIT-SR-B1", 990311101L).ToJsonObject(), ScratchBatchSolarRadiationResult(countyId_SolarRadiation, "XUNIT-SR-B2", 990311101L).ToJsonObject()],
+                [ScratchBatchSolarRadiationResult(countyId_SolarRadiation, "XUNIT-SR-B1", 990311101L).ToJsonObject(), ScratchRadiusSolarRadiationResult("XUNIT-SR-B2", 990311102L, -0.1).ToJsonObject()],
             ];
 
             for (int i = 0; i < jsonArrays.Count; i++)
@@ -186,6 +187,67 @@ namespace DiGi.GIS.WebAPI.xUnit
             {
                 await CleanupSolarRadiationBatchScratchAsync(connectionData_Main, connectionData_Storage);
             }
+        }
+
+        /// <summary>
+        /// Verifies on the throwaway test databases that the isolated building - radius 0, a variant the server-side solve stores (DiGi.GIS.PostgreSQL#136) - goes through the API like any other radius: the single write and the batch write each store one, and the read by building model id answers both at radius 0.
+        /// <para>Before DiGi.GIS.WebAPI#93 every one of these calls answered 400, so a client-side solve could not store the isolated variant. Medium test (two live database servers): it seeds <c>building_2d</c> rows under the scratch part 990311 and drops the scratch partitions before and after.</para>
+        /// </summary>
+        [MediumSkippableFact]
+        public async Task BuildingSolarRadiationController_Set_IsolatedRadius()
+        {
+            (ConnectionData connectionData_Main, ConnectionData connectionData_Storage) = SolarRadiationTestConnectionDatas();
+
+            using GISWebAPIConfigurationFileWatcher watcher = new(SolarRadiationConfigurationFilePath(true));
+
+            await CleanupSolarRadiationBatchScratchAsync(connectionData_Main, connectionData_Storage);
+            try
+            {
+                await using (NpgsqlConnection? npgsqlConnection = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Main))
+                {
+                    Assert.NotNull(npgsqlConnection);
+                    await npgsqlConnection.OpenAsync();
+
+                    Assert.True(await PostgreSQL.Create.TableAsync_Building2D(npgsqlConnection));
+                    Assert.True(await PostgreSQL.Create.TableAsync_Building2D_Partition(npgsqlConnection, countyId_SolarRadiation));
+                    await ExecuteSolarRadiationAsync(npgsqlConnection, $"INSERT INTO {PostgreSQL.Constants.TableName.Building2D} (county_id, reference) VALUES ({countyId_SolarRadiation}, 'XUNIT-SR-I1'), ({countyId_SolarRadiation}, 'XUNIT-SR-I2');");
+                }
+
+                BuildingSolarRadiationController controller = SolarRadiationController(watcher, connectionData_Main, connectionData_Storage, "owner@example.com");
+
+                Assert.IsType<OkObjectResult>(await controller.SetSolarRadiationAsync(ScratchRadiusSolarRadiationResult("XUNIT-SR-I1", 990311301L, 0).ToJsonObject()));
+
+                OkObjectResult okObjectResult = Assert.IsType<OkObjectResult>(await controller.SetSolarRadiationsAsync([ScratchRadiusSolarRadiationResult("XUNIT-SR-I2", 990311302L, 0).ToJsonObject()]));
+                Assert.Equal(1, Assert.IsType<int>(okObjectResult.Value));
+
+                foreach ((long buildingModelId, string reference) in new (long, string)[] { (990311301L, "XUNIT-SR-I1"), (990311302L, "XUNIT-SR-I2") })
+                {
+                    ContentResult contentResult = Assert.IsType<ContentResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(buildingModelId, countyId_SolarRadiation, 0, 1, null));
+                    GIS.Classes.BuildingSolarRadiationResult? buildingSolarRadiationResult_Read = Core.Convert.ToDiGi<GIS.Classes.BuildingSolarRadiationResult>(contentResult.Content)?.FirstOrDefault();
+                    Assert.NotNull(buildingSolarRadiationResult_Read);
+                    Assert.Equal(reference, buildingSolarRadiationResult_Read.Reference);
+                    Assert.Equal(0, buildingSolarRadiationResult_Read.Radius);
+                }
+
+                // The isolated variant is its own key: nothing is stored for the same building at 50 m.
+                Assert.IsType<NoContentResult>(await controller.GetSolarRadiationByBuildingModelIdAsync(990311301L, countyId_SolarRadiation, 50, 1, null));
+            }
+            finally
+            {
+                await CleanupSolarRadiationBatchScratchAsync(connectionData_Main, connectionData_Storage);
+            }
+        }
+
+        /// <summary>
+        /// Builds a scratch result filed under <see cref="countyId_SolarRadiation"/> at the given radius, with one surface carrying a whole reference year of shading factors.
+        /// </summary>
+        /// <param name="reference">The building reference.</param>
+        /// <param name="buildingModelId">The id of the building model.</param>
+        /// <param name="radius">The neighbour radius, in m; 0 for the isolated building.</param>
+        /// <returns>The result.</returns>
+        private static GIS.Classes.BuildingSolarRadiationResult ScratchRadiusSolarRadiationResult(string reference, long buildingModelId, double radius)
+        {
+            return new GIS.Classes.BuildingSolarRadiationResult(reference, countyId_SolarRadiation, buildingModelId, radius, 1, GIS.Enums.WeatherSourceType.EPW, "17", null, null, null, null, [ScratchSurfaceSolarRadiation(Constants.SolarRadiation.HourCount)]);
         }
 
         /// <summary>
