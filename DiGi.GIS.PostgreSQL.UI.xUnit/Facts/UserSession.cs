@@ -89,47 +89,103 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         }
 
         /// <summary>
-        /// Verifies that <see cref="WebAPIBuildingSolarRadiationSolveTask"/> renews its session before a write once the token is within five minutes of expiry, and writes with the new token; a token far from expiry is written with as it is, without a renewal; an expired token whose renewal is refused fails the write (null) without sending it (DiGi.GIS.PostgreSQL.UI#48).
+        /// Verifies that a write of <see cref="WebAPIBuildingSolarRadiationSolveTask"/> no longer renews the session itself (DiGi.GIS.PostgreSQL.UI#52): a token still valid - even one within <see cref="Constants.UserSession.RefreshMargin"/> of its expiry - is sent as it is, with no refresh request; an expired token fails the write (null) without anything being sent.
+        /// <para>The renewal is the loop's alone (<see cref="WebAPIBuildingSolarRadiationSolveTask_RenewsSession"/>), so no two renewals race.</para>
         /// </summary>
         [Fact]
-        public async Task WebAPIBuildingSolarRadiationSolveTask_RenewsSession()
+        public async Task WebAPIBuildingSolarRadiationSolveTask_WriteToken()
         {
-            string tokenString_Old = SessionToken(DateTimeOffset.UtcNow.AddMinutes(1));
-            string tokenString_New = SessionToken(DateTimeOffset.UtcNow.AddHours(1), "new");
+            string tokenString_Due = SessionToken(DateTimeOffset.UtcNow.AddMinutes(1));
             string tokenString_Expired = SessionToken(DateTimeOffset.UtcNow.AddMinutes(-1));
 
-            using SessionHttpMessageHandler sessionHttpMessageHandler = new((path, count) =>
-            {
-                if (path.EndsWith("/refresh", StringComparison.Ordinal))
-                {
-                    return count == 1 ? Response(HttpStatusCode.OK, "{\"token\":\"" + tokenString_New + "\"}") : new HttpResponseMessage(HttpStatusCode.Unauthorized);
-                }
-
-                return Response(HttpStatusCode.OK, "1");
-            });
+            using SessionHttpMessageHandler sessionHttpMessageHandler = new((path, count) => path.EndsWith("/refresh", StringComparison.Ordinal) ? new HttpResponseMessage(HttpStatusCode.Unauthorized) : Response(HttpStatusCode.OK, "1"));
 
             List<BuildingSolarRadiationResult> buildingSolarRadiationResults = [new BuildingSolarRadiationResult("XUNIT-R", 5, 1, 50, 1, WeatherSourceType.EPW, "7", null, null, null, null, null)];
 
             (GISWebAPIManager gISWebAPIManager, ServiceProvider serviceProvider) = SessionManager(sessionHttpMessageHandler);
             using (serviceProvider)
             {
-                ProbeSessionWebAPIBuildingSolarRadiationSolveTask probeSessionWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager) { TokenString = tokenString_Old };
+                ProbeSessionWebAPIBuildingSolarRadiationSolveTask probeSessionWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager) { TokenString = tokenString_Due };
 
                 Assert.Equal(1, await probeSessionWebAPIBuildingSolarRadiationSolveTask.WriteAsync(buildingSolarRadiationResults));
-                Assert.Equal(tokenString_New, probeSessionWebAPIBuildingSolarRadiationSolveTask.TokenString);
-
-                Assert.Equal(1, await probeSessionWebAPIBuildingSolarRadiationSolveTask.WriteAsync(buildingSolarRadiationResults));
+                Assert.Equal(tokenString_Due, probeSessionWebAPIBuildingSolarRadiationSolveTask.TokenString);
 
                 probeSessionWebAPIBuildingSolarRadiationSolveTask.TokenString = tokenString_Expired;
                 Assert.Null(await probeSessionWebAPIBuildingSolarRadiationSolveTask.WriteAsync(buildingSolarRadiationResults));
             }
 
-            List<SessionRequest> sessionRequests = sessionHttpMessageHandler.Requests;
-            Assert.Equal(new string[] { "/user/session/refresh", "write", "write", "/user/session/refresh" }, sessionRequests.Select(x => x.PathAndQuery.StartsWith("/user/", StringComparison.Ordinal) ? x.PathAndQuery : "write"));
-            Assert.Equal("Bearer " + tokenString_Old, sessionRequests[0].Authorization);
-            Assert.Equal("Bearer " + tokenString_New, sessionRequests[1].Authorization);
-            Assert.Equal("Bearer " + tokenString_New, sessionRequests[2].Authorization);
-            Assert.Contains("/setsolarradiations?", sessionRequests[1].PathAndQuery, StringComparison.OrdinalIgnoreCase);
+            SessionRequest sessionRequest = Assert.Single(sessionHttpMessageHandler.Requests);
+            Assert.Contains("/setsolarradiations?", sessionRequest.PathAndQuery, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("Bearer " + tokenString_Due, sessionRequest.Authorization);
+        }
+
+        /// <summary>
+        /// Verifies the renewal loop <see cref="WebAPIBuildingSolarRadiationSolveTask"/> runs beside its solve (DiGi.GIS.PostgreSQL.UI#52): a token within <see cref="Constants.UserSession.RefreshMargin"/> of its expiry is exchanged for a new one while the run is still reading - before any write - with the old token as the bearer; a token far from its expiry is not renewed; an expired token whose renewal is refused is tried once and the loop stops, since no retry can succeed.
+        /// <para>The probe holds the run in its first read until the loop has had its chance, then ends it; a batch that solves for longer than a token lives is the case this covers, as the write no longer renews.</para>
+        /// </summary>
+        [Fact]
+        public async Task WebAPIBuildingSolarRadiationSolveTask_RenewsSession()
+        {
+            string tokenString_Due = SessionToken(DateTimeOffset.UtcNow.AddMinutes(1));
+            string tokenString_New = SessionToken(DateTimeOffset.UtcNow.AddHours(1), "new");
+            string tokenString_Expired = SessionToken(DateTimeOffset.UtcNow.AddMinutes(-1));
+
+            // Due: renewed while the run reads.
+            using SessionHttpMessageHandler sessionHttpMessageHandler_Due = new((path, count) => path.EndsWith("/refresh", StringComparison.Ordinal) && count == 1 ? Response(HttpStatusCode.OK, "{\"token\":\"" + tokenString_New + "\"}") : new HttpResponseMessage(HttpStatusCode.Unauthorized));
+            (GISWebAPIManager gISWebAPIManager_Due, ServiceProvider serviceProvider_Due) = SessionManager(sessionHttpMessageHandler_Due);
+            using (serviceProvider_Due)
+            {
+                ProbeSessionWebAPIBuildingSolarRadiationSolveTask probeSessionWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager_Due) { TokenString = tokenString_Due };
+                probeSessionWebAPIBuildingSolarRadiationSolveTask.Holding = () => Until(() => probeSessionWebAPIBuildingSolarRadiationSolveTask.TokenString != tokenString_Due);
+
+                Assert.False(await probeSessionWebAPIBuildingSolarRadiationSolveTask.RunAsync());
+                Assert.Equal(tokenString_New, probeSessionWebAPIBuildingSolarRadiationSolveTask.TokenString);
+            }
+
+            SessionRequest sessionRequest_Due = Assert.Single(sessionHttpMessageHandler_Due.Requests);
+            Assert.Equal("/user/session/refresh", sessionRequest_Due.PathAndQuery);
+            Assert.Equal("Bearer " + tokenString_Due, sessionRequest_Due.Authorization);
+
+            // Fresh: not renewed.
+            using SessionHttpMessageHandler sessionHttpMessageHandler_Fresh = new((path, count) => new HttpResponseMessage(HttpStatusCode.Unauthorized));
+            (GISWebAPIManager gISWebAPIManager_Fresh, ServiceProvider serviceProvider_Fresh) = SessionManager(sessionHttpMessageHandler_Fresh);
+            using (serviceProvider_Fresh)
+            {
+                ProbeSessionWebAPIBuildingSolarRadiationSolveTask probeSessionWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager_Fresh) { TokenString = tokenString_New };
+                probeSessionWebAPIBuildingSolarRadiationSolveTask.Holding = () => Task.Delay(TimeSpan.FromMilliseconds(100));
+
+                Assert.False(await probeSessionWebAPIBuildingSolarRadiationSolveTask.RunAsync());
+                Assert.Equal(tokenString_New, probeSessionWebAPIBuildingSolarRadiationSolveTask.TokenString);
+            }
+
+            Assert.Empty(sessionHttpMessageHandler_Fresh.Requests);
+
+            // Expired and refused: one try, then the loop stops.
+            using SessionHttpMessageHandler sessionHttpMessageHandler_Expired = new((path, count) => new HttpResponseMessage(HttpStatusCode.Unauthorized));
+            (GISWebAPIManager gISWebAPIManager_Expired, ServiceProvider serviceProvider_Expired) = SessionManager(sessionHttpMessageHandler_Expired);
+            using (serviceProvider_Expired)
+            {
+                ProbeSessionWebAPIBuildingSolarRadiationSolveTask probeSessionWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager_Expired) { TokenString = tokenString_Expired };
+                probeSessionWebAPIBuildingSolarRadiationSolveTask.Holding = async () =>
+                {
+                    await Until(() => sessionHttpMessageHandler_Expired.Requests.Count != 0);
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                };
+
+                Assert.False(await probeSessionWebAPIBuildingSolarRadiationSolveTask.RunAsync());
+                Assert.Equal(tokenString_Expired, probeSessionWebAPIBuildingSolarRadiationSolveTask.TokenString);
+            }
+
+            Assert.Equal("/user/session/refresh", Assert.Single(sessionHttpMessageHandler_Expired.Requests).PathAndQuery);
+
+            // Polls until the condition holds, for at most a second - the loop's first check runs as the run starts.
+            static async Task Until(Func<bool> condition)
+            {
+                for (int i = 0; i < 100 && !condition(); i++)
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(10));
+                }
+            }
         }
 
         private static string Base64Url(string text)
@@ -168,18 +224,36 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         private sealed record SessionRequest(string Method, string PathAndQuery, string? Authorization, long? ContentLength, string? Body);
 
         /// <summary>
-        /// Exposes the protected write of <see cref="WebAPIBuildingSolarRadiationSolveTask"/> to the facts.
+        /// Exposes the protected write and run of <see cref="WebAPIBuildingSolarRadiationSolveTask"/> to the facts. A run is held in its first read (the EPW stations) for as long as <see cref="Holding"/> takes, then ends there - no station - so the renewal loop that runs beside it can be observed without a solve.
         /// </summary>
         private sealed class ProbeSessionWebAPIBuildingSolarRadiationSolveTask : WebAPIBuildingSolarRadiationSolveTask
         {
             public ProbeSessionWebAPIBuildingSolarRadiationSolveTask(GISWebAPIManager gISWebAPIManager)
                 : base(gISWebAPIManager)
             {
+                PostgreSQLBuildingSolarRadiationSolveOptions = new Solar.Classes.PostgreSQLBuildingSolarRadiationSolveOptions() { Radii = [50] };
+            }
+
+            public Func<Task>? Holding { get; set; }
+
+            public Task<bool> RunAsync()
+            {
+                return ExecuteAsync(new Progress<long>(), CancellationToken.None);
             }
 
             public Task<int?> WriteAsync(List<BuildingSolarRadiationResult> buildingSolarRadiationResults)
             {
                 return WriteAsync(5, buildingSolarRadiationResults, 30, CancellationToken.None);
+            }
+
+            protected override async Task<List<(int Id, double X, double Y)>?> ReadEPWFileLocationsAsync(int commandTimeout, CancellationToken cancellationToken)
+            {
+                if (Holding is not null)
+                {
+                    await Holding();
+                }
+
+                return null;
             }
         }
 
