@@ -3,13 +3,10 @@ using DiGi.GIS.PostgreSQL.UI.Classes;
 using DiGi.GIS.PostgreSQL.UI.Enums;
 using DiGi.GIS.WebAPI.Classes;
 using DiGi.UI.WPF.Interfaces;
-using DiGi.WebAPI.Classes;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,43 +44,22 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         }
 
         /// <summary>
-        /// Verifies the order in which <see cref="UIWebAPIBuildingSolarRadiationSolveTask"/> refuses, against a scripted GIS Web API and with no WPF application (a test host runs none): an unreadable endpoint catalogue ends the run before anything else is asked for; a complete catalogue lets it reach the user interface check, which ends it before the counties are read - no dialog, no sign-in, no other request.
+        /// Verifies that <see cref="UIWebAPIBuildingSolarRadiationSolveTask"/> refuses before any request when no WPF application runs (a test host runs none), against a scripted GIS Web API: the user interface check comes first, so no county is read, no dialog opens and no sign-in is sent (DiGi.GIS.PostgreSQL.UI#50).
         /// </summary>
         [Fact]
         public async Task UIWebAPIBuildingSolarRadiationSolveTask_Refusal()
         {
             Assert.Null(System.Windows.Application.Current);
 
-            List<EndpointInformation> endpointInformations =
-            [
-                .. new string?[]
-                {
-                    DiGi.WebAPI.Query.Path<Building2DController>(nameof(Building2DController.GetCentroidsByCountyIdAsync)),
-                    DiGi.WebAPI.Query.Path<BuildingSolarRadiationController>(nameof(BuildingSolarRadiationController.GetReferencesByCountyIdAsync)),
-                    DiGi.WebAPI.Query.Path<BuildingSolarRadiationController>(nameof(BuildingSolarRadiationController.SetSolarRadiationsAsync)),
-                    DiGi.WebAPI.Query.Path<EPWFileController>(nameof(EPWFileController.GetEPWFileByIdAsync)),
-                    DiGi.WebAPI.Query.Path<EPWFileController>(nameof(EPWFileController.GetEPWFileLocationsAsync)),
-                }.Select(x => new EndpointInformation("X", "X", x, ["GET"], false, null, null))
-            ];
-            string json = Core.Convert.ToSystem_String(endpointInformations) ?? throw new InvalidOperationException("The catalogue could not be serialized");
-
-            using SolarSolveHttpMessageHandler solarSolveHttpMessageHandler_Unreadable = new(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
-            Assert.False(await Run(solarSolveHttpMessageHandler_Unreadable));
-            Assert.Equal(new string[] { "/information/endpoints" }, solarSolveHttpMessageHandler_Unreadable.PathAndQueries);
-
-            using SolarSolveHttpMessageHandler solarSolveHttpMessageHandler_Complete = new(_ => Response(HttpStatusCode.OK, json));
-            Assert.False(await Run(solarSolveHttpMessageHandler_Complete));
-            Assert.Equal(new string[] { "/information/endpoints" }, solarSolveHttpMessageHandler_Complete.PathAndQueries);
-
-            static async Task<bool> Run(SolarSolveHttpMessageHandler solarSolveHttpMessageHandler)
+            using SolarSolveHttpMessageHandler solarSolveHttpMessageHandler = new(_ => Response(HttpStatusCode.OK, "[]"));
+            (GISWebAPIManager gISWebAPIManager, ServiceProvider serviceProvider) = SolarSolveManager(solarSolveHttpMessageHandler);
+            using (serviceProvider)
             {
-                (GISWebAPIManager gISWebAPIManager, ServiceProvider serviceProvider) = SolarSolveManager(solarSolveHttpMessageHandler);
-                using (serviceProvider)
-                {
-                    ProbeUIWebAPIBuildingSolarRadiationSolveTask probeUIWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager);
-                    return await probeUIWebAPIBuildingSolarRadiationSolveTask.RunAsync();
-                }
+                ProbeUIWebAPIBuildingSolarRadiationSolveTask probeUIWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager);
+                Assert.False(await probeUIWebAPIBuildingSolarRadiationSolveTask.RunAsync());
             }
+
+            Assert.Empty(solarSolveHttpMessageHandler.PathAndQueries);
         }
 
         /// <summary>

@@ -3,7 +3,6 @@ using DiGi.GIS.PostgreSQL.Classes;
 using DiGi.GIS.PostgreSQL.Enums;
 using DiGi.GIS.PostgreSQL.UI.Classes;
 using DiGi.GIS.WebAPI.Classes;
-using DiGi.WebAPI.Classes;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
@@ -22,52 +21,21 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Verifies the deployment check of <see cref="WebAPIBuildingSolarRadiationSolveTask"/> against a scripted GIS Web API (TODO [SolarSolveEndpointsDeployed], DiGi.GIS.PostgreSQL.UI#48): a catalogue without <c>centroidsbycountyid</c>, or one that cannot be read, ends the run after the catalogue request alone; a catalogue listing every route lets the run go on to its first read.
+        /// Verifies that <see cref="WebAPIBuildingSolarRadiationSolveTask"/> with a token goes straight to its first read, against a scripted GIS Web API that fails every request: the weather locations are asked for, the endpoint catalogue never is (DiGi.GIS.PostgreSQL.UI#50 removed that check), and the failed read ends the run.
         /// </summary>
         [Fact]
-        public async Task WebAPIBuildingSolarRadiationSolveTask_Deployment()
+        public async Task WebAPIBuildingSolarRadiationSolveTask_FirstRead()
         {
-            List<string?> routes =
-            [
-                DiGi.WebAPI.Query.Path<Building2DController>(nameof(Building2DController.GetCentroidsByCountyIdAsync)),
-                DiGi.WebAPI.Query.Path<BuildingSolarRadiationController>(nameof(BuildingSolarRadiationController.GetReferencesByCountyIdAsync)),
-                DiGi.WebAPI.Query.Path<BuildingSolarRadiationController>(nameof(BuildingSolarRadiationController.SetSolarRadiationsAsync)),
-                DiGi.WebAPI.Query.Path<EPWFileController>(nameof(EPWFileController.GetEPWFileByIdAsync)),
-                DiGi.WebAPI.Query.Path<EPWFileController>(nameof(EPWFileController.GetEPWFileLocationsAsync)),
-            ];
-            Assert.All(routes, x => Assert.False(string.IsNullOrWhiteSpace(x)));
-
-            // The host writes the controller in its own case; the check must not care.
-            string json_All = Catalogue(routes.Select(x => x!.Replace("epwfile", "EPWFile", StringComparison.Ordinal)));
-            string json_Missing = Catalogue(routes.Skip(1).Select(x => x!));
-
-            using SolarSolveHttpMessageHandler solarSolveHttpMessageHandler_Missing = new(_ => Response(HttpStatusCode.OK, json_Missing));
-            Assert.False(await Run(solarSolveHttpMessageHandler_Missing));
-            Assert.Equal(new string[] { "/information/endpoints" }, solarSolveHttpMessageHandler_Missing.PathAndQueries);
-
-            using SolarSolveHttpMessageHandler solarSolveHttpMessageHandler_Unreadable = new(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
-            Assert.False(await Run(solarSolveHttpMessageHandler_Unreadable));
-            Assert.Single(solarSolveHttpMessageHandler_Unreadable.PathAndQueries);
-
-            using SolarSolveHttpMessageHandler solarSolveHttpMessageHandler_All = new(pathAndQuery => pathAndQuery.StartsWith("/information/", StringComparison.Ordinal) ? Response(HttpStatusCode.OK, json_All) : new HttpResponseMessage(HttpStatusCode.InternalServerError));
-            Assert.False(await Run(solarSolveHttpMessageHandler_All));
-            Assert.Contains(solarSolveHttpMessageHandler_All.PathAndQueries, x => x.EndsWith("/epwfile/locations", StringComparison.OrdinalIgnoreCase));
-
-            static string Catalogue(IEnumerable<string> routeTemplates)
+            using SolarSolveHttpMessageHandler solarSolveHttpMessageHandler = new(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+            (GISWebAPIManager gISWebAPIManager, ServiceProvider serviceProvider) = SolarSolveManager(solarSolveHttpMessageHandler);
+            using (serviceProvider)
             {
-                List<EndpointInformation> endpointInformations = [.. routeTemplates.Select(x => new EndpointInformation("X", "X", x, ["GET"], false, null, null))];
-                return Core.Convert.ToSystem_String(endpointInformations) ?? throw new InvalidOperationException("The catalogue could not be serialized");
+                ProbeWebAPIBuildingSolarRadiationSolveTask probeWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager) { TokenString = "xunit-token" };
+                Assert.False(await probeWebAPIBuildingSolarRadiationSolveTask.RunAsync());
             }
 
-            static async Task<bool> Run(SolarSolveHttpMessageHandler solarSolveHttpMessageHandler)
-            {
-                (GISWebAPIManager gISWebAPIManager, ServiceProvider serviceProvider) = SolarSolveManager(solarSolveHttpMessageHandler);
-                using (serviceProvider)
-                {
-                    ProbeWebAPIBuildingSolarRadiationSolveTask probeWebAPIBuildingSolarRadiationSolveTask = new(gISWebAPIManager) { TokenString = "xunit-token" };
-                    return await probeWebAPIBuildingSolarRadiationSolveTask.RunAsync();
-                }
-            }
+            Assert.Contains(solarSolveHttpMessageHandler.PathAndQueries, x => x.EndsWith("/epwfile/locations", StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain(solarSolveHttpMessageHandler.PathAndQueries, x => x.StartsWith("/information/", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -140,7 +108,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                     Assert.Contains("administrativearealtype=" + ((int)AdministrativeArealType.County).ToString(CultureInfo.InvariantCulture), pathAndQuery_Counties, StringComparison.Ordinal);
                     Assert.Contains("uniquecode=false", pathAndQuery_Counties, StringComparison.Ordinal);
 
-                    // No token: the run refuses at TryInitialize, after the deployment check and before any read.
+                    // No token: the run refuses at TryInitialize, before any read.
                     Assert.False(probeWebAPIBuildingSolarRadiationSolveTask.IsInitialized());
                     probeWebAPIBuildingSolarRadiationSolveTask.TokenString = "xunit-token";
                     Assert.True(probeWebAPIBuildingSolarRadiationSolveTask.IsInitialized());
