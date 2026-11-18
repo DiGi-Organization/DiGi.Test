@@ -7,7 +7,7 @@ namespace DiGi.Harness.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Tests <see cref="Convert.ToAnthropic_JsonObject(Classes.Conversation?, ProviderConfiguration?, IEnumerable{ToolDefinition}?, string?)"/>: the cached system block, adaptive summarized thinking, effort, fallbacks, automatic tool choice, and thinking blocks replayed unchanged with their signatures.
+        /// Tests <see cref="Convert.ToAnthropic_JsonObject(Classes.Conversation?, ProviderConfiguration?, IEnumerable{ToolDefinition}?, string?, ToolChoice)"/>: the cached system block, adaptive summarized thinking, effort, fallbacks, automatic tool choice and <c>tool_choice: none</c> with the tools kept, and thinking blocks replayed unchanged with their signatures.
         /// </summary>
         [Fact]
         public void ToAnthropic_JsonObject()
@@ -51,10 +51,15 @@ namespace DiGi.Harness.xUnit
             Assert.Null(jsonObject_Plain?["tools"]);
             Assert.Null(jsonObject_Plain?["system"]);
             Assert.Equal(Constants.Default.MaxTokens, jsonObject_Plain?["max_tokens"]?.GetValue<int>());
+
+            JsonObject? jsonObject_None = conversation.ToAnthropic_JsonObject(ProviderConfiguration_Anthropic(), [toolDefinition], null, ToolChoice.None);
+            Assert.Equal("none", jsonObject_None?["tool_choice"]?["type"]?.GetValue<string>());
+            Assert.Equal("call_endpoint", jsonObject_None?["tools"]?[0]?["name"]?.GetValue<string>());
+            Assert.Equal("auto", conversation.ToAnthropic_JsonObject(ProviderConfiguration_Anthropic(), [toolDefinition], null, ToolChoice.Auto)?["tool_choice"]?["type"]?.GetValue<string>());
         }
 
         /// <summary>
-        /// Tests <see cref="Convert.ToOpenAI_JsonObject(Classes.Conversation?, ProviderConfiguration?, IEnumerable{ToolDefinition}?, string?)"/>: the system message, tool calls with their arguments string, <c>role: tool</c> results, and <c>reasoning_content</c> replayed only when the provider asks for it.
+        /// Tests <see cref="Convert.ToOpenAI_JsonObject(Classes.Conversation?, ProviderConfiguration?, IEnumerable{ToolDefinition}?, string?, ToolChoice)"/>: the system message, tool calls with their arguments string, <c>role: tool</c> results, <c>reasoning_content</c> replayed only when the provider asks for it, and <c>tool_choice: "none"</c> with the tools kept.
         /// </summary>
         [Fact]
         public void ToOpenAI_JsonObject()
@@ -91,6 +96,12 @@ namespace DiGi.Harness.xUnit
             Assert.Null(jsonObject_NoReplay?["messages"]?[1]?["reasoning_content"]);
             Assert.Equal("high", jsonObject_NoReplay?["reasoning_effort"]?.GetValue<string>());
             Assert.Equal(4, (jsonObject_NoReplay?["messages"] as JsonArray)?.Count);
+
+            JsonObject? jsonObject_None = conversation.ToOpenAI_JsonObject(ProviderConfiguration_Local(), [toolDefinition], null, ToolChoice.None);
+            Assert.Equal("none", jsonObject_None?["tool_choice"]?.GetValue<string>());
+            Assert.Equal("call_endpoint", jsonObject_None?["tools"]?[0]?["function"]?["name"]?.GetValue<string>());
+            Assert.Equal("auto", conversation.ToOpenAI_JsonObject(ProviderConfiguration_Local(), [toolDefinition], null, ToolChoice.Auto)?["tool_choice"]?.GetValue<string>());
+            Assert.Null(conversation.ToOpenAI_JsonObject(ProviderConfiguration_Local(), null, null, ToolChoice.None)?["tool_choice"]);
         }
 
         /// <summary>

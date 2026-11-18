@@ -105,7 +105,7 @@ namespace DiGi.Harness.xUnit
         }
 
         /// <summary>
-        /// Tests the stops of <see cref="Modify.RunTurnAsync(Classes.Conversation?, HttpClient?, ProviderConfiguration?, IEnumerable{ITool}?, RunOptions?, Func{HarnessEvent, CancellationToken, Task}?, CancellationToken)"/>: the iteration limit answers the last tool calls and ends with <see cref="ErrorCategory.MaxToolIterations"/>; invalid tool input is answered with an error without running the tool; a refusal ends with <see cref="ErrorCategory.Refusal"/>; an unreachable provider ends with <see cref="ErrorCategory.Unavailable"/>; and every stop ends with an <see cref="ErrorEvent"/> before <see cref="TurnCompletedEvent"/>.
+        /// Tests the stops of <see cref="Modify.RunTurnAsync(Classes.Conversation?, HttpClient?, ProviderConfiguration?, IEnumerable{ITool}?, RunOptions?, Func{HarnessEvent, CancellationToken, Task}?, CancellationToken)"/>: the iteration limit, whose tool-less final step fails at the provider, answers the last tool calls and ends with <see cref="ErrorCategory.MaxToolIterations"/>; invalid tool input is answered with an error without running the tool; a refusal ends with <see cref="ErrorCategory.Refusal"/>; an unreachable provider ends with <see cref="ErrorCategory.Unavailable"/>; and every stop ends with an <see cref="ErrorEvent"/> before <see cref="TurnCompletedEvent"/>.
         /// </summary>
         [Fact]
         public async Task RunTurnAsync_Stops()
@@ -113,6 +113,7 @@ namespace DiGi.Harness.xUnit
             StubHttpMessageHandler stubHttpMessageHandler = new();
             stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("Anthropic_ToolUse.sse"));
             stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("Anthropic_ToolUse.sse"));
+            stubHttpMessageHandler.Enqueue((httpRequestMessage, cancellationToken) => throw new HttpRequestException("refused"));
             using HttpClient httpClient = new(stubHttpMessageHandler);
 
             RecordingTool recordingTool = new(Constants.ToolName.CallEndpoint, """{"type":"object","properties":{"method":{"type":"string"},"path":{"type":"string"},"county":{"type":"string"}},"required":["method","path","county"]}""", (toolUseContent, cancellationToken) => Task.FromResult("never"));
@@ -125,8 +126,10 @@ namespace DiGi.Harness.xUnit
                 return Task.CompletedTask;
             });
 
+            // The tool-less final step after the limit fails here (provider unreachable), so the limit stays the reported error.
             Assert.Equal(ErrorCategory.MaxToolIterations, turnResult.ErrorCategory);
-            Assert.Equal(2, turnResult.Steps);
+            Assert.Equal(3, turnResult.Steps);
+            Assert.Equal(3, stubHttpMessageHandler.Requests.Count);
             Assert.Empty(recordingTool.Calls);
             Assert.Contains("lacks required properties: county", Assert.IsType<ToolResultContent>(conversation.Messages[^1].Contents![0]).Text);
             Assert.Equal(Role.User, conversation.Messages[^1].Role);
@@ -152,6 +155,117 @@ namespace DiGi.Harness.xUnit
 
             TurnResult turnResult_Invalid = await conversation_Unreachable.RunTurnAsync(httpClient_Unreachable, null, null, null, null);
             Assert.Equal(ErrorCategory.InvalidConfiguration, turnResult_Invalid.ErrorCategory);
+        }
+
+        /// <summary>
+        /// Tests the final step of <see cref="Modify.RunTurnAsync(Classes.Conversation?, HttpClient?, ProviderConfiguration?, IEnumerable{ITool}?, RunOptions?, Func{HarnessEvent, CancellationToken, Task}?, CancellationToken)"/> on the Anthropic protocol (DiGi.Harness#6): a model still calling tools at the iteration limit gets one more request with the tools offered but <c>tool_choice: none</c>, and its text answer ends the turn without an error.
+        /// </summary>
+        [Fact]
+        public async Task RunTurnAsync_MaxToolIterations_Anthropic()
+        {
+            StubHttpMessageHandler stubHttpMessageHandler = new();
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("Anthropic_ToolUse.sse"));
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("Anthropic_ToolUse.sse"));
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("Anthropic_Answer.sse"));
+            using HttpClient httpClient = new(stubHttpMessageHandler);
+
+            RecordingTool recordingTool = new(Constants.ToolName.CallEndpoint, InputSchema_Path, (toolUseContent, cancellationToken) => Task.FromResult("HTTP 200 OK\n1261"));
+
+            Classes.Conversation conversation = new("anthropic", [new Message(Role.User, [new TextContent("How many buildings are in Kraków?")])]);
+            List<HarnessEvent> harnessEvents = [];
+            TurnResult turnResult = await conversation.RunTurnAsync(httpClient, ProviderConfiguration_Anthropic(), [recordingTool], new RunOptions { SystemPrompt = "Prompt", MaxToolIterations = 2 }, (harnessEvent, cancellationToken) =>
+            {
+                harnessEvents.Add(harnessEvent);
+                return Task.CompletedTask;
+            });
+
+            Assert.Equal(ErrorCategory.Undefined, turnResult.ErrorCategory);
+            Assert.Null(turnResult.ErrorMessage);
+            Assert.Equal(StopReason.EndTurn, turnResult.StopReason);
+            Assert.Equal(3, turnResult.Steps);
+            Assert.Equal(2, turnResult.ToolCalls);
+            Assert.Equal(2, recordingTool.Calls.Count);
+
+            Assert.Equal(6, conversation.Messages.Count);
+            Assert.Equal(Role.Assistant, conversation.Messages[^1].Role);
+            Assert.Equal("Kraków has 12 345 buildings.", Assert.IsType<TextContent>(conversation.Messages[^1].Contents![0]).Text);
+
+            Assert.Equal(3, stubHttpMessageHandler.Requests.Count);
+            Assert.Contains("\"tool_choice\":{\"type\":\"auto\"}", stubHttpMessageHandler.Requests[1].Body);
+            Assert.Contains("\"tools\":[", stubHttpMessageHandler.Requests[2].Body);
+            Assert.Contains("\"tool_choice\":{\"type\":\"none\"}", stubHttpMessageHandler.Requests[2].Body);
+            Assert.Contains(System.Text.Json.JsonSerializer.Serialize(Constants.Default.FinalStepPrompt)[1..^1], stubHttpMessageHandler.Requests[2].Body);
+            Assert.DoesNotContain(System.Text.Json.JsonSerializer.Serialize(Constants.Default.FinalStepPrompt)[1..^1], stubHttpMessageHandler.Requests[1].Body);
+
+            Assert.Equal(3, harnessEvents.OfType<StepStartedEvent>().Count());
+            Assert.Empty(harnessEvents.OfType<ErrorEvent>());
+            Assert.IsType<TurnCompletedEvent>(harnessEvents[^1]);
+        }
+
+        /// <summary>
+        /// Tests the final step of <see cref="Modify.RunTurnAsync(Classes.Conversation?, HttpClient?, ProviderConfiguration?, IEnumerable{ITool}?, RunOptions?, Func{HarnessEvent, CancellationToken, Task}?, CancellationToken)"/> on the OpenAI protocol (DiGi.Harness#6): the request after the iteration limit sends <c>tool_choice: "none"</c> and the text answer ends the turn without an error.
+        /// </summary>
+        [Fact]
+        public async Task RunTurnAsync_MaxToolIterations_OpenAI()
+        {
+            StubHttpMessageHandler stubHttpMessageHandler = new();
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("OpenAI_ToolCalls.sse"));
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("OpenAI_ToolCalls.sse"));
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("OpenAI_Answer.sse"));
+            using HttpClient httpClient = new(stubHttpMessageHandler);
+
+            RecordingTool recordingTool = new(Constants.ToolName.CallEndpoint, InputSchema_Path, (toolUseContent, cancellationToken) => Task.FromResult("7"));
+
+            Classes.Conversation conversation = new("local", [new Message(Role.User, [new TextContent("How many counties?")])]);
+            TurnResult turnResult = await conversation.RunTurnAsync(httpClient, ProviderConfiguration_Local(), [recordingTool], new RunOptions { SystemPrompt = "Prompt", MaxToolIterations = 2 }, null);
+
+            Assert.Equal(ErrorCategory.Undefined, turnResult.ErrorCategory);
+            Assert.Equal(3, turnResult.Steps);
+            Assert.Equal(4, turnResult.ToolCalls);
+
+            Assert.Equal(Role.Assistant, conversation.Messages[^1].Role);
+            Assert.Equal("There are 7 counties.", Assert.IsType<TextContent>(conversation.Messages[^1].Contents![0]).Text);
+
+            Assert.Equal(3, stubHttpMessageHandler.Requests.Count);
+            Assert.Contains("\"tool_choice\":\"auto\"", stubHttpMessageHandler.Requests[1].Body);
+            Assert.Contains("\"tools\":[", stubHttpMessageHandler.Requests[2].Body);
+            Assert.Contains("\"tool_choice\":\"none\"", stubHttpMessageHandler.Requests[2].Body);
+            Assert.Contains(System.Text.Json.JsonSerializer.Serialize(Constants.Default.FinalStepPrompt)[1..^1], stubHttpMessageHandler.Requests[2].Body);
+        }
+
+        /// <summary>
+        /// Tests the final step of <see cref="Modify.RunTurnAsync(Classes.Conversation?, HttpClient?, ProviderConfiguration?, IEnumerable{ITool}?, RunOptions?, Func{HarnessEvent, CancellationToken, Task}?, CancellationToken)"/> when the model ignores <c>tool_choice: none</c> and calls a tool anyway (DiGi.Harness#6): the call is answered with an error result without running it, and the turn ends with <see cref="ErrorCategory.MaxToolIterations"/>.
+        /// </summary>
+        [Fact]
+        public async Task RunTurnAsync_MaxToolIterations_ToolCallIgnored()
+        {
+            StubHttpMessageHandler stubHttpMessageHandler = new();
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("Anthropic_ToolUse.sse"));
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("Anthropic_ToolUse.sse"));
+            stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, Fixture("Anthropic_ToolUse.sse"));
+            using HttpClient httpClient = new(stubHttpMessageHandler);
+
+            RecordingTool recordingTool = new(Constants.ToolName.CallEndpoint, InputSchema_Path, (toolUseContent, cancellationToken) => Task.FromResult("HTTP 200 OK\n1261"));
+
+            Classes.Conversation conversation = new("anthropic", [new Message(Role.User, [new TextContent("Loop")])]);
+            List<HarnessEvent> harnessEvents = [];
+            TurnResult turnResult = await conversation.RunTurnAsync(httpClient, ProviderConfiguration_Anthropic(), [recordingTool], new RunOptions { MaxToolIterations = 2 }, (harnessEvent, cancellationToken) =>
+            {
+                harnessEvents.Add(harnessEvent);
+                return Task.CompletedTask;
+            });
+
+            Assert.Equal(ErrorCategory.MaxToolIterations, turnResult.ErrorCategory);
+            Assert.Equal(3, turnResult.Steps);
+            Assert.Equal(2, recordingTool.Calls.Count);
+            Assert.Equal(3, stubHttpMessageHandler.Requests.Count);
+
+            Assert.Equal(Role.User, conversation.Messages[^1].Role);
+            ToolResultContent toolResultContent = Assert.IsType<ToolResultContent>(conversation.Messages[^1].Contents![0]);
+            Assert.True(toolResultContent.IsError);
+            Assert.StartsWith("Not run: ", toolResultContent.Text);
+            Assert.IsType<ErrorEvent>(harnessEvents[^2]);
+            Assert.IsType<TurnCompletedEvent>(harnessEvents[^1]);
         }
 
         /// <summary>
