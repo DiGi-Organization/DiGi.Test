@@ -127,17 +127,21 @@ namespace DiGi.GIS.Analytical.xUnit
                 1,
                 3,
                 new Dictionary<Guid, string>() { [guid] = "FrontageLine.0.1.0.0" },
-                new Dictionary<Guid, Regulation.Enums.ConstructionRole>() { [guid] = Regulation.Enums.ConstructionRole.PartyWall });
+                new Dictionary<Guid, Regulation.Enums.ConstructionRole>() { [guid] = Regulation.Enums.ConstructionRole.PartyWall },
+                new Regulation.Classes.TypologyData(0.3, 0.1, Regulation.Enums.FloorBoundary.Cellar, 0.3, Regulation.Enums.RoofType.Flat, 0.5, 0.9, 1, "TABULA"));
             Assert.Equal(2.0, openingGenerationResult.Storeys![0].Shortfall);
             Assert.Equal(guid, openingGenerationResult.FrontWall);
             Assert.Equal(2, openingGenerationResult.WallOpeningRestrictions!.Count);
             Assert.Equal("FrontageLine.0.1.0.0", openingGenerationResult.FrontageLines![guid]);
             Assert.Equal(Regulation.Enums.ConstructionRole.PartyWall, openingGenerationResult.MissingConstructionRoles![guid]);
+            Assert.Equal(Regulation.Enums.FloorBoundary.Cellar, openingGenerationResult.TypologyData?.FloorBoundary);
             OpeningGenerationResult openingGenerationResult_Copy = new(openingGenerationResult);
             Assert.Equal(Core.Convert.ToSystem_String(openingGenerationResult), Core.Convert.ToSystem_String(openingGenerationResult_Copy));
             Assert.Equal("FrontageLine.0.1.0.0", openingGenerationResult_Copy.FrontageLines![guid]);
             Assert.Equal(Regulation.Enums.ConstructionRole.PartyWall, openingGenerationResult_Copy.MissingConstructionRoles![guid]);
             Assert.Equal(3, openingGenerationResult_Copy.DroppedOpeningCount);
+            Assert.Equal(0.3, openingGenerationResult_Copy.TypologyData?.AdditionalFloorResistance);
+            Assert.Equal(0.3, Core.Convert.ToDiGi<OpeningGenerationResult>(Core.Convert.ToSystem_String(openingGenerationResult))?.FirstOrDefault()?.TypologyData?.AdditionalFloorResistance);
             Core.xUnit.Query.SerializationCheck(openingGenerationResult);
 
             Guid guid_Wall = Guid.NewGuid();
