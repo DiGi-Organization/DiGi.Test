@@ -7,7 +7,7 @@ namespace DiGi.EPW.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Tests that EPW missing-value markers (9999 for the radiation fields, 999 for snow depth and albedo) are decoded as null by the value queries, while values just below the markers remain measurements and the raw properties and EPW text keep the markers.
+        /// Tests that EPW missing-value markers (99.9 for the dry bulb temperature, 9999 for the radiation fields, 999 for snow depth and albedo) are decoded as null by the value queries, while values just below the markers remain measurements and the raw properties and EPW text keep the markers.
         /// </summary>
         [Fact]
         public void MissingValue_Decoding()
@@ -24,6 +24,7 @@ namespace DiGi.EPW.xUnit
             Assert.True(index_Data >= 0);
 
             string[] values = lines[index_Data].Split(',');
+            values[6] = "99.9";
             values[13] = "9999";
             values[14] = "9999";
             values[15] = "9999";
@@ -34,12 +35,14 @@ namespace DiGi.EPW.xUnit
             Assert.NotNull(dataRecord_Missing);
             Assert.Equal(1, index_Next);
 
+            Assert.Null(dataRecord_Missing.DryBulbTemperatureValue());
             Assert.Null(dataRecord_Missing.GlobalHorizontalRadiationValue());
             Assert.Null(dataRecord_Missing.DirectNormalRadiationValue());
             Assert.Null(dataRecord_Missing.DiffuseHorizontalRadiationValue());
             Assert.Null(dataRecord_Missing.SnowDepthValue());
             Assert.Null(dataRecord_Missing.AlbedoValue());
 
+            Assert.Equal(99.9f, dataRecord_Missing.DryBulbTemperature);
             Assert.Equal(9999f, dataRecord_Missing.GlobalHorizontalRadiation);
             Assert.Equal(9999f, dataRecord_Missing.DirectNormalRadiation);
             Assert.Equal(9999f, dataRecord_Missing.DiffuseHorizontalRadiation);
@@ -47,6 +50,7 @@ namespace DiGi.EPW.xUnit
             Assert.Equal(999f, dataRecord_Missing.Albedo);
 
             string[] values_Written = dataRecord_Missing.ToSystem_String().Split(',');
+            Assert.Equal(99.9f, float.Parse(values_Written[6], System.Globalization.CultureInfo.InvariantCulture));
             Assert.Equal("9999", values_Written[13]);
             Assert.Equal("9999", values_Written[14]);
             Assert.Equal("9999", values_Written[15]);
@@ -54,6 +58,7 @@ namespace DiGi.EPW.xUnit
             Assert.Equal("999", values_Written[32]);
 
             string[] values_Boundary = lines[index_Data].Split(',');
+            values_Boundary[6] = "99.8";
             values_Boundary[13] = "9998.9";
             values_Boundary[14] = "9998.9";
             values_Boundary[15] = "9998.9";
@@ -63,6 +68,7 @@ namespace DiGi.EPW.xUnit
             DataRecord? dataRecord_Boundary = Create.DataRecord([string.Join(",", values_Boundary)], 0, out _);
             Assert.NotNull(dataRecord_Boundary);
 
+            Assert.Equal(99.8f, dataRecord_Boundary.DryBulbTemperatureValue());
             Assert.Equal(9998.9f, dataRecord_Boundary.GlobalHorizontalRadiationValue());
             Assert.Equal(9998.9f, dataRecord_Boundary.DirectNormalRadiationValue());
             Assert.Equal(9998.9f, dataRecord_Boundary.DiffuseHorizontalRadiationValue());
@@ -71,7 +77,7 @@ namespace DiGi.EPW.xUnit
         }
 
         /// <summary>
-        /// Tests that the Warsaw sample EPW file carries no missing-value markers, so every hourly record reports a measured value for all five decoded fields and the decoder produces no false positives on good data.
+        /// Tests that the Warsaw sample EPW file carries no missing-value markers, so every hourly record reports a measured value for all six decoded fields and the decoder produces no false positives on good data.
         /// </summary>
         [Fact]
         public void MissingValue_WarsawNone()
@@ -87,6 +93,7 @@ namespace DiGi.EPW.xUnit
 
             foreach (DataRecord dataRecord in ePWFile.DataRecords)
             {
+                Assert.NotNull(dataRecord.DryBulbTemperatureValue());
                 Assert.NotNull(dataRecord.GlobalHorizontalRadiationValue());
                 Assert.NotNull(dataRecord.DirectNormalRadiationValue());
                 Assert.NotNull(dataRecord.DiffuseHorizontalRadiationValue());
