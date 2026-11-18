@@ -112,10 +112,10 @@ namespace DiGi.GIS.WebAPI.xUnit
         }
 
         /// <summary>
-        /// Verifies <see cref="Query.Building2DCentroidsAsync"/> against a scripted server: the query names the part and the timeout; a columnar answer gives its centroids; a 500, a malformed answer or a county id below 1 gives null, never an empty list. Reference: DiGi.GIS.PostgreSQL.UI#48.
+        /// Verifies <see cref="Query.Building2DCentroidsByCountyIdAsync"/> against a scripted server: the query names the part and the timeout; a columnar answer gives its centroids; a 500, a malformed answer or a county id below 1 gives null, never an empty list. Reference: DiGi.GIS.PostgreSQL.UI#48.
         /// </summary>
         [Fact]
-        public async Task Building2DCentroidsAsync_Read()
+        public async Task Building2DCentroidsByCountyIdAsync_Read()
         {
             ScriptedHttpMessageHandler scriptedHttpMessageHandler = new((path, count) => count switch
             {
@@ -127,7 +127,7 @@ namespace DiGi.GIS.WebAPI.xUnit
             (GISWebAPIManager gISWebAPIManager, ServiceProvider serviceProvider) = SolarSolveClientManager(scriptedHttpMessageHandler);
             using (serviceProvider)
             {
-                List<Building2DCentroid>? building2DCentroids = await gISWebAPIManager.Building2DCentroidsAsync(11, commandTimeout: 90);
+                List<Building2DCentroid>? building2DCentroids = await gISWebAPIManager.Building2DCentroidsByCountyIdAsync(11, commandTimeout: 90);
                 Assert.NotNull(building2DCentroids);
                 Building2DCentroid building2DCentroid = Assert.Single(building2DCentroids);
                 Assert.Equal("XUNIT-C-1", building2DCentroid.Reference);
@@ -135,9 +135,9 @@ namespace DiGi.GIS.WebAPI.xUnit
                 Assert.Equal(1.25, building2DCentroid.X);
                 Assert.Equal(2.5, building2DCentroid.Y);
 
-                Assert.Null(await gISWebAPIManager.Building2DCentroidsAsync(11));
-                Assert.Null(await gISWebAPIManager.Building2DCentroidsAsync(11));
-                Assert.Null(await gISWebAPIManager.Building2DCentroidsAsync(0));
+                Assert.Null(await gISWebAPIManager.Building2DCentroidsByCountyIdAsync(11));
+                Assert.Null(await gISWebAPIManager.Building2DCentroidsByCountyIdAsync(11));
+                Assert.Null(await gISWebAPIManager.Building2DCentroidsByCountyIdAsync(0));
             }
 
             Assert.Equal(3, scriptedHttpMessageHandler.Requests.Count);
