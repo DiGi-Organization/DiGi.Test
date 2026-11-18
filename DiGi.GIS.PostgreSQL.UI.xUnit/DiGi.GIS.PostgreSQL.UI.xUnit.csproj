@@ -120,6 +120,22 @@
     <Reference Include="DiGi.Weather">
       <HintPath>..\..\DiGi.Weather\bin\DiGi.Weather.dll</HintPath>
     </Reference>
+    <!-- The batch heat demand run and its closure (DiGi.GIS.PostgreSQL.UI#49). -->
+    <Reference Include="DiGi.Analytical.Building.Energy">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.Energy.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Analytical.Building.Regulation">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.Regulation.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.Analytical.Energy">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.Energy.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.PostgreSQL.Energy">
+      <HintPath>..\..\DiGi.GIS.PostgreSQL\bin\DiGi.GIS.PostgreSQL.Energy.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Unit.IO">
+      <HintPath>..\..\DiGi.Unit\bin\DiGi.Unit.IO.dll</HintPath>
+    </Reference>
     <!-- Needed by ExportPredictionImages_ByteParity for DiGi.GIS.UI.Modify.WriteImages, the file-based export pipeline it compares against. -->
     <Reference Include="DiGi.GIS.UI">
       <HintPath>..\..\DiGi.GIS.UI\bin\DiGi.GIS.UI.dll</HintPath>
