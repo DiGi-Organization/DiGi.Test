@@ -145,5 +145,28 @@ namespace DiGi.Core.xUnit
             Enums.CountryCode? countryCode_GetValueByStringKey = parametrizedObject.GetValue<Enums.CountryCode>("CountryParam", getValueSettings);
             Assert.Equal(Enums.CountryCode.DE, countryCode_GetValueByStringKey);
         }
+
+        /// <summary>
+        /// Tests the in-memory JSON round trip - the <see cref="DiGi.Core.Classes.SerializableObject.Clone"/> path every type derived from <see cref="ParametrizedObject"/> takes - of a <see cref="Guid"/> parameter: its node has kind <c>String</c> but holds a boxed <see cref="Guid"/>, and <see cref="DiGi.Core.Query.Value(System.Text.Json.Nodes.JsonNode, Type)"/> reads it the way the text leg does (DiGi-Organization/DiGi.Core#14).
+        /// </summary>
+        [Fact]
+        public void ParametrizedObject_JsonObjectRoundTrip_GuidParameter()
+        {
+            Guid guid = Guid.NewGuid();
+
+            ParametrizedObject source = new();
+            Assert.True(source.SetValue("GuidParam", guid, new SetValueSettings() { CheckAccessType = false }));
+
+            ParametrizedObject? copy = Create.SerializableObject<ParametrizedObject>(source.ToJsonObject());
+            Assert.NotNull(copy);
+
+            // An untyped parameter reloads its Guid as the string of the JSON text.
+            Assert.Equal(guid.ToString(), copy.GetValue("GuidParam"));
+
+            // The in-memory leg and the text leg agree.
+            ParametrizedObject? reloaded = Convert.ToDiGi<ParametrizedObject>(Convert.ToSystem_String(source))?.FirstOrDefault();
+            Assert.NotNull(reloaded);
+            Assert.Equal(Convert.ToSystem_String(reloaded), Convert.ToSystem_String(copy));
+        }
     }
 }

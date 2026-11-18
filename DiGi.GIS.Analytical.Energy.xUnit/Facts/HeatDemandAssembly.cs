@@ -41,8 +41,9 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
 
             (BuildingSolarRadiationResult buildingSolarRadiationResult, Guid guid_Dropped) = HeatDemandAssembly_SolarResult(buildingModel, ePWFile);
 
-            // The copy constructor: a model from Core.Query.Clone shares its relations with the original, and the split would reach the stored model.
-            BuildingModel buildingModel_Split = new(buildingModel);
+            // An isolated copy, so the split leaves the fixture's model untouched (DiGi-Organization/DiGi.Core#14).
+            BuildingModel? buildingModel_Split = Core.Query.Clone(buildingModel);
+            Assert.NotNull(buildingModel_Split);
             List<PartyWallResult>? partyWallResults = DiGi.Analytical.Building.Query.PartyWalls(buildingModel_Split, [buildingModel_Neighbour]);
             Assert.NotNull(partyWallResults);
             Assert.True(DiGi.Analytical.Building.Modify.SplitPartyWalls(buildingModel_Split, partyWallResults));
