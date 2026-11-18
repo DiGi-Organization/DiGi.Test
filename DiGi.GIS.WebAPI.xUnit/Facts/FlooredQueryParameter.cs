@@ -185,8 +185,9 @@ namespace DiGi.GIS.WebAPI.xUnit
                 }
             }
 
-            // 74 since the solar solve endpoints of DiGi.GIS.WebAPI#93 (buildingmodel/itemsbycountyid, epwfile/itembyid, epwfile/locations, buildingsolarradiation/setsolarradiations and referencesbycountyid).
-            Assert.Equal(74, count);
+            // 74 since the solar solve endpoints of DiGi.GIS.WebAPI#93 (buildingmodel/itemsbycountyid, epwfile/itembyid, epwfile/locations, buildingsolarradiation/setsolarradiations and referencesbycountyid);
+            // 75 since building2d/centroidsbycountyid (DiGi.GIS.PostgreSQL.UI#48).
+            Assert.Equal(75, count);
         }
 
         /// <summary>
