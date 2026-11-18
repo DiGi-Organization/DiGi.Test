@@ -201,15 +201,17 @@ namespace DiGi.WebAPI.WindowsService.xUnit
             Assert.Equal("100", GisDocument_Maximum(openApiOperation_ByAddress, "limit"));
 
             // The exhaustive form of the assertions above: every commandtimeout the public document carries,
-            // floored at 0 with no maximum - sixty of them. The fifty of #48 plus predictedyearbuiltruns of
+            // floored at 0 with no maximum - sixty-two of them. The fifty of #48 plus predictedyearbuiltruns of
             // #50, plus countbyfiltergroup of #52, countbyadministrativeareal2did of #53, and aggregate summaries (batch) of #56, then estimatedcountsbycountyids of
-            // DiGi.GIS.PostgreSQL.UI#32, addresspoint/countbycountyid of #72, the occupancy snapshots of #73 and DiGi.GIS.PostgreSQL#108, and
-            // buildingdata/byaddress of #85; the four sibling
+            // DiGi.GIS.PostgreSQL.UI#32, addresspoint/countbycountyid of #72, the occupancy snapshots of #73 and DiGi.GIS.PostgreSQL#108,
+            // buildingdata/byaddress of #85, buildingmodel/itemsbycountyid of #93 and building2d/centroidsbycountyid of
+            // DiGi.GIS.PostgreSQL.UI#48. The other solar solve endpoints of #93 sit on controllers this document does
+            // not load (BuildingSolarRadiation, EPWFile), and the four sibling
             // maintenance endpoints of #50 are key-gated and hidden (IgnoreApi inherited) and so never reach the
-            // public document. That is why this served count trails the reflection sweep's sixty-nine (the whole
+            // public document. That is why this served count trails the reflection sweep's seventy-five (the whole
             // assembly, hidden endpoints included) - a tripwire, not a target: an endpoint added to the public
             // document or stripped of its floor fails here instead of passing unasserted
-            // (DiGi.GIS.WebAPI#48, #50, #52, #53, #56, #72, #73, #85, DiGi.GIS.PostgreSQL#108).
+            // (DiGi.GIS.WebAPI#48, #50, #52, #53, #56, #72, #73, #85, #93, DiGi.GIS.PostgreSQL#108, DiGi.GIS.PostgreSQL.UI#48).
             int commandTimeouts = 0;
             foreach (IOpenApiPathItem openApiPathItem in openApiDocument.Paths.Values)
             {
@@ -243,7 +245,7 @@ namespace DiGi.WebAPI.WindowsService.xUnit
                 }
             }
 
-            Assert.Equal(60, commandTimeouts);
+            Assert.Equal(62, commandTimeouts);
         }
 
         private static OpenApiOperation GisDocument_Operation(OpenApiDocument openApiDocument, string path, HttpMethod httpMethod)
