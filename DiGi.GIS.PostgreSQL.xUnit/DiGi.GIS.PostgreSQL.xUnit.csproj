@@ -25,6 +25,9 @@
          GeoAPI.CoordinateSystems.Transformations.ICoordinateTransformation per fact and name that type, so this
          project re-declares the package at the same version as DiGi.GIS.PostgreSQL (DiGi.GIS.PostgreSQL#125). -->
     <PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
+    <!-- DiGi.GIS.PostgreSQL.Energy reaches DiGi.Solar and DiGi.Geometry by HintPath, so their NuGet dependencies are re-declared here (Coding - Host Dependencies.md). -->
+    <PackageReference Include="QuikGraph" Version="2.5.0" />
+    <PackageReference Include="SolarCalculator" Version="3.6.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
@@ -35,6 +38,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DiGi.GIS.PostgreSQL\DiGi.GIS.PostgreSQL\DiGi.GIS.PostgreSQL.csproj" />
+    <ProjectReference Include="..\..\DiGi.GIS.PostgreSQL\DiGi.GIS.PostgreSQL.Energy\DiGi.GIS.PostgreSQL.Energy.csproj" />
     <ProjectReference Include="..\DiGi.Core.xUnit\DiGi.Core.xUnit.csproj" />
   </ItemGroup>
 
@@ -44,6 +48,12 @@
     </Reference>
     <Reference Include="DiGi.Analytical.Building">
       <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Analytical.Building.Energy">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.Energy.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Analytical.Building.Regulation">
+      <HintPath>..\..\DiGi.Analytical\bin\DiGi.Analytical.Building.Regulation.dll</HintPath>
     </Reference>
     <Reference Include="DiGi.BDL">
       <HintPath>..\..\DiGi.BDL\bin\DiGi.BDL.dll</HintPath>
@@ -77,6 +87,9 @@
     </Reference>
     <Reference Include="DiGi.GIS.Analytical">
       <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.Analytical.Energy">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.Energy.dll</HintPath>
     </Reference>
     <Reference Include="DiGi.GIS.IO">
       <HintPath>..\..\DiGi.GIS.IO\bin\DiGi.GIS.IO.dll</HintPath>

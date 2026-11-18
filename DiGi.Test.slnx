@@ -576,6 +576,16 @@
       <BuildDependency Project="../DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL.csproj" />
       <BuildDependency Project="../DiGi.Solar/DiGi.Solar/DiGi.Solar.csproj" />
     </Project>
+    <Project Path="DiGi.GIS.PostgreSQL.Energy.xUnit/DiGi.GIS.PostgreSQL.Energy.xUnit.csproj">
+      <BuildDependency Project="../DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL.Solar/DiGi.GIS.PostgreSQL.Solar.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.Energy/DiGi.Analytical.Building.Energy.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.HVAC/DiGi.Analytical.Building.HVAC.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.Regulation/DiGi.Analytical.Building.Regulation.csproj" />
+      <BuildDependency Project="../DiGi.GIS.Analytical/DiGi.GIS.Analytical.Energy/DiGi.GIS.Analytical.Energy.csproj" />
+      <BuildDependency Project="../DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL.Energy/DiGi.GIS.PostgreSQL.Energy.csproj" />
+      <BuildDependency Project="../DiGi.GIS.IO/DiGi.GIS.IO/DiGi.GIS.IO.csproj" />
+    </Project>
     <Project Path="DiGi.GIS.PostgreSQL.Solar.xUnit/DiGi.GIS.PostgreSQL.Solar.xUnit.csproj">
       <BuildDependency Project="../DiGi.GIS.PostgreSQL/DiGi.GIS.PostgreSQL.Solar/DiGi.GIS.PostgreSQL.Solar.csproj" />
       <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
