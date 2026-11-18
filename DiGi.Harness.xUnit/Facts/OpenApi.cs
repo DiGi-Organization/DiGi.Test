@@ -122,5 +122,38 @@ namespace DiGi.Harness.xUnit
             ToolResultContent toolResultContent_DescribeOutside = await describeEndpointTool.InvokeAsync(new ToolUseContent("6", "describe_endpoint", """{"method":"GET","path":"/user/me"}"""));
             Assert.True(toolResultContent_DescribeOutside.IsError);
         }
+
+        /// <summary>
+        /// Tests <see cref="CallEndpointTool"/> with a POST body the model passed as a string (DiGi-Organization/DiGi.Harness#5): a string holding a JSON object or array is sent as that object or array, not as a JSON string literal; any other string is still sent as a JSON string, and an object body is unchanged.
+        /// </summary>
+        [Fact]
+        public async Task CallEndpointTool_StringBody()
+        {
+            StubHttpMessageHandler stubHttpMessageHandler = new();
+            for (int i = 0; i < 5; i++)
+            {
+                stubHttpMessageHandler.Enqueue(HttpStatusCode.OK, "[]", "application/json");
+            }
+
+            using HttpClient httpClient = new(stubHttpMessageHandler);
+
+            Harness.Classes.CallEndpointTool callEndpointTool = new(new Uri("https://api.example.test"), "/gis/", Swagger_Sample(), ["/gis/building/itemsbyreferences"], null, httpClient);
+
+            (string Input, string Expected)[] cases =
+            [
+                ("""{"method":"POST","path":"/gis/building/itemsbyreferences","body":"{\"AdministrativeAreal2DId\": 55413}"}""", """{"AdministrativeAreal2DId":55413}"""),
+                ("""{"method":"POST","path":"/gis/building/itemsbyreferences","body":" [\"Building function\"] "}""", """["Building function"]"""),
+                ("""{"method":"POST","path":"/gis/building/itemsbyreferences","body":{"AdministrativeAreal2DId":55413}}""", """{"AdministrativeAreal2DId":55413}"""),
+                ("""{"method":"POST","path":"/gis/building/itemsbyreferences","body":"Bemowo"}""", "\"Bemowo\""),
+                ("""{"method":"POST","path":"/gis/building/itemsbyreferences","body":"{not json"}""", "\"{not json\""),
+            ];
+
+            for (int i = 0; i < cases.Length; i++)
+            {
+                ToolResultContent toolResultContent = await callEndpointTool.InvokeAsync(new ToolUseContent(i.ToString(System.Globalization.CultureInfo.InvariantCulture), "call_endpoint", cases[i].Input));
+                Assert.False(toolResultContent.IsError, cases[i].Input);
+                Assert.Equal(cases[i].Expected, stubHttpMessageHandler.Requests[i].Body);
+            }
+        }
     }
 }
