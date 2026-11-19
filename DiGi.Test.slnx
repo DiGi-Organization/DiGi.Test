@@ -151,6 +151,8 @@
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
       <BuildDependency Project="../DiGi.EPW/DiGi.EPW/DiGi.EPW.csproj" />
       <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="../DiGi.Python/DiGi.Python/DiGi.Python.csproj" />
+      <BuildDependency Project="../DiGi.Serilog/DiGi.Serilog/DiGi.Serilog.csproj" />
     </Project>
     <Project Path="DiGi.EnergyPlus.xUnit/DiGi.EnergyPlus.xUnit.csproj">
       <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.HVAC/DiGi.Analytical.Building.HVAC.csproj" />

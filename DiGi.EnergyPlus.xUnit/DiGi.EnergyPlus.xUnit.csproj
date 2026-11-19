@@ -22,6 +22,8 @@
     <!-- DiGi.Geometry is referenced by HintPath, so its NuGet dependencies do not flow to the test host. -->
     <PackageReference Include="NetTopologySuite" Version="2.6.0" />
     <PackageReference Include="QuikGraph" Version="2.5.0" />
+    <!-- Serilog.Sinks.File is a NuGet dependency of DiGi.Serilog (referenced via HintPath by DiGi.EnergyPlus), so it must be re-added here to reach the test host output. -->
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>

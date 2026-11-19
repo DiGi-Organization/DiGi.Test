@@ -1,0 +1,69 @@
+Program Version:,EnergyPlus, Version 26.2.0-4bd7a1f26f, YMD=2026.11.19 12:43
+Tabular Output Report in Format: ,Comma
+
+Building:,a4cebe17-4c7e-47b6-a61c-88d4cfc62903
+Environment:,YEAR ** Warszawa-Chopina Intl AP MZ POL IMGW WMO#=123750
+
+----------------------------------------------------------------------------------------------------
+REPORT:,Envelope Summary
+FOR:,Entire Facility
+Opaque Exterior
+
+,,Construction,Construction Assignment Source,Zone,Space,Reflectance,U-Factor with Film [W/m2-K],U-Factor no Film [W/m2-K],Gross Area [m2],Net Area [m2],Azimuth [deg],Tilt [deg],Cardinal Direction
+,4FF67FA3-E63C-414F-9523-8549221CEB4D,WALL (WALL U 0.3),Explicit,BUILDING,BUILDING,0.40,0.302,0.316,30.00,26.40,180.00,90.00,S
+,CCE85E6C-858F-4525-A93D-9916D03D88AD,WALL (WALL U 0.3),Explicit,BUILDING,BUILDING,0.40,0.302,0.316,24.00,24.00,90.00,90.00,E
+,0AFB6533-4371-4250-9B96-220F2CF91E09,WALL (WALL U 0.3),Explicit,BUILDING,BUILDING,0.40,0.302,0.316,30.00,30.00,0.00,90.00,N
+,E01ECC71-8664-499D-B332-D7B44DCEFBC9,WALL (WALL U 0.3),Explicit,BUILDING,BUILDING,0.40,0.302,0.316,24.00,24.00,270.00,90.00,W
+,0B9CED4E-901D-4F08-AB22-1A4D53D82D4F,ROOF (ROOF U 0.25),Explicit,BUILDING,BUILDING,0.40,0.250,0.259,80.00,80.00,90.00,0.00,
+
+
+Opaque Interior
+
+,,Construction,Construction Assignment Source,Zone,Space,Adjacent Surface,Reflectance,U-Factor with Film [W/m2-K],U-Factor no Film [W/m2-K],Gross Area [m2],Net Area [m2],Azimuth [deg],Tilt [deg],Cardinal Direction
+,THERMAL BRIDGES,THERMAL BRIDGES,Explicit,BUILDING,BUILDING,THERMAL BRIDGES,0.40,0.251,0.258,107.20,107.20,270.00,90.00,W
+,79DEADA3-61BF-4DFF-B005-91E9FEFE152A,FLOOR (GROUND FLOOR U 0.253),Explicit,BUILDING,BUILDING,GROUND,0.40,0.253,0.264,80.00,80.00,180.00,180.00,
+
+
+Exterior Fenestration
+
+,,Construction,Construction Assignment Source,Zone,Space,Frame and Divider,Glass Area [m2],Frame Area [m2],Divider Area [m2],Area of One Opening [m2],Area of Multiplied Openings [m2],Glass U-Factor [W/m2-K],Glass SHGC,Glass Visible Transmittance,Frame Conductance [W/m2-K],Divider Conductance [W/m2-K],NFRC Product Type,Assembly U-Factor [W/m2-K],Assembly SHGC,Assembly Visible Transmittance,Shade Control,Parent Surface,Azimuth [deg],Tilt [deg],Cardinal Direction
+,72AF347A-14FA-4217-8A69-101F5F0174E1,GLAZING U 1.3 SHGC 0.433,Explicit,BUILDING,BUILDING,,1.80,0.00,0.00,1.80,1.80,1.299,0.434,0.350,,,,,,,No,4FF67FA3-E63C-414F-9523-8549221CEB4D,180.00,90.00,S
+,92A1E561-6534-4F1C-AA63-B9A102CEEED0,GLAZING U 1.3 SHGC 0.42,Explicit,BUILDING,BUILDING,,1.80,0.00,0.00,1.80,1.80,1.299,0.421,0.336,,,,,,,No,4FF67FA3-E63C-414F-9523-8549221CEB4D,180.00,90.00,S
+,Total or Average,,,,,,,,,,3.60,1.299,0.427,0.343,,,,,,,,,,,
+,North Total or Average,,,,,,,,,,0.00,-,-,-,,,,,,,,,,,
+,Non-North Total or Average,,,,,,,,,,3.60,1.299,0.427,0.343,,,,,,,,,,,
+
+
+Exterior Fenestration Shaded State
+
+,,Frame and Divider,Glass U-Factor [W/m2-K],Glass SHGC,Glass Visible Transmittance,NFRC Product Type,Assembly U-Factor [W/m2-K],Assembly SHGC,Assembly Visible Transmittance
+,None,,,,,,,,
+
+
+Interior Fenestration
+
+,,Construction,Construction Assignment Source,Zone,Space,Area of One Opening [m2],Area of Openings [m2],Glass U-Factor [W/m2-K],Glass SHGC,Glass Visible Transmittance,Parent Surface
+,Total or Average,,,,,,0.00,-,-,-,
+
+
+Exterior Door
+
+,,Construction,Construction Assignment Source,Zone,Space,U-Factor with Film [W/m2-K],U-Factor no Film [W/m2-K],Gross Area [m2],Parent Surface
+,None,,,,,,,,
+
+
+Interior Door
+
+,,Construction,Construction Assignment Source,Zone,Space,U-Factor with Film [W/m2-K],U-Factor no Film [W/m2-K],Gross Area [m2],Parent Surface
+,None,,,,,,,,
+
+
+Opaque Construction Layers
+
+,,Layer 1,Layer 2,Layer 3,Layer 4,Layer 5,Layer 6,Layer 7,Layer 8,Layer 9,Layer 10
+,FLOOR (GROUND FLOOR U 0.253),FLOOR (GROUND FLOOR U 0.253) ADJUSTMENT R 1.238,Insulation 100 mm,Concrete 100 mm,,,,,,,
+,ROOF (ROOF U 0.25),Insulation 200 mm x0.761,Concrete 150 mm x0.761,,,,,,,,
+,WALL (WALL U 0.3),WALL (WALL U 0.3) ADJUSTMENT R 0.317,Insulation 100 mm,Brick 250 mm,Plaster 15 mm,,,,,,
+,THERMAL BRIDGES,THERMAL BRIDGES R 3.87,,,,,,,,,
+
+
