@@ -144,6 +144,24 @@
       <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
     </Project>
   </Folder>
+  <Folder Name="/EnergyPlus/">
+    <Project Path="../DiGi.EnergyPlus/DiGi.EnergyPlus/DiGi.EnergyPlus.csproj">
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building/DiGi.Analytical.Building.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical/DiGi.Analytical.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.EPW/DiGi.EPW/DiGi.EPW.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+    </Project>
+    <Project Path="DiGi.EnergyPlus.xUnit/DiGi.EnergyPlus.xUnit.csproj">
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building.HVAC/DiGi.Analytical.Building.HVAC.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical.Building/DiGi.Analytical.Building.csproj" />
+      <BuildDependency Project="../DiGi.Analytical/DiGi.Analytical/DiGi.Analytical.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="../DiGi.EPW/DiGi.EPW/DiGi.EPW.csproj" />
+      <BuildDependency Project="../DiGi.Geometry/DiGi.Geometry/DiGi.Geometry.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
+  </Folder>
   <Folder Name="/EPW/">
     <Project Path="../DiGi.EPW/DiGi.EPW/DiGi.EPW.csproj">
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
