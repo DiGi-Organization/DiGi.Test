@@ -256,8 +256,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         }
 
         /// <summary>
-        /// Verifies that <c>Query.Match</c> over a subdivision reference and its path prefers the subdivision's own match and falls back to the path's municipality reference only when the subdivision does not match.
-        /// <para>This is the resolution both passes of <see cref="PostgreSQLBuildingDataUpdateTask"/> share: the subdivision loop for its subdivisions, and the unassigned pass for the cross-county buildings' own subdivisions.</para>
+        /// Verifies that <c>Query.Match</c> over a subdivision reference and its path takes the path's municipality, never a unit the subdivision's name alone points at (DiGi-Organization/DiGi.GIS.PostgreSQL#148).
+        /// <para>A subdivision named like a neighbouring municipality (GROMADKA inside Bolesławiec) used to take that municipality; in Warsaw the same name-only match gave neighbourhoods the units of same-named villages elsewhere. This is the resolution both passes of <see cref="PostgreSQLBuildingDataUpdateTask"/> share: the subdivision loop for its subdivisions, and the unassigned pass for the cross-county buildings' own subdivisions.</para>
         /// </summary>
         [Fact]
         public void Match_SubdivisionReference_MunicipalityFallback()
@@ -288,7 +288,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             AdministrativeAreal2DReferencePath administrativeAreal2DReferencePath = new([municipalityReference]);
             Assert.NotNull(administrativeAreal2DReferencePath[AdministrativeArealType.Municipality]);
 
-            // A subdivision that names its own statistical unit matches directly, even though the path's municipality is a different unit.
+            // A subdivision named like another municipality takes its own path's municipality, not the unit its name points at.
             AdministrativeAreal2DReference subdivisionReference_Matched = new()
             {
                 Id = 900,
@@ -298,7 +298,11 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             GIS.Classes.StatisticalUnit? statisticalUnit_Subdivision = Query.Match(rootStatisticalUnit, subdivisionReference_Matched, administrativeAreal2DReferencePath);
             Assert.NotNull(statisticalUnit_Subdivision);
-            Assert.Equal("GROMADKA", statisticalUnit_Subdivision.Name);
+            Assert.Equal("BOLESŁAWIEC", statisticalUnit_Subdivision.Name);
+
+            // By its name alone a subdivision matches nothing.
+            Assert.Null(Query.Match(rootStatisticalUnit, subdivisionReference_Matched));
+            Assert.Null(Query.Match(rootStatisticalUnit, "GROMADKA", null, AdministrativeArealType.Subdivision));
 
             // A subdivision that matches nothing falls back to the municipality of its path.
             AdministrativeAreal2DReference subdivisionReference_Unmatched = new()

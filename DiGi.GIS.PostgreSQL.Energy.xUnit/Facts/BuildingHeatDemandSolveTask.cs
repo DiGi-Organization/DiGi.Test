@@ -100,8 +100,8 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
             foreach (DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour constructionFlavour in new[] { DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.Regulation })
             {
                 MemoryBuildingHeatDemandSolveTask memoryBuildingHeatDemandSolveTask = HeatDemandSolve_Task(1);
-                memoryBuildingHeatDemandSolveTask.YearBuilts["R0"] = (2008, YearBuiltSource.Prediction);
-                memoryBuildingHeatDemandSolveTask.YearBuilts["R1"] = (fallbackYearBuilt, YearBuiltSource.User);
+                memoryBuildingHeatDemandSolveTask.YearBuilts["R0"] = (2008, YearBuiltSource.Prediction, null);
+                memoryBuildingHeatDemandSolveTask.YearBuilts["R1"] = (fallbackYearBuilt, YearBuiltSource.User, null);
                 memoryBuildingHeatDemandSolveTask.PostgreSQLBuildingHeatDemandSolveOptions.ConstructionFlavour = constructionFlavour;
 
                 await memoryBuildingHeatDemandSolveTask.RunAsync(CancellationToken.None);
@@ -115,6 +115,40 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
                 Assert.NotNull(buildingHeatDemandResult_Prediction.ConstructionSetSource);
                 Assert.Equal(buildingHeatDemandResult_User.ConstructionSetSource, buildingHeatDemandResult_Prediction.ConstructionSetSource);
             }
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="BuildingHeatDemandSolveTask"/> calculates a building predicted at the predictor's first year as the census year built of its area, read with its year built (DiGi-Organization/DiGi.GIS.Analytical#17).
+        /// <para>First run: R0 and R1 are Prediction 2008 with census years 1960 and 1995; both are written with their census year and source Census, and with different construction sets. Second run: R0 is Prediction 2008 with no census year and takes the fallback year; R1 is a user year of 2008 and keeps it whatever its census year.</para>
+        /// </summary>
+        [MediumFact]
+        public async Task BuildingHeatDemandSolveTask_CensusYearBuilt()
+        {
+            MemoryBuildingHeatDemandSolveTask memoryBuildingHeatDemandSolveTask = HeatDemandSolve_Task(1);
+            memoryBuildingHeatDemandSolveTask.YearBuilts["R0"] = (2008, YearBuiltSource.Prediction, 1960);
+            memoryBuildingHeatDemandSolveTask.YearBuilts["R1"] = (2008, YearBuiltSource.Prediction, 1995);
+
+            await memoryBuildingHeatDemandSolveTask.RunAsync(CancellationToken.None);
+
+            Dictionary<string, BuildingHeatDemandResult> buildingHeatDemandResults = Assert.Single(memoryBuildingHeatDemandSolveTask.Writes).BuildingHeatDemandResults.ToDictionary(x => x.Reference!);
+            Assert.Equal((short)1960, buildingHeatDemandResults["R0"].YearBuilt);
+            Assert.Equal(YearBuiltSource.Census, buildingHeatDemandResults["R0"].YearBuiltSource);
+            Assert.Equal((short)1995, buildingHeatDemandResults["R1"].YearBuilt);
+            Assert.Equal(YearBuiltSource.Census, buildingHeatDemandResults["R1"].YearBuiltSource);
+            Assert.NotNull(buildingHeatDemandResults["R0"].ConstructionSetSource);
+            Assert.NotEqual(buildingHeatDemandResults["R0"].ConstructionSetSource, buildingHeatDemandResults["R1"].ConstructionSetSource);
+
+            memoryBuildingHeatDemandSolveTask = HeatDemandSolve_Task(1);
+            memoryBuildingHeatDemandSolveTask.YearBuilts["R0"] = (2008, YearBuiltSource.Prediction, null);
+            memoryBuildingHeatDemandSolveTask.YearBuilts["R1"] = (2008, YearBuiltSource.User, 1960);
+
+            await memoryBuildingHeatDemandSolveTask.RunAsync(CancellationToken.None);
+
+            buildingHeatDemandResults = Assert.Single(memoryBuildingHeatDemandSolveTask.Writes).BuildingHeatDemandResults.ToDictionary(x => x.Reference!);
+            Assert.Equal(new OpeningGenerationOptions().FallbackYearBuilt, buildingHeatDemandResults["R0"].YearBuilt);
+            Assert.Equal(YearBuiltSource.Fallback, buildingHeatDemandResults["R0"].YearBuiltSource);
+            Assert.Equal((short)2008, buildingHeatDemandResults["R1"].YearBuilt);
+            Assert.Equal(YearBuiltSource.User, buildingHeatDemandResults["R1"].YearBuiltSource);
         }
 
         /// <summary>
@@ -262,8 +296,8 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
             result.Building2DCentroids.Add(new Building2DCentroid() { CountyId = 1, Reference = "R0", X = heatDemandSolve_Origin.X + 5, Y = heatDemandSolve_Origin.Y + 4 });
             result.Building2DCentroids.Add(new Building2DCentroid() { CountyId = 1, Reference = "R1", X = heatDemandSolve_Origin.X + 15, Y = heatDemandSolve_Origin.Y + 4 });
             result.Building2DCentroids.Add(new Building2DCentroid() { CountyId = 1, Reference = "M", X = heatDemandSolve_Origin.X + 40, Y = heatDemandSolve_Origin.Y + 4 });
-            result.YearBuilts["R0"] = (1975, YearBuiltSource.User);
-            result.YearBuilts["R1"] = (1975, YearBuiltSource.User);
+            result.YearBuilts["R0"] = (1975, YearBuiltSource.User, null);
+            result.YearBuilts["R1"] = (1975, YearBuiltSource.User, null);
             result.PostgreSQLBuildingHeatDemandSolveOptions = new PostgreSQLBuildingHeatDemandSolveOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism };
             return result;
         }
@@ -328,7 +362,7 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
 
             public List<(int CountyId, List<BuildingHeatDemandResult> BuildingHeatDemandResults)> Writes { get; } = [];
 
-            public Dictionary<string, (short? YearBuilt, YearBuiltSource? YearBuiltSource)> YearBuilts { get; } = [];
+            public Dictionary<string, (short? YearBuilt, YearBuiltSource? YearBuiltSource, short? CensusYearBuilt)> YearBuilts { get; } = [];
 
             public Task<bool> RunAsync(CancellationToken cancellationToken)
             {
@@ -394,9 +428,9 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
                 return Task.FromResult<Dictionary<string, OccupancyData>?>([]);
             }
 
-            protected override Task<Dictionary<string, (short? YearBuilt, YearBuiltSource? YearBuiltSource)>?> ReadYearBuiltsAsync(int countyId, List<string> references, int commandTimeout, CancellationToken cancellationToken)
+            protected override Task<Dictionary<string, (short? YearBuilt, YearBuiltSource? YearBuiltSource, short? CensusYearBuilt)>?> ReadYearBuiltsAsync(int countyId, List<string> references, int commandTimeout, CancellationToken cancellationToken)
             {
-                return Task.FromResult<Dictionary<string, (short? YearBuilt, YearBuiltSource? YearBuiltSource)>?>(YearBuilts.Where(x => references.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value));
+                return Task.FromResult<Dictionary<string, (short? YearBuilt, YearBuiltSource? YearBuiltSource, short? CensusYearBuilt)>?>(YearBuilts.Where(x => references.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value));
             }
 
             protected override bool TryInitialize()
