@@ -90,6 +90,34 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
         }
 
         /// <summary>
+        /// Verifies that <see cref="BuildingHeatDemandSolveTask"/> calculates a building predicted at the predictor's first year as the fallback year, in both construction flavours (DiGi-Organization/DiGi.GIS.Analytical#16).
+        /// <para>R0 is read as Prediction 2008 and R1 as a user year equal to the fallback. Expected: R0 is written with the fallback year and source Fallback, and with the construction set of R1, in a TypicalAsBuilt run and in a Regulation run, whose regime the task selects itself.</para>
+        /// </summary>
+        [MediumFact]
+        public async Task BuildingHeatDemandSolveTask_CensoredPrediction()
+        {
+            short fallbackYearBuilt = new OpeningGenerationOptions().FallbackYearBuilt;
+            foreach (DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour constructionFlavour in new[] { DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.Regulation })
+            {
+                MemoryBuildingHeatDemandSolveTask memoryBuildingHeatDemandSolveTask = HeatDemandSolve_Task(1);
+                memoryBuildingHeatDemandSolveTask.YearBuilts["R0"] = (2008, YearBuiltSource.Prediction);
+                memoryBuildingHeatDemandSolveTask.YearBuilts["R1"] = (fallbackYearBuilt, YearBuiltSource.User);
+                memoryBuildingHeatDemandSolveTask.PostgreSQLBuildingHeatDemandSolveOptions.ConstructionFlavour = constructionFlavour;
+
+                await memoryBuildingHeatDemandSolveTask.RunAsync(CancellationToken.None);
+
+                Dictionary<string, BuildingHeatDemandResult> buildingHeatDemandResults = Assert.Single(memoryBuildingHeatDemandSolveTask.Writes).BuildingHeatDemandResults.ToDictionary(x => x.Reference!);
+                BuildingHeatDemandResult buildingHeatDemandResult_Prediction = buildingHeatDemandResults["R0"];
+                BuildingHeatDemandResult buildingHeatDemandResult_User = buildingHeatDemandResults["R1"];
+                Assert.Equal(fallbackYearBuilt, buildingHeatDemandResult_Prediction.YearBuilt);
+                Assert.Equal(YearBuiltSource.Fallback, buildingHeatDemandResult_Prediction.YearBuiltSource);
+                Assert.Equal(constructionFlavour, buildingHeatDemandResult_Prediction.ConstructionFlavour);
+                Assert.NotNull(buildingHeatDemandResult_Prediction.ConstructionSetSource);
+                Assert.Equal(buildingHeatDemandResult_User.ConstructionSetSource, buildingHeatDemandResult_Prediction.ConstructionSetSource);
+            }
+        }
+
+        /// <summary>
         /// Verifies that the parallel calculation of a batch gives the same results as one building at a time (DiGi.GIS.PostgreSQL#143): the construction library, the opening-size library, the climate-zone map and the weather are shared by every calculation of a run, so a calculation that wrote to one of them would show here.
         /// </summary>
         [MediumFact]

@@ -67,7 +67,9 @@ namespace DiGi.GIS.Analytical.xUnit
             openingGenerationOptions.ObstructionInnerCityFactor = 0.5;
             openingGenerationOptions.RoadFrontageDistance = 6.0;
             openingGenerationOptions.AssignEnvelopeConstructions = false;
+            openingGenerationOptions.FallbackYearBuilt = 1950;
             OpeningGenerationOptions openingGenerationOptions_Copy = new(openingGenerationOptions);
+            Assert.Equal((short)1950, openingGenerationOptions_Copy.FallbackYearBuilt);
             Assert.Equal(Core.Convert.ToSystem_String(openingGenerationOptions), Core.Convert.ToSystem_String(openingGenerationOptions_Copy));
             Assert.False(openingGenerationOptions_Copy.AssignEnvelopeConstructions);
             Assert.Equal(12.5, openingGenerationOptions_Copy.StaircaseSpacing);
