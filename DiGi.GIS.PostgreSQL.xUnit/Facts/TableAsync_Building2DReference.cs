@@ -13,6 +13,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// Claims from a queue table left in the shape it had before claiming existed, and checks that the claim brings it up to date rather than failing on it.
         /// <para>This is the regression guard for a deployed failure. Claiming was added with a backward-compatible <c>ADD COLUMN IF NOT EXISTS claimed_at</c> in the DDL, but the claim path guarded itself with a table-existence check - <c>to_regclass</c>, which answers for the table and knows nothing about its columns - and only the enqueue path ever ran the DDL. Every queue table already deployed therefore passed the guard and then raised <c>42703</c> on a column that was not there, which the converter logged and returned as null, and which the download task reported as an outright failure.</para>
         /// <para>The ordering is asserted for a second defect found with it: claims were ordered on the queuing time alone, so a row whose lease expired came back ahead of every row that had never been attempted. A run failing on what it reached first could re-attempt those forever without ever reaching the rest of the queue.</para>
+        /// <para>The retirement is asserted for a third defect found there (DiGi.GIS.PostgreSQL#145): the poison-row <c>DELETE</c> that runs before every claim could not be served by any index, walked the whole growing queue on every claim and timed out on production - so an entry seeded at the attempt ceiling is now checked to be deleted by the claim that would have reached it, never returned and never left behind, and the migration is checked to create the index on <c>attempts</c> the retirement needs.</para>
         /// <para>Skipped by default: it drops and recreates the real queue table, so it needs <c>GIS_PostgreSQL_Storage.conf</c> beside the test assembly pointing at a scratch database. Never point it at a database whose queue holds work - the drop is not recoverable.</para>
         /// </summary>
         [Fact(Skip = "Drops and recreates the OrtoDatas queue table. Point GIS_PostgreSQL_Storage.conf at a scratch database before running.")]
@@ -55,6 +56,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
                 Assert.Contains("claimed_at", await ColumnNamesAsync(npgsqlConnection, tableName));
                 Assert.Contains($"idx_{tableName}_claimed_at", await IndexNamesAsync(npgsqlConnection, tableName));
+                Assert.Contains($"idx_{tableName}_attempts", await IndexNamesAsync(npgsqlConnection, tableName));
 
                 //Queuing order decides which of the two is taken first, and the rows survive the migration
 
@@ -79,6 +81,19 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 //Running the DDL again is a no-op on a table already in shape
 
                 Assert.True(await npgsqlConnection.TableAsync_Building2DReference(tableName));
+                Assert.Equal(1, await DiGi.PostgreSQL.Query.CountAsync(npgsqlConnection, tableName));
+
+                //An entry that reached the attempt ceiling is retired by the claim that would have reached
+                //it, never handed out and never left behind: the claim excludes it through its own ceiling,
+                //and the retirement DELETE is what finally removes it (DiGi.GIS.PostgreSQL#145)
+
+                await ExecuteAsync(npgsqlConnection, $"INSERT INTO {tableName} (county_id, reference, attempts) VALUES ({countyId}, 'reference_poison', 5);");
+                Assert.Equal(2, await DiGi.PostgreSQL.Query.CountAsync(npgsqlConnection, tableName));
+
+                List<Building2DReference>? building2DReferences_Retire = await ortoDatasPostgreSQLConverter.GetNextBuilding2DReferencesAsync(1, claimTimeoutMinutes: 0);
+                Assert.NotNull(building2DReferences_Retire);
+                Assert.Single(building2DReferences_Retire);
+                Assert.Equal("reference_newer", building2DReferences_Retire[0].Reference);
                 Assert.Equal(1, await DiGi.PostgreSQL.Query.CountAsync(npgsqlConnection, tableName));
             }
             finally
