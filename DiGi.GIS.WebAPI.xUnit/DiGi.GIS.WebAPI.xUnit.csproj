@@ -77,6 +77,12 @@
     <Reference Include="DiGi.GIS">
       <HintPath>..\..\DiGi.GIS\bin\DiGi.GIS.dll</HintPath>
     </Reference>
+    <!-- Named only for the columnvalues facts, which assert every answer key against the unique id of the real
+         DiGi.GIS.IO.Constants.Column member: DiGi.GIS.WebAPI reaches DiGi.GIS.IO by HintPath, so the constants
+         are not visible here without this entry. -->
+    <Reference Include="DiGi.GIS.IO">
+      <HintPath>..\..\DiGi.GIS.IO\bin\DiGi.GIS.IO.dll</HintPath>
+    </Reference>
     <!-- Required only to name the BuildingModelParameter the BuildingModel facts set: DiGi.GIS.WebAPI
          reaches DiGi.GIS.Analytical by HintPath, so the enum is not visible here without this entry. -->
     <Reference Include="DiGi.GIS.Analytical">
