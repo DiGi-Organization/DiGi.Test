@@ -87,6 +87,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                 (typeof(EPWFileController), nameof(EPWFileController.GetEPWFileLocationsAsync), "commandTimeout", 0, false),
                 (typeof(BuildingSolarRadiationController), nameof(BuildingSolarRadiationController.SetSolarRadiationsAsync), "commandTimeout", 0, false),
                 (typeof(BuildingSolarRadiationController), nameof(BuildingSolarRadiationController.GetReferencesByCountyIdAsync), "commandTimeout", 0, false),
+                // the heat-demand summary read of DiGi.GIS.WebAPI#101.
+                (typeof(BuildingHeatDemandController), nameof(BuildingHeatDemandController.GetSummariesByCountyIdsAsync), "commandTimeout", 0, false),
 
                 // the keyset page of buildingmodel/itemsbycountyid guards idAfter < 0 and limit <= 0 (DiGi.GIS.WebAPI#93).
                 (typeof(BuildingModelController), nameof(BuildingModelController.GetItemsByCountyIdAsync), "idAfter", 0, false),
@@ -186,8 +188,9 @@ namespace DiGi.GIS.WebAPI.xUnit
             }
 
             // 74 since the solar solve endpoints of DiGi.GIS.WebAPI#93 (buildingmodel/itemsbycountyid, epwfile/itembyid, epwfile/locations, buildingsolarradiation/setsolarradiations and referencesbycountyid);
-            // 75 since building2d/centroidsbycountyid (DiGi.GIS.PostgreSQL.UI#48).
-            Assert.Equal(75, count);
+            // 75 since building2d/centroidsbycountyid (DiGi.GIS.PostgreSQL.UI#48);
+            // 76 since buildingheatdemand/summariesbycountyids (DiGi.GIS.WebAPI#101).
+            Assert.Equal(76, count);
         }
 
         /// <summary>

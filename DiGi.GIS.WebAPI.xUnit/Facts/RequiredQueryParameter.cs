@@ -114,7 +114,11 @@ namespace DiGi.GIS.WebAPI.xUnit
                 (typeof(TerrainController), nameof(TerrainController.GetMesh3DByCircleAsync), "tolerance"),
                 (typeof(TerrainController), nameof(TerrainController.GetCoverageByCountyIdAsync), "originX"),
                 (typeof(TerrainController), nameof(TerrainController.GetCoverageByCountyIdAsync), "originY"),
-                (typeof(TerrainController), nameof(TerrainController.GetSummariesByCountyIdsAsync), "countyIds")
+                (typeof(TerrainController), nameof(TerrainController.GetSummariesByCountyIdsAsync), "countyIds"),
+                // the heat-demand summary read of DiGi.GIS.WebAPI#101 - all three selectors are optional.
+                (typeof(BuildingHeatDemandController), nameof(BuildingHeatDemandController.GetSummariesByCountyIdsAsync), "countyIds"),
+                (typeof(BuildingHeatDemandController), nameof(BuildingHeatDemandController.GetSummariesByCountyIdsAsync), "methodVersion"),
+                (typeof(BuildingHeatDemandController), nameof(BuildingHeatDemandController.GetSummariesByCountyIdsAsync), "yearBuiltBounds")
             ];
 
             Assert.NotEmpty(parameters);
