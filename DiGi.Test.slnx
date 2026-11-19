@@ -352,6 +352,11 @@
     <Project Path="../DiGi.BDL/DiGi.BDL/DiGi.BDL.csproj">
       <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
     </Project>
+    <Project Path="DiGi.BDL.xUnit/DiGi.BDL.xUnit.csproj">
+      <BuildDependency Project="../DiGi.BDL/DiGi.BDL/DiGi.BDL.csproj" />
+      <BuildDependency Project="../DiGi.Core/DiGi.Core/DiGi.Core.csproj" />
+      <BuildDependency Project="DiGi.Core.xUnit/DiGi.Core.xUnit.csproj" />
+    </Project>
     <Project Path="../DiGi.BDOT10k/DiGi.BDOT10k/DiGi.BDOT10k.csproj">
       <BuildDependency Project="../DiGi.GML/DiGi.GML/DiGi.GML.csproj" />
     </Project>
