@@ -72,6 +72,7 @@ namespace DiGi.GIS.WebAPI.xUnit
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetAcquisitionCoveragesByCountyIdsAsync), "commandTimeout", 0, false),
                 (typeof(OpenBuildingController), nameof(OpenBuildingController.GetDatasetsAsync), "commandTimeout", 0, false),
                 (typeof(OpenBuildingController), nameof(OpenBuildingController.GetSummariesByCountyIdsAsync), "commandTimeout", 0, false),
+                (typeof(OpenBuildingController), nameof(OpenBuildingController.GetSizesAsync), "commandTimeout", 0, false),
                 (typeof(OrtoAreaController), nameof(OrtoAreaController.ValidationSummaryAsync), "commandTimeout", 0, false),
                 (typeof(UnitController), nameof(UnitController.GetStatisticalDataCollectionAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetQueueSummariesByCountyIdsAsync), "commandTimeout", 0, false),
@@ -189,8 +190,9 @@ namespace DiGi.GIS.WebAPI.xUnit
 
             // 74 since the solar solve endpoints of DiGi.GIS.WebAPI#93 (buildingmodel/itemsbycountyid, epwfile/itembyid, epwfile/locations, buildingsolarradiation/setsolarradiations and referencesbycountyid);
             // 75 since building2d/centroidsbycountyid (DiGi.GIS.PostgreSQL.UI#48);
-            // 76 since buildingheatdemand/summariesbycountyids (DiGi.GIS.WebAPI#101).
-            Assert.Equal(76, count);
+            // 76 since buildingheatdemand/summariesbycountyids (DiGi.GIS.WebAPI#101);
+            // 77 since openbuilding/sizes (DiGi.GIS.PostgreSQL#150).
+            Assert.Equal(77, count);
         }
 
         /// <summary>
