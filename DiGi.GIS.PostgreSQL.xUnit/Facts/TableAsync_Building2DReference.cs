@@ -14,6 +14,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// <para>This is the regression guard for a deployed failure. Claiming was added with a backward-compatible <c>ADD COLUMN IF NOT EXISTS claimed_at</c> in the DDL, but the claim path guarded itself with a table-existence check - <c>to_regclass</c>, which answers for the table and knows nothing about its columns - and only the enqueue path ever ran the DDL. Every queue table already deployed therefore passed the guard and then raised <c>42703</c> on a column that was not there, which the converter logged and returned as null, and which the download task reported as an outright failure.</para>
         /// <para>The ordering is asserted for a second defect found with it: claims were ordered on the queuing time alone, so a row whose lease expired came back ahead of every row that had never been attempted. A run failing on what it reached first could re-attempt those forever without ever reaching the rest of the queue.</para>
         /// <para>The retirement is asserted for a third defect found there (DiGi.GIS.PostgreSQL#145): the poison-row <c>DELETE</c> that runs before every claim could not be served by any index, walked the whole growing queue on every claim and timed out on production - so an entry seeded at the attempt ceiling is now checked to be deleted by the claim that would have reached it, never returned and never left behind, and the migration is checked to create the index on <c>attempts</c> the retirement needs.</para>
+        /// <para>Two further guards close what the retirement itself promises (DiGi.GIS.PostgreSQL#145, #147): an entry one attempt below the ceiling is checked to survive the retirement and come back claimable - the production entries of #147 sit at a single attempt, fairness-starved rather than exhausted - and a retirement that fails is checked not to void the claim, which must still hand out the head of the queue instead of returning null with an empty round, with the failing row excluded by the claim's own ceiling either way.</para>
         /// <para>Skipped by default: it drops and recreates the real queue table, so it needs <c>GIS_PostgreSQL_Storage.conf</c> beside the test assembly pointing at a scratch database. Never point it at a database whose queue holds work - the drop is not recoverable.</para>
         /// </summary>
         [Fact(Skip = "Drops and recreates the OrtoDatas queue table. Point GIS_PostgreSQL_Storage.conf at a scratch database before running.")]
@@ -21,6 +22,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         {
             const string tableName = TableName.OrtoDatas_Building2DReference_Update;
             const int countyId = 5;
+            const string functionName_RetireFail = "zz_retire_fail";
+            const string triggerName_RetireFail = "zz_retire_fail_trigger";
 
             GISPostgreSQLConverterManager? gISPostgreSQLConverterManager = Create.GISPostgreSQLConverterManager();
             Assert.NotNull(gISPostgreSQLConverterManager);
@@ -95,9 +98,52 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Single(building2DReferences_Retire);
                 Assert.Equal("reference_newer", building2DReferences_Retire[0].Reference);
                 Assert.Equal(1, await DiGi.PostgreSQL.Query.CountAsync(npgsqlConnection, tableName));
+
+                //An entry below the attempt ceiling survives the retirement and stays claimable: the
+                //DELETE removes only what the claim itself would refuse, so a partially retried entry
+                //is cleaned up after, never discarded - the production entries of DiGi.GIS.PostgreSQL#147
+                //sit at a single attempt and must outlive every claim round.
+
+                await ExecuteAsync(npgsqlConnection, $"INSERT INTO {tableName} (county_id, reference, attempts) VALUES ({countyId}, 'reference_belowceiling', 4);");
+                Assert.Equal(2, await DiGi.PostgreSQL.Query.CountAsync(npgsqlConnection, tableName));
+
+                List<Building2DReference>? building2DReferences_BelowCeiling = await ortoDatasPostgreSQLConverter.GetNextBuilding2DReferencesAsync(1, claimTimeoutMinutes: 0);
+                Assert.NotNull(building2DReferences_BelowCeiling);
+                Assert.Single(building2DReferences_BelowCeiling);
+                Assert.Equal("reference_belowceiling", building2DReferences_BelowCeiling[0].Reference);
+                Assert.Equal(2, await DiGi.PostgreSQL.Query.CountAsync(npgsqlConnection, tableName));
+
+                //A failed retirement does not void the claim (DiGi.GIS.PostgreSQL#145): a BEFORE DELETE
+                //trigger makes the retire statement raise on the exhausted row - exactly where the
+                //production statement timed out - and the claim must still hand out the head of the queue
+                //instead of returning null with an empty round. The raising row and the one claimed above
+                //both sit at the ceiling now, so the claim's own ceiling excludes them whether or not the
+                //retirement ran, and nothing stays deleted because the raised statement aborts whole.
+
+                await ExecuteAsync(npgsqlConnection, $@"CREATE OR REPLACE FUNCTION {functionName_RetireFail}() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF OLD.reference = 'reference_poison_failing' THEN
+        RAISE EXCEPTION 'retirement blocked by the fact';
+    END IF;
+    RETURN OLD;
+END;
+$$;");
+                await ExecuteAsync(npgsqlConnection, $"CREATE TRIGGER {triggerName_RetireFail} BEFORE DELETE ON {tableName} FOR EACH ROW EXECUTE FUNCTION {functionName_RetireFail}();");
+                await ExecuteAsync(npgsqlConnection, $"INSERT INTO {tableName} (county_id, reference, attempts) VALUES ({countyId}, 'reference_poison_failing', 5);");
+                await ExecuteAsync(npgsqlConnection, $"INSERT INTO {tableName} (county_id, reference, attempts) VALUES ({countyId}, 'reference_claimable', 0);");
+                Assert.Equal(4, await DiGi.PostgreSQL.Query.CountAsync(npgsqlConnection, tableName));
+
+                List<Building2DReference>? building2DReferences_FailedRetire = await ortoDatasPostgreSQLConverter.GetNextBuilding2DReferencesAsync(1, claimTimeoutMinutes: 0);
+                Assert.NotNull(building2DReferences_FailedRetire);
+                Assert.Single(building2DReferences_FailedRetire);
+                Assert.Equal("reference_claimable", building2DReferences_FailedRetire[0].Reference);
+                Assert.Equal(4, await DiGi.PostgreSQL.Query.CountAsync(npgsqlConnection, tableName));
+                Assert.Equal(1L, await ScalarAsync(npgsqlConnection, $"SELECT count(*) FROM {tableName} WHERE reference = 'reference_poison_failing' AND attempts = 5;"));
             }
             finally
             {
+                await ExecuteAsync(npgsqlConnection, $"DROP TRIGGER IF EXISTS {triggerName_RetireFail} ON {tableName};");
+                await ExecuteAsync(npgsqlConnection, $"DROP FUNCTION IF EXISTS {functionName_RetireFail}();");
                 await ExecuteAsync(npgsqlConnection, $"DROP TABLE IF EXISTS {tableName};");
             }
         }
