@@ -7,7 +7,7 @@ namespace DiGi.EnergyPlus.xUnit
     {
         /// <summary>
         /// Tests <see cref="Convert.ToDiGi_EnergyPlusResult(string?)"/> on the committed output of one real EnergyPlus 26.2 run of the in-code box with the Warsaw IMGW weather file, <c>files/EnergyPlus_Box</c> (DiGi-Organization/DiGi.EnergyPlus#1).
-        /// <para>The monthly heating energy is the CSV's joules over 3.6 MJ/kWh, January 6 923 650 538 J and July 0; the annual is their sum. The version, one warning and no severe error come from the error file, and the seven external surfaces of the envelope summary - four walls of U-factor with film 0.302, the roof 0.25, two windows of glass U 1.299 - from the tables. A run whose error file does not report completion, a directory without the variables file and a null directory give null.</para>
+        /// <para>The monthly heating energy is the CSV's joules over 3.6 MJ/kWh, January 6 923 650 538 J and July 0; the annual is their sum. The version, one warning and no severe error come from the error file, and the seven external surfaces of the envelope summary - four walls of U-factor with film 0.302, the roof 0.25, two windows of glass U 1.299, with their net areas - from the tables. A run whose error file does not report completion, a directory without the variables file and a null directory give null.</para>
         /// </summary>
         [Fact]
         public void ToDiGi_EnergyPlusResult()
@@ -43,6 +43,12 @@ namespace DiGi.EnergyPlus.xUnit
             Assert.Equal(2, thermalTransmittances.Values.Count(x => x == 1.299));
             Assert.All(thermalTransmittances.Keys, x => Assert.Equal(x.ToLowerInvariant(), x));
 
+            // Net areas: the south wall loses its two 1.8 m2 windows.
+            Dictionary<string, double>? areas = energyPlusResult.Areas;
+            Assert.NotNull(areas);
+            Assert.Equal(thermalTransmittances.Keys.Order(), areas.Keys.Order());
+            Assert.Equal([1.8, 1.8, 24.0, 24.0, 26.4, 30.0, 80.0], areas.Values.Order());
+
             Assert.Null(Convert.ToDiGi_EnergyPlusResult(null));
             Assert.Null(Convert.ToDiGi_EnergyPlusResult(directory_Files));
 
@@ -61,13 +67,13 @@ namespace DiGi.EnergyPlus.xUnit
         }
 
         /// <summary>
-        /// Tests the serialization of <see cref="EnergyPlusResult"/> (DiGi-Organization/DiGi.EnergyPlus#1): a result with its monthly and per-system lists populated and no thermal transmittances survives the JSON round trip and <see cref="Core.xUnit.Query.SerializationCheck{TSerializableObject}(TSerializableObject)"/>, and its copy constructor copies every member, lists and dictionaries as copies.
+        /// Tests the serialization of <see cref="EnergyPlusResult"/> (DiGi-Organization/DiGi.EnergyPlus#1): a result with its monthly and per-system lists populated and no thermal transmittances or areas survives the JSON round trip and <see cref="Core.xUnit.Query.SerializationCheck{TSerializableObject}(TSerializableObject)"/>, and its copy constructor copies every member, lists and dictionaries as copies.
         /// </summary>
         [Fact]
         public void EnergyPlusResult_Serialization()
         {
             List<double> heatingEnergies = [1923.2, 1693.1, 1269.4, 962.4, 377.4, 4.4, 0.0, 25.8, 270.2, 851.4, 1425.8, 1748.7];
-            EnergyPlusResult energyPlusResult = new("26.2.0-4bd7a1f26f", heatingEnergies.Sum(), heatingEnergies, new Dictionary<string, List<double>>() { ["IDEAL LOADS"] = heatingEnergies }, null, 1, 0);
+            EnergyPlusResult energyPlusResult = new("26.2.0-4bd7a1f26f", heatingEnergies.Sum(), heatingEnergies, new Dictionary<string, List<double>>() { ["IDEAL LOADS"] = heatingEnergies }, null, null, 1, 0);
 
             Assert.Equal("26.2.0-4bd7a1f26f", energyPlusResult.EnergyPlusVersion);
             Assert.Equal(heatingEnergies.Sum(), energyPlusResult.HeatingEnergy);
@@ -84,7 +90,7 @@ namespace DiGi.EnergyPlus.xUnit
 
             Core.xUnit.Query.SerializationCheck(energyPlusResult);
 
-            EnergyPlusResult energyPlusResult_Transmittances = new("26.2.0-4bd7a1f26f", 1.0, heatingEnergies, null, new Dictionary<string, double>() { ["wall"] = 0.302 }, 0, 0);
+            EnergyPlusResult energyPlusResult_Transmittances = new("26.2.0-4bd7a1f26f", 1.0, heatingEnergies, null, new Dictionary<string, double>() { ["wall"] = 0.302 }, new Dictionary<string, double>() { ["wall"] = 26.4 }, 0, 0);
             Core.xUnit.Query.SerializationCheck(energyPlusResult_Transmittances);
 
             EnergyPlusResult energyPlusResult_Copy = new(energyPlusResult_Transmittances);
@@ -92,6 +98,7 @@ namespace DiGi.EnergyPlus.xUnit
             Assert.Equal(energyPlusResult_Transmittances.HeatingEnergy, energyPlusResult_Copy.HeatingEnergy);
             Assert.Equal(energyPlusResult_Transmittances.HeatingEnergies, energyPlusResult_Copy.HeatingEnergies);
             Assert.Equal(energyPlusResult_Transmittances.ThermalTransmittances, energyPlusResult_Copy.ThermalTransmittances);
+            Assert.Equal(energyPlusResult_Transmittances.Areas, energyPlusResult_Copy.Areas);
             Assert.Equal(energyPlusResult_Transmittances.WarningCount, energyPlusResult_Copy.WarningCount);
             Assert.Equal(energyPlusResult_Transmittances.SevereErrorCount, energyPlusResult_Copy.SevereErrorCount);
 

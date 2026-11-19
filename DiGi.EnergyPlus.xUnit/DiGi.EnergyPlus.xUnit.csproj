@@ -24,6 +24,10 @@
     <PackageReference Include="QuikGraph" Version="2.5.0" />
     <!-- Serilog.Sinks.File is a NuGet dependency of DiGi.Serilog (referenced via HintPath by DiGi.EnergyPlus), so it must be re-added here to reach the test host output. -->
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <!-- SolarCalculator is a NuGet dependency of DiGi.Solar (referenced via HintPath), so it must be re-added here to reach the test host output. -->
+    <PackageReference Include="SolarCalculator" Version="3.6.0" />
+    <!-- ProjNET4GeoAPI is a NuGet dependency of DiGi.GIS (referenced via HintPath). -->
+    <PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
@@ -69,6 +73,24 @@
     </Reference>
     <Reference Include="DiGi.Geometry.Object">
       <HintPath>..\..\DiGi.Geometry\bin\DiGi.Geometry.Object.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS">
+      <HintPath>..\..\DiGi.GIS\bin\DiGi.GIS.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.Analytical">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.Analytical.Energy">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.Energy.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.GIS.Analytical.Solar">
+      <HintPath>..\..\DiGi.GIS.Analytical\bin\DiGi.GIS.Analytical.Solar.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Solar">
+      <HintPath>..\..\DiGi.Solar\bin\DiGi.Solar.dll</HintPath>
+    </Reference>
+    <Reference Include="DiGi.Weather">
+      <HintPath>..\..\DiGi.Weather\bin\DiGi.Weather.dll</HintPath>
     </Reference>
   </ItemGroup>
 
