@@ -15,7 +15,7 @@ namespace DiGi.GIS.xUnit
     {
         /// <summary>
         /// <c>Modify.WriteByVariableAsync</c> with a recorded fetch instead of BDL (DiGi-Organization/DiGi.GIS.PostgreSQL#149).
-        /// <para>Units: a county (level 5), Warsaw and Mokotów (level 6); Warsaw already holds the population, at level 6 only. Expected: the gmina level goes first; the population is asked at level 6 only (Mokotów lacks it) and never at level 5, where no unit holds it; the two census variables no unit holds are asked at both levels, the level-5 fetches failing and being reported; Warsaw keeps its population and gains the census, Mokotów gets a new collection, the county none, and a unit not given is not written.</para>
+        /// <para>Units: a county (level 5), Warsaw and Mokotów (level 6); Warsaw already holds the population, at level 6 only. Expected: the gmina level goes first, and within it the census variables both units lack before the population only Mokotów lacks, though given after it; the population is asked at level 6 only and never at level 5, where no unit holds it; the two census variables no unit holds are asked at both levels, the level-5 fetches failing and being reported; Warsaw keeps its population and gains the census, Mokotów gets a new collection, the county none, and a unit not given is not written.</para>
         /// <para>A fetch that keeps failing stops the run after three failures in a row, the pairs not attempted reported as failed.</para>
         /// </summary>
         [Fact]
@@ -64,7 +64,7 @@ namespace DiGi.GIS.xUnit
 
                 Assert.NotNull(result);
                 Assert.Equal(
-                    [(Variable.population_thousand_persons, 6), (Variable.inhabited_dwellings_total_census_2021, 6), (Variable.inhabited_dwellings_built_1945_1970_census_2021, 6), (Variable.inhabited_dwellings_total_census_2021, 5), (Variable.inhabited_dwellings_built_1945_1970_census_2021, 5)],
+                    [(Variable.inhabited_dwellings_total_census_2021, 6), (Variable.inhabited_dwellings_built_1945_1970_census_2021, 6), (Variable.population_thousand_persons, 6), (Variable.inhabited_dwellings_total_census_2021, 5), (Variable.inhabited_dwellings_built_1945_1970_census_2021, 5)],
                     calls);
                 Assert.Equal([(Variable.inhabited_dwellings_total_census_2021, 5), (Variable.inhabited_dwellings_built_1945_1970_census_2021, 5)], result.Value.Failures);
                 Assert.Equal(2, result.Value.CollectionCount);
