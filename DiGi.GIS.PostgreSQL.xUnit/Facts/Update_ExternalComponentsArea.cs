@@ -61,6 +61,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// The name of the closing tolerance column - the open-envelope signal the method writes beside the 35 area columns.
         /// </summary>
         private const string ColumnName_ClosingTolerance = "Closing tolerance";
+        private const string ColumnName_CalculatedHeight = "Calculated height";
 
         /// <summary>
         /// Builds a polygonal face from a plane and the face's local 2D points.
@@ -767,6 +768,63 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             // An exact box closes at the finest rung of the ladder: the canonical Distance tolerance, stored as the float it was written as.
             Assert.Equal((float)DiGi.Core.Constants.Tolerance.Distance, ClosingToleranceValue(table, row!, ColumnName_ClosingTolerance));
+        }
+
+        /// <summary>
+        /// Verifies that the calculated height of a row is the Z extent of the stored model's bounding box, in meters, and that no component geometry leaves it null rather than 0 (DiGi-Organization/DiGi.GIS.IO#20).
+        /// <para>The fixture box spans z from 0 to 10, so its height is 10 whether or not its envelope closes: the open box without its roof still reaches z = 10 through its walls. A model with a space but no components still gets its row and has no bounding box, so its height cell stays unset - a null, distinct from a height of 0. A degenerate model gets no row, so no height. A second call over the same table overwrites the cell and adds no row.</para>
+        /// </summary>
+        [Fact]
+        public void Update_ExternalComponentsArea_CalculatedHeight()
+        {
+            BuildingModel model_Box = Model("ref_height", 5, [.. Box()]);
+
+            Table table = new();
+            Modify.Update_ExternalComponentsArea(table, [model_Box]);
+
+            Assert.Equal(1, table.RowCount);
+
+            Row? row = table.GetRow(0);
+            Assert.NotNull(row);
+
+            Assert.Equal(10.0f, ClosingToleranceValue(table, row!, ColumnName_CalculatedHeight)!.Value, 1e-3f);
+
+            // The open envelope (no roof) is still classified and still reaches the full wall height.
+            IComponent[] boxComponents = Box();
+            BuildingModel model_Open = Model("ref_height_open", 5, boxComponents[0], boxComponents[1], boxComponents[2], boxComponents[3], boxComponents[4]);
+
+            Table table_Open = new();
+            Modify.Update_ExternalComponentsArea(table_Open, [model_Open]);
+
+            Row? row_Open = table_Open.GetRow(0);
+            Assert.NotNull(row_Open);
+            Assert.Equal(10.0f, ClosingToleranceValue(table_Open, row_Open!, ColumnName_CalculatedHeight)!.Value, 1e-3f);
+
+            // No component geometry: the row exists and the height is null, never 0.
+            BuildingModel model_NoComponents = Model("ref_height_none", 5);
+
+            Table table_NoComponents = new();
+            Modify.Update_ExternalComponentsArea(table_NoComponents, [model_NoComponents]);
+
+            Assert.Equal(1, table_NoComponents.RowCount);
+
+            Row? row_NoComponents = table_NoComponents.GetRow(0);
+            Assert.NotNull(row_NoComponents);
+            Assert.Null(ClosingToleranceValue(table_NoComponents, row_NoComponents!, ColumnName_CalculatedHeight));
+
+            // A degenerate model (three faces) gets no row, so no height.
+            BuildingModel model_Degenerate = Model("ref_height_degenerate", 5, boxComponents[0], boxComponents[1], boxComponents[4]);
+
+            Table table_Degenerate = new();
+            Modify.Update_ExternalComponentsArea(table_Degenerate, [model_Degenerate]);
+
+            Assert.Equal(0, table_Degenerate.RowCount);
+
+            // A second call over the same table overwrites the cell and adds no row.
+            Modify.Update_ExternalComponentsArea(table, [model_Box]);
+
+            Assert.Equal(1, table.RowCount);
+            Assert.Equal(10.0f, ClosingToleranceValue(table, table.GetRow(0)!, ColumnName_CalculatedHeight)!.Value, 1e-3f);
         }
 
         /// <summary>

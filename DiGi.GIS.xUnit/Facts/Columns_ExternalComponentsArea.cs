@@ -127,6 +127,17 @@ namespace DiGi.GIS.xUnit
             Assert.False(string.IsNullOrWhiteSpace(((ExtendedColumn)column_ClosingTolerance).Description));
             Assert.DoesNotContain("closing_tolerance", uniqueIds);
 
+            // The calculated height column (DiGi-Organization/DiGi.GIS.IO#20): a standalone length column, outside the 35 whose order the classification indexes.
+            Column column_CalculatedHeight = IO.Create.Column_CalculatedHeight();
+            Assert.Equal("Calculated height", column_CalculatedHeight.Name);
+            Assert.Equal("calculated_height", Core.IO.Query.UniqueId(column_CalculatedHeight));
+            Assert.IsType<UnitColumn>(column_CalculatedHeight);
+            Assert.Equal(typeof(float), ((ExtendedColumn)column_CalculatedHeight).Type);
+            Assert.Equal("Geometry", ((ExtendedColumn)column_CalculatedHeight).Category);
+            Assert.Equal(Unit.Enums.UnitDataType.Float, ((UnitColumn)column_CalculatedHeight).UnitDataType);
+            Assert.False(string.IsNullOrWhiteSpace(((ExtendedColumn)column_CalculatedHeight).Description));
+            Assert.DoesNotContain("calculated_height", uniqueIds);
+
             Assert.DoesNotContain("floor_area", uniqueIds);
             Assert.DoesNotContain("total_area", uniqueIds);
 
@@ -186,8 +197,9 @@ namespace DiGi.GIS.xUnit
             // 39 columns before the Solar radiation set landed in Constants.Column (a7134d7 added 22 Solar columns, d4ec436 added 3 more),
             // the 9 party wall area columns of DiGi-Organization/DiGi.GIS.Analytical#4,
             // the 4 heat demand columns of DiGi-Organization/DiGi.GIS.IO#18,
-            // and the census year built column of DiGi-Organization/DiGi.GIS.IO#19.
-            Assert.Equal(78, preExistingUniqueIds.Count);
+            // the census year built column of DiGi-Organization/DiGi.GIS.IO#19,
+            // and the calculated height column of DiGi-Organization/DiGi.GIS.IO#20.
+            Assert.Equal(79, preExistingUniqueIds.Count);
             Assert.Empty(uniqueIds.Intersect(preExistingUniqueIds));
 
             List<Column> dynamicColumns =
