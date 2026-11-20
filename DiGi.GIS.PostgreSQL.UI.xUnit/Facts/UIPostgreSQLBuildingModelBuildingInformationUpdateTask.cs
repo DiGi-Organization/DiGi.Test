@@ -65,7 +65,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             // Without a converter manager there is nothing to read the stored models with, so the row must not be offered at all.
             List<IVisualBackgroundTask>? visualBackgroundTasks_NoManager = DiGi.GIS.PostgreSQL.UI.Create.VisualBackgroundTasks(null, null, null, Mode.ServerAndClient);
             Assert.NotNull(visualBackgroundTasks_NoManager);
-            Assert.Empty(visualBackgroundTasks_NoManager);
+            Assert.DoesNotContain(visualBackgroundTasks_NoManager, x => x.TypeName == typeof(UIPostgreSQLBuildingModelBuildingInformationUpdateTask).Name);
         }
 
         /// <summary>

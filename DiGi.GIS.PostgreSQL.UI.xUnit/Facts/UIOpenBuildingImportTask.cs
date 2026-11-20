@@ -83,7 +83,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             // Without a converter manager there is nothing to import through, so no row at all.
             List<IVisualBackgroundTask>? visualBackgroundTasks_NoManager = Create.VisualBackgroundTasks(null, null, null, Mode.ServerAndClient);
             Assert.NotNull(visualBackgroundTasks_NoManager);
-            Assert.Empty(visualBackgroundTasks_NoManager);
+            Assert.DoesNotContain(visualBackgroundTasks_NoManager, x => x.TypeName == typeof(UIOpenBuildingImportTask).Name);
         }
 
         /// <summary>

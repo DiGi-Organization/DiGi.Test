@@ -20,18 +20,19 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         [Fact]
         public void VisualBackgroundTasks()
         {
-            // Null converter manager and null WebAPI manager should return empty list across all modes
+            // Null converter manager and null WebAPI manager: no server task, and on the client side only the tasks that
+            // need neither - writing the BDL statistical data collections (DiGi-Organization/DiGi.GIS.PostgreSQL#149).
             List<IVisualBackgroundTask>? visualBackgroundTasks_NullManagers_Server = Create.VisualBackgroundTasks(null, null, null, Mode.Server);
             Assert.NotNull(visualBackgroundTasks_NullManagers_Server);
             Assert.Empty(visualBackgroundTasks_NullManagers_Server);
 
             List<IVisualBackgroundTask>? visualBackgroundTasks_NullManagers_Client = Create.VisualBackgroundTasks(null, null, null, Mode.Client);
             Assert.NotNull(visualBackgroundTasks_NullManagers_Client);
-            Assert.Empty(visualBackgroundTasks_NullManagers_Client);
+            Assert.Equal([typeof(UIStatisticalDataCollectionsWriteTask).Name], visualBackgroundTasks_NullManagers_Client.ConvertAll(x => x.TypeName));
 
             List<IVisualBackgroundTask>? visualBackgroundTasks_NullManagers_Both = Create.VisualBackgroundTasks(null, null, null, Mode.ServerAndClient);
             Assert.NotNull(visualBackgroundTasks_NullManagers_Both);
-            Assert.Empty(visualBackgroundTasks_NullManagers_Both);
+            Assert.Equal([typeof(UIStatisticalDataCollectionsWriteTask).Name], visualBackgroundTasks_NullManagers_Both.ConvertAll(x => x.TypeName));
 
             // With converter manager but null WebAPI manager (the issue #1 scenario)
             GISPostgreSQLConverterManager gISPostgreSQLConverterManager = new();
@@ -49,10 +50,10 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             Assert.Contains(visualBackgroundTasks_Server, x => x.TypeName == typeof(UIPostgreSQLBuildingDataSolarRadiationUpdateTask).Name);
             Assert.Contains(visualBackgroundTasks_Server, x => x.TypeName == typeof(UIPostgreSQLBuildingSolarRadiationContextExportTask).Name);
 
-            // Client mode with null WebAPI manager should return empty list
+            // Client mode with null WebAPI manager offers only the tasks that need no WebAPI manager.
             List<IVisualBackgroundTask>? visualBackgroundTasks_Client = Create.VisualBackgroundTasks(gISPostgreSQLConverterManager, null, null, Mode.Client);
             Assert.NotNull(visualBackgroundTasks_Client);
-            Assert.Empty(visualBackgroundTasks_Client);
+            Assert.Equal([typeof(UIStatisticalDataCollectionsWriteTask).Name], visualBackgroundTasks_Client.ConvertAll(x => x.TypeName));
         }
 
         /// <summary>
@@ -169,7 +170,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             // Without a converter manager there is nothing to read the stored models with, so the row must not be offered at all.
             List<IVisualBackgroundTask>? visualBackgroundTasks_NoManager = Create.VisualBackgroundTasks(null, null, null, Mode.ServerAndClient);
             Assert.NotNull(visualBackgroundTasks_NoManager);
-            Assert.Empty(visualBackgroundTasks_NoManager);
+            Assert.DoesNotContain(visualBackgroundTasks_NoManager, x => x.TypeName == typeof(UIPostgreSQLBuildingDataExternalComponentsUpdateTask).Name);
         }
 
         private sealed class TestRefusingBackgroundTask : Core.Classes.BackgroundTask
