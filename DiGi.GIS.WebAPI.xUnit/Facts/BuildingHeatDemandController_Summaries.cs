@@ -125,7 +125,9 @@ namespace DiGi.GIS.WebAPI.xUnit
                     county_id INT NOT NULL,
                     building_model_id BIGINT NOT NULL,
                     reference TEXT NOT NULL,
+                    method SMALLINT NOT NULL,
                     method_version INT NOT NULL,
+                    input_variant SMALLINT NOT NULL,
                     weather_source_type INT NOT NULL,
                     weather_source_id TEXT,
                     solar_source INT NOT NULL,
@@ -145,10 +147,10 @@ namespace DiGi.GIS.WebAPI.xUnit
 
             await ExecuteHeatDemandAsync(npgsqlConnection, $@"
                 INSERT INTO {PostgreSQL.Constants.TableName.BuildingHeatDemand}
-                    (county_id, building_model_id, reference, method_version, weather_source_type, solar_source, construction_flavour,
+                    (county_id, building_model_id, reference, method, method_version, input_variant, weather_source_type, solar_source, construction_flavour,
                      heating_energy_need, heating_energy_need_per_area, design_heat_load, ""object"", created_at)
                 VALUES
-                    ({countyId_SolarRadiation}, 990311001, 'XUNIT-HD-API', 1, 0, 2, 0,
+                    ({countyId_SolarRadiation}, 990311001, 'XUNIT-HD-API', 1, 1, 1, 0, 2, 0,
                      12000, 120, 8000, '{{""YearBuilt"":1975,""BuildingType"":0,""HeatDemandResult"":{{""ExcludedComponents"":[],""GlazingFallbackCount"":0,""MissingIrradiationCount"":0}}}}'::jsonb, '2026-11-18T12:00:00Z');");
         }
 

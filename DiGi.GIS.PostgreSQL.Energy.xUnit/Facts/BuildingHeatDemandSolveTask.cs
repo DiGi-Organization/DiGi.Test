@@ -85,6 +85,9 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
             memoryBuildingHeatDemandSolveTask.Writes.Clear();
             Assert.False(await memoryBuildingHeatDemandSolveTask.RunAsync(CancellationToken.None));
             Assert.Equal(2, memoryBuildingHeatDemandSolveTask.SkippedCompletedCount);
+
+            // A stored result counts as completed only for the run's own method, version and input variant (DiGi-Organization/DiGi.GIS.PostgreSQL#152).
+            Assert.Equal((DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, DiGi.Analytical.Building.Energy.Constants.Default.HeatDemandMethodVersion, DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Generated), memoryBuildingHeatDemandSolveTask.CompletedReferencesKey);
             Assert.Equal(0, memoryBuildingHeatDemandSolveTask.SolvedCount);
             Assert.Empty(memoryBuildingHeatDemandSolveTask.Writes);
         }
@@ -362,6 +365,11 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
 
             public HashSet<string> CompletedReferences { get; } = [];
 
+            /// <summary>
+            /// Gets the method, method version and input variant the last read of the completed references asked for.
+            /// </summary>
+            public (DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod HeatDemandMethod, int MethodVersion, DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant HeatDemandInputVariant)? CompletedReferencesKey { get; private set; }
+
             public bool Initialized { get; set; } = true;
 
             public int ReadCount { get; private set; }
@@ -402,8 +410,9 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
                 return Task.FromResult<List<BuildingSolarRadiationResult>?>([]);
             }
 
-            protected override Task<HashSet<string>?> ReadCompletedReferencesAsync(int countyId, int methodVersion, int commandTimeout, CancellationToken cancellationToken)
+            protected override Task<HashSet<string>?> ReadCompletedReferencesAsync(int countyId, DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod heatDemandMethod, int methodVersion, DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant heatDemandInputVariant, int commandTimeout, CancellationToken cancellationToken)
             {
+                CompletedReferencesKey = (heatDemandMethod, methodVersion, heatDemandInputVariant);
                 return Task.FromResult<HashSet<string>?>([.. CompletedReferences]);
             }
 

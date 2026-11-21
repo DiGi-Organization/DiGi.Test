@@ -137,14 +137,14 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         }
 
         /// <summary>
-        /// Verifies that a heat demand county summary carries every member through the constructor, the copy constructor and a JSON round trip, and passes <c>SerializationCheck</c> (DiGi.GIS.PostgreSQL#146). Every member holds a distinct value, so a member dropped by a constructor fails here; the open ends of a band stay null.
+        /// Verifies that a heat demand county summary carries every member through the constructor, the copy constructor and a JSON round trip, and passes <c>SerializationCheck</c> (DiGi.GIS.PostgreSQL#146); a JSON without the method and the input variant reads as 1 and 1 (DiGi-Organization/DiGi.GIS.PostgreSQL#152). Every member holds a distinct value, so a member dropped by a constructor fails here; the open ends of a band stay null.
         /// </summary>
         [Fact]
         public void BuildingHeatDemandCountyResult_Serialization()
         {
             DateTimeOffset firstCreatedAt = new(2026, 11, 18, 10, 0, 0, TimeSpan.Zero);
             DateTimeOffset lastCreatedAt = new(2026, 11, 18, 13, 41, 0, TimeSpan.Zero);
-            BuildingHeatDemandCountyResult buildingHeatDemandCountyResult = new(55417, 1, BuildingType.Terraced, 2, 1967, 1985, 1000, 300, 700, 1.5e7, 151.5, 92.5, 140.25, 233.75, 9.5e6, 12, 34, 56, 78, 9, firstCreatedAt, lastCreatedAt);
+            BuildingHeatDemandCountyResult buildingHeatDemandCountyResult = new(55417, 3, 1, 4, BuildingType.Terraced, 2, 1967, 1985, 1000, 300, 700, 1.5e7, 151.5, 92.5, 140.25, 233.75, 9.5e6, 12, 34, 56, 78, 9, firstCreatedAt, lastCreatedAt);
 
             BuildingHeatDemandCountyResult buildingHeatDemandCountyResult_Copy = new(buildingHeatDemandCountyResult);
             BuildingHeatDemandCountyResult? buildingHeatDemandCountyResult_Json = Core.Convert.ToDiGi<BuildingHeatDemandCountyResult>(Core.Convert.ToSystem_String(buildingHeatDemandCountyResult))?.FirstOrDefault();
@@ -153,7 +153,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             foreach (BuildingHeatDemandCountyResult x in new BuildingHeatDemandCountyResult[] { buildingHeatDemandCountyResult_Copy, buildingHeatDemandCountyResult_Json })
             {
                 Assert.Equal(55417, x.CountyId);
+                Assert.Equal(3, x.Method);
                 Assert.Equal(1, x.MethodVersion);
+                Assert.Equal(4, x.InputVariant);
                 Assert.Equal(BuildingType.Terraced, x.BuildingType);
                 Assert.Equal(2, x.YearBuiltBandIndex);
                 Assert.Equal((short?)1967, x.YearBuiltMin);
@@ -178,7 +180,14 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
             Core.xUnit.Query.SerializationCheck(buildingHeatDemandCountyResult);
 
-            BuildingHeatDemandCountyResult buildingHeatDemandCountyResult_Open = new(55417, 1, BuildingType.SingleFamily, null, null, null, 1, 0, 1, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, 0, 0, 0, 0, 0, null, null);
+            // A summary serialized before the method and the input variant were recorded reads as Monthly and Generated (DiGi-Organization/DiGi.GIS.PostgreSQL#152).
+            System.Text.Json.Nodes.JsonObject jsonObject = System.Text.Json.Nodes.JsonNode.Parse(Core.Convert.ToSystem_String(buildingHeatDemandCountyResult)!)!.AsObject();
+            Assert.True(jsonObject.Remove(nameof(BuildingHeatDemandCountyResult.Method)));
+            Assert.True(jsonObject.Remove(nameof(BuildingHeatDemandCountyResult.InputVariant)));
+            BuildingHeatDemandCountyResult buildingHeatDemandCountyResult_Legacy = new(jsonObject);
+            Assert.Equal((1, 1, 1), (buildingHeatDemandCountyResult_Legacy.Method, buildingHeatDemandCountyResult_Legacy.MethodVersion, buildingHeatDemandCountyResult_Legacy.InputVariant));
+
+            BuildingHeatDemandCountyResult buildingHeatDemandCountyResult_Open = new(55417, 1, 1, 1, BuildingType.SingleFamily, null, null, null, 1, 0, 1, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, double.NaN, 0, 0, 0, 0, 0, null, null);
             BuildingHeatDemandCountyResult buildingHeatDemandCountyResult_Open_Copy = new(buildingHeatDemandCountyResult_Open);
             Assert.Null(buildingHeatDemandCountyResult_Open_Copy.YearBuiltBandIndex);
             Assert.Null(buildingHeatDemandCountyResult_Open_Copy.YearBuiltMin);
