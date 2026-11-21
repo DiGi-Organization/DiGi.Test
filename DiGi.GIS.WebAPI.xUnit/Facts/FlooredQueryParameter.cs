@@ -191,8 +191,9 @@ namespace DiGi.GIS.WebAPI.xUnit
             // 74 since the solar solve endpoints of DiGi.GIS.WebAPI#93 (buildingmodel/itemsbycountyid, epwfile/itembyid, epwfile/locations, buildingsolarradiation/setsolarradiations and referencesbycountyid);
             // 75 since building2d/centroidsbycountyid (DiGi.GIS.PostgreSQL.UI#48);
             // 76 since buildingheatdemand/summariesbycountyids (DiGi.GIS.WebAPI#101);
-            // 77 since openbuilding/sizes (DiGi.GIS.PostgreSQL#150).
-            Assert.Equal(77, count);
+            // 77 since openbuilding/sizes (DiGi.GIS.PostgreSQL#150);
+            // 78 since buildingheatdemand/byreferences (DiGi-Organization/DiGi.GIS.WebAPI#104).
+            Assert.Equal(78, count);
         }
 
         /// <summary>
