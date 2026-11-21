@@ -1,6 +1,7 @@
 using DiGi.Analytical.Building.Classes;
 using DiGi.Analytical.Building.Energy;
 using DiGi.Analytical.Building.Energy.Classes;
+using DiGi.Analytical.Building.Energy.Enums;
 using DiGi.Analytical.Building.Enums;
 using DiGi.Analytical.Building.HVAC;
 using DiGi.Analytical.Building.HVAC.Classes;
@@ -13,6 +14,8 @@ using DiGi.Analytical.Classes;
 using DiGi.Core.Parameter.Classes;
 using DiGi.Geometry.Spatial.Classes;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace DiGi.Analytical.xUnit
 {
@@ -419,7 +422,7 @@ namespace DiGi.Analytical.xUnit
         }
 
         /// <summary>
-        /// Tests the serialization and copying of <see cref="MonthlyClimate"/>, <see cref="HeatDemandOptions"/> and <see cref="HeatDemandResult"/> (DiGi-Organization/DiGi.Analytical#21): a string round trip, <see cref="Core.xUnit.Query.SerializationCheck"/> and a member-by-member <c>new T(source)</c> assertion; the identifier keys of the irradiation dictionary are asserted again under pl-PL.
+        /// Tests the serialization and copying of <see cref="MonthlyClimate"/>, <see cref="HeatDemandOptions"/> and <see cref="HeatDemandResult"/> (DiGi-Organization/DiGi.Analytical#21): a string round trip, <see cref="Core.xUnit.Query.SerializationCheck"/> and a member-by-member <c>new T(source)</c> assertion; the identifier keys of the irradiation dictionary are asserted again under pl-PL. The result's <see cref="HeatDemandResult.HeatDemandMethod"/> is <see cref="HeatDemandMethod.Monthly"/>, is read from the JSON, and a JSON without it reads as Monthly (DiGi-Organization/DiGi.Analytical#23).
         /// </summary>
         [Fact]
         public void HeatDemand_Serialization()
@@ -499,6 +502,7 @@ namespace DiGi.Analytical.xUnit
 
             HeatDemandResult? heatDemandResult = buildingModel.HeatDemandResult(monthlyClimate, new TypologyData(0.3, 0.1, FloorBoundary.Soil, 0.0, RoofType.Flat, 0.5, 0.9, 0, "test"));
             Assert.NotNull(heatDemandResult);
+            Assert.Equal(HeatDemandMethod.Monthly, heatDemandResult.HeatDemandMethod);
 
             HeatDemandResult heatDemandResult_Copy = new(heatDemandResult);
             Assert.Equal(heatDemandResult.HeatingEnergyNeed, heatDemandResult_Copy.HeatingEnergyNeed);
@@ -525,6 +529,7 @@ namespace DiGi.Analytical.xUnit
             Assert.Equal(heatDemandResult.DesignTransmissionHeatLoss, heatDemandResult_Copy.DesignTransmissionHeatLoss);
             Assert.Equal(heatDemandResult.DesignVentilationHeatLoss, heatDemandResult_Copy.DesignVentilationHeatLoss);
             Assert.Equal(heatDemandResult.Method, heatDemandResult_Copy.Method);
+            Assert.Equal(heatDemandResult.HeatDemandMethod, heatDemandResult_Copy.HeatDemandMethod);
             Assert.Equal(heatDemandResult.MethodVersion, heatDemandResult_Copy.MethodVersion);
             Assert.Equal(heatDemandResult.Sources, heatDemandResult_Copy.Sources);
             Assert.Equal(heatDemandResult.ExcludedComponents, heatDemandResult_Copy.ExcludedComponents);
@@ -537,6 +542,21 @@ namespace DiGi.Analytical.xUnit
             Assert.Equal(heatDemandResult.HeatingEnergyNeeds, heatDemandResult_Json.HeatingEnergyNeeds);
             Assert.Equal(heatDemandResult.Sources, heatDemandResult_Json.Sources);
             Assert.Equal(heatDemandResult.GlazingFallbackCount, heatDemandResult_Json.GlazingFallbackCount);
+            Assert.Equal(HeatDemandMethod.Monthly, heatDemandResult_Json.HeatDemandMethod);
+
+            // The method is read from the JSON (DiGi-Organization/DiGi.Analytical#23): a stored value wins, and a result
+            // serialized before the method was recorded - no member - reads as Monthly, the only method there was.
+            JsonObject jsonObject = JsonNode.Parse(Core.Convert.ToSystem_String(heatDemandResult)!)!.AsObject();
+            Assert.True(jsonObject.ContainsKey(nameof(HeatDemandResult.HeatDemandMethod)));
+            jsonObject[nameof(HeatDemandResult.HeatDemandMethod)] = jsonObject[nameof(HeatDemandResult.HeatDemandMethod)]!.GetValueKind() == JsonValueKind.String ? nameof(HeatDemandMethod.Undefined) : (int)HeatDemandMethod.Undefined;
+            HeatDemandResult heatDemandResult_Undefined = new(jsonObject);
+            Assert.Equal(HeatDemandMethod.Undefined, heatDemandResult_Undefined.HeatDemandMethod);
+            Assert.Equal(HeatDemandMethod.Undefined, new HeatDemandResult(heatDemandResult_Undefined).HeatDemandMethod);
+
+            Assert.True(jsonObject.Remove(nameof(HeatDemandResult.HeatDemandMethod)));
+            HeatDemandResult heatDemandResult_Legacy = new(jsonObject);
+            Assert.Equal(HeatDemandMethod.Monthly, heatDemandResult_Legacy.HeatDemandMethod);
+            Assert.Equal(heatDemandResult.MethodVersion, heatDemandResult_Legacy.MethodVersion);
         }
 
         /// <summary>

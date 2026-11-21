@@ -204,7 +204,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// <returns>The result.</returns>
         private static BuildingHeatDemandResult SummaryBuildingHeatDemandResult(string reference, long buildingModelId, int methodVersion, BuildingType buildingType, short? yearBuilt, HeatDemandSolarSource heatDemandSolarSource, double heatingEnergyNeedPerArea, double heatingEnergyNeed, double designHeatLoad, List<string>? excludedComponents, int glazingFallbackCount, int missingIrradiationCount)
         {
-            DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(heatingEnergyNeed, heatingEnergyNeedPerArea, null, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 100, 300, 20, designHeatLoad, designHeatLoad, 0, "scratch", methodVersion, null, excludedComponents, glazingFallbackCount, missingIrradiationCount);
+            DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(heatingEnergyNeed, heatingEnergyNeedPerArea, null, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 100, 300, 20, designHeatLoad, designHeatLoad, 0, "scratch", DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, methodVersion, null, excludedComponents, glazingFallbackCount, missingIrradiationCount);
             return new BuildingHeatDemandResult(reference, countyId_HeatDemand_A, buildingModelId, GIS.Enums.WeatherSourceType.EPW, "17", heatDemandSolarSource, null, null, 0, 0, ConstructionFlavour.TypicalAsBuilt, "1.7.1", "TABULA", buildingType, yearBuilt, yearBuilt is null ? null : GIS.Enums.YearBuiltSource.User, null, new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero), heatDemandResult);
         }
     }

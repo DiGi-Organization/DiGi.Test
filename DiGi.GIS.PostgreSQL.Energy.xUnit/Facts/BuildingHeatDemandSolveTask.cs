@@ -332,7 +332,7 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
         /// </summary>
         private static BuildingHeatDemandResult HeatDemandSolve_Result(string reference, int countyId, double heatingEnergyNeed, double heatingEnergyNeedPerArea, double designHeatLoad)
         {
-            DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(heatingEnergyNeed, heatingEnergyNeedPerArea, null, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 100, 300, 20, designHeatLoad, designHeatLoad, 0, "method", 1, null, null, 0, 0);
+            DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(heatingEnergyNeed, heatingEnergyNeedPerArea, null, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 100, 300, 20, designHeatLoad, designHeatLoad, 0, "method", DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, 1, null, null, 0, 0);
             return new BuildingHeatDemandResult(reference, countyId, 1, WeatherSourceType.EPW, "7", HeatDemandSolarSource.Unshaded, null, null, 0, 0, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, "1.7.1", "TABULA", DiGi.Analytical.Building.Regulation.Enums.BuildingType.SingleFamily, 1975, YearBuiltSource.User, "PL-376", null, heatDemandResult);
         }
 

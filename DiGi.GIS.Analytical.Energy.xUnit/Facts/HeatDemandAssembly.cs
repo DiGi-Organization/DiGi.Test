@@ -194,7 +194,7 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
             Assert.Equal(Regulation.Enums.ClimateZone.IV, heatDemandInput_Json.OpeningGenerationInput?.ClimateZone);
             Assert.Equal((uint?)8, heatDemandInput_Json.OccupancyData?.Occupancy);
 
-            DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(1000, 50, [100, 90, 80, 60, 30, 10, 5, 5, 20, 50, 80, 100], null, null, null, null, null, null, null, 100, 20, 30, 0, 40, 1e7, 50, 20, 60, 20, 5000, 4000, 1000, "method", 1, new Dictionary<string, string>() { ["Method"] = "method" }, ["guid"], 1, 2);
+            DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(1000, 50, [100, 90, 80, 60, 30, 10, 5, 5, 20, 50, 80, 100], null, null, null, null, null, null, null, 100, 20, 30, 0, 40, 1e7, 50, 20, 60, 20, 5000, 4000, 1000, "method", DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, 1, new Dictionary<string, string>() { ["Method"] = "method" }, ["guid"], 1, 2);
             BuildingHeatDemandResult buildingHeatDemandResult = new("REF", 1465, 42, WeatherSourceType.EPW, "16", HeatDemandSolarSource.Shaded, 1, 50.0, 2, 1, Regulation.Enums.ConstructionFlavour.Regulation, "1.7.1", "TABULA", Regulation.Enums.BuildingType.SingleFamily, 1975, YearBuiltSource.User, "PL-376", new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero), heatDemandResult);
 
             BuildingHeatDemandResult buildingHeatDemandResult_Copy = new(buildingHeatDemandResult);
