@@ -190,7 +190,7 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
         }
 
         /// <summary>
-        /// Tests the serialization and the copying of <see cref="HeatDemandPreparationResult"/> (DiGi-Organization/DiGi.GIS.Analytical#15): a string round trip through <see cref="Core.xUnit.Query.SerializationCheck"/>, a member-by-member <c>new T(source)</c> assertion, and the rule that the copy shares no model with its source - two reads hand out different instances and mutating what the copy handed out leaves the source unchanged.
+        /// Tests the serialization and the copying of <see cref="HeatDemandPreparationResult"/> (DiGi-Organization/DiGi.GIS.Analytical#15): a string round trip through <see cref="Core.xUnit.Query.SerializationCheck"/>, a member-by-member <c>new T(source)</c> assertion, the input variant (<see cref="HeatDemandInputVariant.Generated"/> from the preparation, read from the JSON, copied, Generated when the JSON has none - DiGi-Organization/DiGi.GIS.Analytical#20), and the rule that the copy shares no model with its source - two reads hand out different instances and mutating what the copy handed out leaves the source unchanged.
         /// </summary>
         [MediumFact]
         public void HeatDemandPreparationResult_Serialization()
@@ -204,6 +204,7 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
 
             HeatDemandPreparationResult? heatDemandPreparationResult = buildingModel.HeatDemandPreparationResult(building2D, buildingModel.BuildingInformation, heatDemandInput, [buildingModel_Neighbour], buildingSolarRadiationResult, ePWFile, heatDemandContext);
             Assert.NotNull(heatDemandPreparationResult);
+            Assert.Equal(HeatDemandInputVariant.Generated, heatDemandPreparationResult.HeatDemandInputVariant);
             Core.xUnit.Query.SerializationCheck(heatDemandPreparationResult);
 
             HeatDemandPreparationResult heatDemandPreparationResult_Copy = new(heatDemandPreparationResult);
@@ -212,6 +213,16 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
             Assert.Equal(heatDemandPreparationResult.MatchedSurfaceCount, heatDemandPreparationResult_Copy.MatchedSurfaceCount);
             Assert.Equal(heatDemandPreparationResult.UnshadedSurfaceCount, heatDemandPreparationResult_Copy.UnshadedSurfaceCount);
             Assert.Equal(heatDemandPreparationResult.UsageSource, heatDemandPreparationResult_Copy.UsageSource);
+            Assert.Equal(heatDemandPreparationResult.HeatDemandInputVariant, heatDemandPreparationResult_Copy.HeatDemandInputVariant);
+
+            // The input variant is read from the JSON and copied (DiGi-Organization/DiGi.GIS.Analytical#20); without the member it reads as Generated.
+            System.Text.Json.Nodes.JsonObject jsonObject = System.Text.Json.Nodes.JsonNode.Parse(Core.Convert.ToSystem_String(heatDemandPreparationResult)!)!.AsObject();
+            jsonObject[nameof(HeatDemandPreparationResult.HeatDemandInputVariant)] = jsonObject[nameof(HeatDemandPreparationResult.HeatDemandInputVariant)]!.GetValueKind() == System.Text.Json.JsonValueKind.String ? nameof(HeatDemandInputVariant.Undefined) : (int)HeatDemandInputVariant.Undefined;
+            HeatDemandPreparationResult heatDemandPreparationResult_Undefined = new(jsonObject);
+            Assert.Equal(HeatDemandInputVariant.Undefined, heatDemandPreparationResult_Undefined.HeatDemandInputVariant);
+            Assert.Equal(HeatDemandInputVariant.Undefined, new HeatDemandPreparationResult(heatDemandPreparationResult_Undefined).HeatDemandInputVariant);
+            Assert.True(jsonObject.Remove(nameof(HeatDemandPreparationResult.HeatDemandInputVariant)));
+            Assert.Equal(HeatDemandInputVariant.Generated, new HeatDemandPreparationResult(jsonObject).HeatDemandInputVariant);
             Assert.Equal(heatDemandPreparationResult.MonthlyClimate?.ExternalTemperatures, heatDemandPreparationResult_Copy.MonthlyClimate?.ExternalTemperatures);
             Assert.Equal(heatDemandPreparationResult.MonthlyClimate?.DesignExternalTemperature, heatDemandPreparationResult_Copy.MonthlyClimate?.DesignExternalTemperature);
             Assert.Equal(heatDemandPreparationResult.MonthlyClimate?.AnnualMeanExternalTemperature, heatDemandPreparationResult_Copy.MonthlyClimate?.AnnualMeanExternalTemperature);
@@ -349,6 +360,7 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
                 openingGenerationResult.YearBuilt,
                 openingGenerationResult.YearBuiltSource,
                 usageSource,
+                DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Generated,
                 null,
                 heatDemandResult);
         }

@@ -200,7 +200,7 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
             BuildingHeatDemandResult buildingHeatDemandResult_1 = HeatDemandSolve_Result("A", 1, 12000, 120, 8000);
             BuildingHeatDemandResult buildingHeatDemandResult_Duplicate = HeatDemandSolve_Result("A", 1, 99999, 999, 99999);
             BuildingHeatDemandResult buildingHeatDemandResult_2 = HeatDemandSolve_Result("B", 2, 6000, double.NaN, 4000);
-            BuildingHeatDemandResult buildingHeatDemandResult_Empty = new("C", 1, 3, WeatherSourceType.EPW, "7", HeatDemandSolarSource.Unshaded, null, null, 0, 0, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, null, null, DiGi.Analytical.Building.Regulation.Enums.BuildingType.SingleFamily, null, null, null, null, null);
+            BuildingHeatDemandResult buildingHeatDemandResult_Empty = new("C", 1, 3, WeatherSourceType.EPW, "7", HeatDemandSolarSource.Unshaded, null, null, 0, 0, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, null, null, DiGi.Analytical.Building.Regulation.Enums.BuildingType.SingleFamily, null, null, null, DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Generated, null, null);
 
             Table table = new();
             Assert.Equal(2, table.Update_HeatDemand([buildingHeatDemandResult_1, buildingHeatDemandResult_Duplicate, buildingHeatDemandResult_2, buildingHeatDemandResult_Empty, null]));
@@ -333,7 +333,7 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
         private static BuildingHeatDemandResult HeatDemandSolve_Result(string reference, int countyId, double heatingEnergyNeed, double heatingEnergyNeedPerArea, double designHeatLoad)
         {
             DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(heatingEnergyNeed, heatingEnergyNeedPerArea, null, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 100, 300, 20, designHeatLoad, designHeatLoad, 0, "method", DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, 1, null, null, 0, 0);
-            return new BuildingHeatDemandResult(reference, countyId, 1, WeatherSourceType.EPW, "7", HeatDemandSolarSource.Unshaded, null, null, 0, 0, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, "1.7.1", "TABULA", DiGi.Analytical.Building.Regulation.Enums.BuildingType.SingleFamily, 1975, YearBuiltSource.User, "PL-376", null, heatDemandResult);
+            return new BuildingHeatDemandResult(reference, countyId, 1, WeatherSourceType.EPW, "7", HeatDemandSolarSource.Unshaded, null, null, 0, 0, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, "1.7.1", "TABULA", DiGi.Analytical.Building.Regulation.Enums.BuildingType.SingleFamily, 1975, YearBuiltSource.User, "PL-376", DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Generated, null, heatDemandResult);
         }
 
         /// <summary>

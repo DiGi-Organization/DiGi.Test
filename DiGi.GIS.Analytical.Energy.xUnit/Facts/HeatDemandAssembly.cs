@@ -17,6 +17,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Regulation = DiGi.Analytical.Building.Regulation;
 
 namespace DiGi.GIS.Analytical.Energy.xUnit
@@ -137,9 +139,11 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
 
             BuildingHeatDemandResult? buildingHeatDemandResult = buildingModel.BuildingHeatDemandResult(building2D, buildingModel.BuildingInformation, heatDemandInput, [buildingModel_Neighbour], buildingSolarRadiationResult, ePWFile, heatDemandContext);
             Assert.NotNull(buildingHeatDemandResult);
+            Assert.Equal(HeatDemandInputVariant.Generated, buildingHeatDemandResult.HeatDemandInputVariant);
 
             DiGi.Analytical.Building.Energy.Classes.HeatDemandResult? heatDemandResult = buildingHeatDemandResult.HeatDemandResult;
             Assert.NotNull(heatDemandResult);
+            Assert.Equal(DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, heatDemandResult.HeatDemandMethod);
             Assert.Equal(12, heatDemandResult.HeatingEnergyNeeds?.Count);
             Assert.True(heatDemandResult.HeatingEnergyNeed > 0);
             Assert.True(heatDemandResult.DesignHeatLoad > 0);
@@ -174,7 +178,7 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
         }
 
         /// <summary>
-        /// Tests the serialization and copying of <see cref="HeatDemandInput"/> and <see cref="BuildingHeatDemandResult"/> (DiGi-Organization/DiGi.GIS.Analytical#14): a string round trip, <see cref="Core.xUnit.Query.SerializationCheck"/> and a member-by-member <c>new T(source)</c> assertion.
+        /// Tests the serialization and copying of <see cref="HeatDemandInput"/> and <see cref="BuildingHeatDemandResult"/> (DiGi-Organization/DiGi.GIS.Analytical#14): a string round trip, <see cref="Core.xUnit.Query.SerializationCheck"/> and a member-by-member <c>new T(source)</c> assertion. The result's <see cref="BuildingHeatDemandResult.HeatDemandInputVariant"/> is read from the JSON and copied, and a JSON without it reads as <see cref="HeatDemandInputVariant.Generated"/> (DiGi-Organization/DiGi.GIS.Analytical#20).
         /// </summary>
         [Fact]
         public void HeatDemandAssembly_Serialization()
@@ -195,7 +199,7 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
             Assert.Equal((uint?)8, heatDemandInput_Json.OccupancyData?.Occupancy);
 
             DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(1000, 50, [100, 90, 80, 60, 30, 10, 5, 5, 20, 50, 80, 100], null, null, null, null, null, null, null, 100, 20, 30, 0, 40, 1e7, 50, 20, 60, 20, 5000, 4000, 1000, "method", DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, 1, new Dictionary<string, string>() { ["Method"] = "method" }, ["guid"], 1, 2);
-            BuildingHeatDemandResult buildingHeatDemandResult = new("REF", 1465, 42, WeatherSourceType.EPW, "16", HeatDemandSolarSource.Shaded, 1, 50.0, 2, 1, Regulation.Enums.ConstructionFlavour.Regulation, "1.7.1", "TABULA", Regulation.Enums.BuildingType.SingleFamily, 1975, YearBuiltSource.User, "PL-376", new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero), heatDemandResult);
+            BuildingHeatDemandResult buildingHeatDemandResult = new("REF", 1465, 42, WeatherSourceType.EPW, "16", HeatDemandSolarSource.Shaded, 1, 50.0, 2, 1, Regulation.Enums.ConstructionFlavour.Regulation, "1.7.1", "TABULA", Regulation.Enums.BuildingType.SingleFamily, 1975, YearBuiltSource.User, "PL-376", DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Generated, new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero), heatDemandResult);
 
             BuildingHeatDemandResult buildingHeatDemandResult_Copy = new(buildingHeatDemandResult);
             Assert.Equal(buildingHeatDemandResult.Reference, buildingHeatDemandResult_Copy.Reference);
@@ -215,6 +219,7 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
             Assert.Equal(buildingHeatDemandResult.YearBuilt, buildingHeatDemandResult_Copy.YearBuilt);
             Assert.Equal(buildingHeatDemandResult.YearBuiltSource, buildingHeatDemandResult_Copy.YearBuiltSource);
             Assert.Equal(buildingHeatDemandResult.UsageSource, buildingHeatDemandResult_Copy.UsageSource);
+            Assert.Equal(buildingHeatDemandResult.HeatDemandInputVariant, buildingHeatDemandResult_Copy.HeatDemandInputVariant);
             Assert.Equal(buildingHeatDemandResult.CreatedAt, buildingHeatDemandResult_Copy.CreatedAt);
             Assert.Equal(buildingHeatDemandResult.HeatDemandResult?.HeatingEnergyNeeds, buildingHeatDemandResult_Copy.HeatDemandResult?.HeatingEnergyNeeds);
             Core.xUnit.Query.SerializationCheck(buildingHeatDemandResult);
@@ -225,6 +230,21 @@ namespace DiGi.GIS.Analytical.Energy.xUnit
             Assert.Equal(50.0, buildingHeatDemandResult_Json.SolarRadius);
             Assert.Equal(1000, buildingHeatDemandResult_Json.HeatDemandResult?.HeatingEnergyNeed);
             Assert.Equal(new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero), buildingHeatDemandResult_Json.CreatedAt);
+            Assert.Equal(HeatDemandInputVariant.Generated, buildingHeatDemandResult_Json.HeatDemandInputVariant);
+
+            // The input variant is read from the JSON (DiGi-Organization/DiGi.GIS.Analytical#20): a stored value wins, and
+            // a result serialized before the input variant was recorded - no member - reads as Generated, the only one there was.
+            JsonObject jsonObject = JsonNode.Parse(Core.Convert.ToSystem_String(buildingHeatDemandResult)!)!.AsObject();
+            Assert.True(jsonObject.ContainsKey(nameof(BuildingHeatDemandResult.HeatDemandInputVariant)));
+            jsonObject[nameof(BuildingHeatDemandResult.HeatDemandInputVariant)] = jsonObject[nameof(BuildingHeatDemandResult.HeatDemandInputVariant)]!.GetValueKind() == JsonValueKind.String ? nameof(HeatDemandInputVariant.Undefined) : (int)HeatDemandInputVariant.Undefined;
+            BuildingHeatDemandResult buildingHeatDemandResult_Undefined = new(jsonObject);
+            Assert.Equal(HeatDemandInputVariant.Undefined, buildingHeatDemandResult_Undefined.HeatDemandInputVariant);
+            Assert.Equal(HeatDemandInputVariant.Undefined, new BuildingHeatDemandResult(buildingHeatDemandResult_Undefined).HeatDemandInputVariant);
+
+            Assert.True(jsonObject.Remove(nameof(BuildingHeatDemandResult.HeatDemandInputVariant)));
+            BuildingHeatDemandResult buildingHeatDemandResult_Legacy = new(jsonObject);
+            Assert.Equal(HeatDemandInputVariant.Generated, buildingHeatDemandResult_Legacy.HeatDemandInputVariant);
+            Assert.Equal(1000, buildingHeatDemandResult_Legacy.HeatDemandResult?.HeatingEnergyNeed);
         }
 
         /// <summary>
