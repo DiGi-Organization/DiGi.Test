@@ -20,6 +20,10 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.NotNull(postgreSQLBuildingDataExternalComponentsUpdateTask.PostgreSQLBuildingDataExternalComponentsUpdateOptions);
             Assert.Equal(600, postgreSQLBuildingDataExternalComponentsUpdateTask.PostgreSQLBuildingDataExternalComponentsUpdateOptions.CommandTimeout);
             Assert.Null(postgreSQLBuildingDataExternalComponentsUpdateTask.PostgreSQLBuildingDataExternalComponentsUpdateOptions.CountyIds);
+            Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.PostgreSQLBuildingDataExternalComponentsUpdateOptions.MaxDegreeOfParallelism);
+            Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.DegenerateModelCount);
+            Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.FailedModelCount);
+            Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.SkippedReferenceCount);
             Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.FailedCountyCount);
             Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.OpenEnvelopeCount);
             Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateTask.ProcessedCountyCount);

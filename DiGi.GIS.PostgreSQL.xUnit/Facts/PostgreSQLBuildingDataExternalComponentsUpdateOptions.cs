@@ -19,6 +19,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Null(postgreSQLBuildingDataExternalComponentsUpdateOptions.CountyIds);
             Assert.True(postgreSQLBuildingDataExternalComponentsUpdateOptions.PartyWalls);
             Assert.Equal(0.2, postgreSQLBuildingDataExternalComponentsUpdateOptions.PartyWallMaxDistance);
+            Assert.Equal(0, postgreSQLBuildingDataExternalComponentsUpdateOptions.MaxDegreeOfParallelism);
         }
 
         /// <summary>
@@ -33,7 +34,10 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 CommandTimeout = 120,
                 CountyIds = [55417, 56029, 53477],
                 PartyWalls = false,
-                PartyWallMaxDistance = 0.15
+                PartyWallMaxDistance = 0.15,
+                MaxDegreeOfParallelism = 3,
+                BatchSize = 250,
+                SkipCompleted = true
             };
 
             string? text = Core.Convert.ToSystem_String(postgreSQLBuildingDataExternalComponentsUpdateOptions);
@@ -45,6 +49,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(120, postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.CommandTimeout);
             Assert.False(postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.PartyWalls);
             Assert.Equal(0.15, postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.PartyWallMaxDistance);
+            Assert.Equal(3, postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.MaxDegreeOfParallelism);
+            Assert.Equal(250, postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.BatchSize);
+            Assert.True(postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.SkipCompleted);
 
             HashSet<int>? countyIds = postgreSQLBuildingDataExternalComponentsUpdateOptions_Parsed.CountyIds;
             Assert.NotNull(countyIds);
@@ -58,6 +65,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(120, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.CommandTimeout);
             Assert.False(postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.PartyWalls);
             Assert.Equal(0.15, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.PartyWallMaxDistance);
+            Assert.Equal(3, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.MaxDegreeOfParallelism);
+            Assert.Equal(250, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.BatchSize);
+            Assert.True(postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.SkipCompleted);
             Assert.NotNull(postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.CountyIds);
             Assert.Equal(3, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.CountyIds.Count);
             Assert.NotSame(postgreSQLBuildingDataExternalComponentsUpdateOptions.CountyIds, postgreSQLBuildingDataExternalComponentsUpdateOptions_Clone.CountyIds);
