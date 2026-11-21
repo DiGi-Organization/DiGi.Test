@@ -23,6 +23,10 @@
          declared here at the same version the libraries were built against - a HintPath reference does
          not carry its own NuGet dependencies. -->
     <PackageReference Include="Npgsql" Version="10.0.2" />
+    <!-- The geometry query the sampled-area fact calls is overloaded on NetTopologySuite types (CS0012), so the
+         package has to be declared here at the same version DiGi.Geometry was built against - a HintPath
+         reference does not carry its own NuGet dependencies. -->
+    <PackageReference Include="NetTopologySuite" Version="2.6.0" />
     <!-- Same package and version DiGi.User.WebAPI signs with, so the tokens these facts mint match the format
          the GIS in-action validator must accept. -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
