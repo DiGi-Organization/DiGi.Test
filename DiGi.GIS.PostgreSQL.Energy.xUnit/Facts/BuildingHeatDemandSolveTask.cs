@@ -192,14 +192,14 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
         }
 
         /// <summary>
-        /// Verifies <see cref="Modify.Update_HeatDemand"/> (DiGi.GIS.PostgreSQL#143): the four heat-demand columns of a <c>building_data</c> table are filled per county part and reference, a non-finite value is left as a null cell, the first result of a key wins, and a result without a heat demand is stepped over.
+        /// Verifies <see cref="Modify.Update_HeatDemand"/> (DiGi.GIS.PostgreSQL#143, DiGi-Organization/DiGi.GIS.IO#21): the six heat-demand columns of a <c>building_data</c> table are filled per county part and reference, a non-finite value is left as a null cell, the first result of a key wins, and a result without a heat demand is stepped over.
         /// </summary>
         [Fact]
         public void Modify_Update_HeatDemand()
         {
             BuildingHeatDemandResult buildingHeatDemandResult_1 = HeatDemandSolve_Result("A", 1, 12000, 120, 8000);
             BuildingHeatDemandResult buildingHeatDemandResult_Duplicate = HeatDemandSolve_Result("A", 1, 99999, 999, 99999);
-            BuildingHeatDemandResult buildingHeatDemandResult_2 = HeatDemandSolve_Result("B", 2, 6000, double.NaN, 4000);
+            BuildingHeatDemandResult buildingHeatDemandResult_2 = HeatDemandSolve_Result("B", 2, 6000, double.NaN, 4000, DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Undefined, DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Undefined);
             BuildingHeatDemandResult buildingHeatDemandResult_Empty = new("C", 1, 3, WeatherSourceType.EPW, "7", HeatDemandSolarSource.Unshaded, null, null, 0, 0, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, null, null, DiGi.Analytical.Building.Regulation.Enums.BuildingType.SingleFamily, null, null, null, DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Generated, null, null);
 
             Table table = new();
@@ -221,6 +221,12 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
             Assert.Equal(120f, Value(row_A, IO.Constants.Column.HeatingEnergyNeedPerArea));
             Assert.Equal(8000f, Value(row_A, IO.Constants.Column.DesignHeatLoad));
             Assert.Equal(1, System.Convert.ToInt32(Value(row_A, IO.Constants.Column.HeatDemandMethodVersion), CultureInfo.InvariantCulture));
+
+            // The method and the input variant are written as the integers of the result's own values (DiGi-Organization/DiGi.GIS.IO#21): B carries Undefined (0) on purpose, so a constant would fail.
+            Assert.Equal(1, System.Convert.ToInt32(Value(row_A, IO.Constants.Column.HeatDemandMethod), CultureInfo.InvariantCulture));
+            Assert.Equal(1, System.Convert.ToInt32(Value(row_A, IO.Constants.Column.HeatDemandInputVariant), CultureInfo.InvariantCulture));
+            Assert.Equal(0, System.Convert.ToInt32(Value(row_B, IO.Constants.Column.HeatDemandMethod), CultureInfo.InvariantCulture));
+            Assert.Equal(0, System.Convert.ToInt32(Value(row_B, IO.Constants.Column.HeatDemandInputVariant), CultureInfo.InvariantCulture));
             Assert.Null(Value(row_B, IO.Constants.Column.HeatingEnergyNeedPerArea));
             Assert.Equal(6000f, Value(row_B, IO.Constants.Column.HeatingEnergyNeed));
 
@@ -330,10 +336,10 @@ namespace DiGi.GIS.PostgreSQL.Energy.xUnit
         /// <summary>
         /// Builds a stored result carrying only the values the <c>building_data</c> columns take.
         /// </summary>
-        private static BuildingHeatDemandResult HeatDemandSolve_Result(string reference, int countyId, double heatingEnergyNeed, double heatingEnergyNeedPerArea, double designHeatLoad)
+        private static BuildingHeatDemandResult HeatDemandSolve_Result(string reference, int countyId, double heatingEnergyNeed, double heatingEnergyNeedPerArea, double designHeatLoad, DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod heatDemandMethod = DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant heatDemandInputVariant = DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Generated)
         {
-            DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(heatingEnergyNeed, heatingEnergyNeedPerArea, null, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 100, 300, 20, designHeatLoad, designHeatLoad, 0, "method", DiGi.Analytical.Building.Energy.Enums.HeatDemandMethod.Monthly, 1, null, null, 0, 0);
-            return new BuildingHeatDemandResult(reference, countyId, 1, WeatherSourceType.EPW, "7", HeatDemandSolarSource.Unshaded, null, null, 0, 0, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, "1.7.1", "TABULA", DiGi.Analytical.Building.Regulation.Enums.BuildingType.SingleFamily, 1975, YearBuiltSource.User, "PL-376", DiGi.GIS.Analytical.Energy.Enums.HeatDemandInputVariant.Generated, null, heatDemandResult);
+            DiGi.Analytical.Building.Energy.Classes.HeatDemandResult heatDemandResult = new(heatingEnergyNeed, heatingEnergyNeedPerArea, null, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 100, 300, 20, designHeatLoad, designHeatLoad, 0, "method", heatDemandMethod, 1, null, null, 0, 0);
+            return new BuildingHeatDemandResult(reference, countyId, 1, WeatherSourceType.EPW, "7", HeatDemandSolarSource.Unshaded, null, null, 0, 0, DiGi.Analytical.Building.Regulation.Enums.ConstructionFlavour.TypicalAsBuilt, "1.7.1", "TABULA", DiGi.Analytical.Building.Regulation.Enums.BuildingType.SingleFamily, 1975, YearBuiltSource.User, "PL-376", heatDemandInputVariant, null, heatDemandResult);
         }
 
         /// <summary>

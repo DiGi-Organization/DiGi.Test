@@ -198,8 +198,9 @@ namespace DiGi.GIS.xUnit
             // the 9 party wall area columns of DiGi-Organization/DiGi.GIS.Analytical#4,
             // the 4 heat demand columns of DiGi-Organization/DiGi.GIS.IO#18,
             // the census year built column of DiGi-Organization/DiGi.GIS.IO#19,
-            // and the calculated height column of DiGi-Organization/DiGi.GIS.IO#20.
-            Assert.Equal(79, preExistingUniqueIds.Count);
+            // the calculated height column of DiGi-Organization/DiGi.GIS.IO#20,
+            // and the heat demand method and input variant columns of DiGi-Organization/DiGi.GIS.IO#21.
+            Assert.Equal(81, preExistingUniqueIds.Count);
             Assert.Empty(uniqueIds.Intersect(preExistingUniqueIds));
 
             List<Column> dynamicColumns =

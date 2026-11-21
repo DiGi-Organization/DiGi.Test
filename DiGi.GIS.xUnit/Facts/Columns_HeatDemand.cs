@@ -8,27 +8,29 @@ namespace DiGi.GIS.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Verifies that Create.Columns_HeatDemand returns the 4 heat demand columns in a stable order, in the Heat Demand category, with unique ids distinct from each other and from every pre-existing column (DiGi-Organization/DiGi.GIS.IO#18).
+        /// Verifies that Create.Columns_HeatDemand returns the 6 heat demand columns in a stable order, in the Heat Demand category, with unique ids distinct from each other and from every pre-existing column (DiGi-Organization/DiGi.GIS.IO#18); the method and the input variant that identify the result are int columns (DiGi-Organization/DiGi.GIS.IO#21).
         /// </summary>
         [Fact]
         public void Columns_HeatDemand()
         {
             List<Column> columns = IO.Create.Columns_HeatDemand();
-            Assert.Equal(4, columns.Count);
+            Assert.Equal(6, columns.Count);
 
             List<string> expectedNames =
             [
                 "Heating energy need",
                 "Heating energy need per area",
                 "Design heat load",
-                "Heat demand method version"
+                "Heat demand method version",
+                "Heat demand method",
+                "Heat demand input variant"
             ];
 
             Assert.Equal(expectedNames, columns.ConvertAll(x => x.Name ?? string.Empty));
 
             List<string> uniqueIds = columns.ConvertAll(x => Core.IO.Query.UniqueId(x) ?? string.Empty);
-            Assert.Equal(["heating_energy_need", "heating_energy_need_per_area", "design_heat_load", "heat_demand_method_version"], uniqueIds);
-            Assert.Equal(4, uniqueIds.Distinct().Count());
+            Assert.Equal(["heating_energy_need", "heating_energy_need_per_area", "design_heat_load", "heat_demand_method_version", "heat_demand_method", "heat_demand_input_variant"], uniqueIds);
+            Assert.Equal(6, uniqueIds.Distinct().Count());
 
             // The three energy and power columns are UnitColumns with Float precision; the version column is a plain ExtendedColumn of int.
             foreach (Column column in columns.GetRange(0, 3))
@@ -40,11 +42,15 @@ namespace DiGi.GIS.xUnit
                 Assert.False(string.IsNullOrWhiteSpace(((ExtendedColumn)column).Description));
             }
 
-            Assert.IsNotType<UnitColumn>(columns[3]);
-            Assert.IsType<ExtendedColumn>(columns[3]);
-            Assert.Equal(typeof(int), ((ExtendedColumn)columns[3]).Type);
-            Assert.Equal("Heat Demand", ((ExtendedColumn)columns[3]).Category);
-            Assert.False(string.IsNullOrWhiteSpace(((ExtendedColumn)columns[3]).Description));
+            // The version, the method and the input variant are plain ExtendedColumns of int: the integers of the enums, never their names.
+            foreach (Column column in columns.GetRange(3, 3))
+            {
+                Assert.IsNotType<UnitColumn>(column);
+                Assert.IsType<ExtendedColumn>(column);
+                Assert.Equal(typeof(int), ((ExtendedColumn)column).Type);
+                Assert.Equal("Heat Demand", ((ExtendedColumn)column).Category);
+                Assert.False(string.IsNullOrWhiteSpace(((ExtendedColumn)column).Description));
+            }
 
             // Disjointness from every pre-existing column.
             List<string> preExistingUniqueIds = [];
