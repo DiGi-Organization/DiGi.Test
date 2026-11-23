@@ -94,6 +94,82 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         }
 
         /// <summary>
+        /// Verifies that the solar radiation solve options window carries an edited radii list through the accept logic into the options it holds, refuses an empty list with a reason, and leaves the caller's options untouched (DiGi.GIS.PostgreSQL#158).
+        /// <para>The dialog is the only place a run's radii are chosen, and it opens with the previous run's list, so a run scoped to one radius has to survive the real Remove and Add buttons and the accept logic. The accept logic is called directly rather than through the OK button: a DialogResult needs ShowDialog and a failed validation shows a modal box, either of which would hang a fact (Coding - WPF Deferred Loading.md section 5).</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingSolarRadiationSolveOptionsWindow_AcceptRadii()
+        {
+            PostgreSQLBuildingSolarRadiationSolveOptions postgreSQLBuildingSolarRadiationSolveOptions = new()
+            {
+                CountyIds = [55417],
+                Radii = [0, 50, 100],
+                SkipExisting = true,
+                BatchSize = 25,
+                TileSize = 125,
+                ReceiverCountMax = 300,
+                CasterTriangleCountMax = 64_000,
+                CommandTimeout = 900,
+                BuildingCountMax = 500,
+                MaxDegreeOfParallelism = 6
+            };
+
+            List<double>? radii_Edited = null;
+            bool? accepted = null;
+            string? message_Accepted = null;
+            bool? accepted_Refused = null;
+            string? message_Refused = null;
+            PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Accepted = null;
+
+            Exception? exception = RunSTA(() =>
+            {
+                PostgreSQLBuildingSolarRadiationSolveOptionsWindow postgreSQLBuildingSolarRadiationSolveOptionsWindow = new(postgreSQLBuildingSolarRadiationSolveOptions, SolarRadiationOptionsWindowCounties());
+
+                // The prefill of an earlier run, narrowed to one radius through the buttons the dialog offers:
+                // 0 and 50 out, 200 added and taken out again, so both handlers are exercised.
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.ListBoxControl_Radii.SelectItems<double>(x => x == 0 || x == 50);
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.Button_RemoveRadii.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.TextBoxControl_Radius.Value = "200";
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.Button_AddRadius.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.ListBoxControl_Radii.SelectItems<double>(x => x == 200);
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.Button_RemoveRadii.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+                radii_Edited = postgreSQLBuildingSolarRadiationSolveOptionsWindow.ListBoxControl_Radii.GetItems<double>(selected: false);
+
+                accepted = postgreSQLBuildingSolarRadiationSolveOptionsWindow.TryAccept(out message_Accepted);
+                postgreSQLBuildingSolarRadiationSolveOptions_Accepted = postgreSQLBuildingSolarRadiationSolveOptionsWindow.PostgreSQLBuildingSolarRadiationSolveOptions;
+
+                // The last radius out: the dialog has to refuse, with a reason, and leave the accepted options alone.
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.ListBoxControl_Radii.SelectItems<double>(x => x == 100);
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.Button_RemoveRadii.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+                accepted_Refused = postgreSQLBuildingSolarRadiationSolveOptionsWindow.TryAccept(out message_Refused);
+            });
+
+            Assert.Null(exception);
+
+            // Edited through the real buttons: sorted, de-duplicated, one radius left.
+            Assert.Equal([100], radii_Edited);
+
+            // Accepted: the edit carried into the options, the selected county with it, no reason asked for.
+            Assert.True(accepted);
+            Assert.Null(message_Accepted);
+            Assert.NotNull(postgreSQLBuildingSolarRadiationSolveOptions_Accepted);
+            Assert.Equal([100], postgreSQLBuildingSolarRadiationSolveOptions_Accepted!.Radii);
+            Assert.Contains(55417, postgreSQLBuildingSolarRadiationSolveOptions_Accepted!.CountyIds!);
+
+            // The window works on a copy: the caller's options still hold what the dialog was opened with.
+            Assert.Equal([0, 50, 100], postgreSQLBuildingSolarRadiationSolveOptions.Radii);
+
+            // An empty radii list is refused with a reason and writes nothing over the accepted values.
+            Assert.False(accepted_Refused);
+            Assert.False(string.IsNullOrWhiteSpace(message_Refused));
+            Assert.Equal([100], postgreSQLBuildingSolarRadiationSolveOptions_Accepted.Radii);
+        }
+
+        /// <summary>
         /// Verifies that the solar urban-context export options window builds without a database or a running application, keeps the radii in the column order given, proposes <see cref="Query.SolarContextDirectory(string?)"/> when the options carry no folder, keeps a folder they do carry, and works on a copy (DiGi.GIS.PostgreSQL.UI#44).
         /// </summary>
         [Fact]
