@@ -85,5 +85,162 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             // The caller's own instance is untouched by the edit made to the window's copy above.
             Assert.Equal(600, postgreSQLBuildingDataExternalComponentsUpdateOptions.CommandTimeout);
         }
+
+        /// <summary>
+        /// Verifies that the party walls box of the external components area options window starts from the options it is given and that OK writes the box back, so the dialog can switch the party wall measurement off for a run that only needs the other columns (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#54).
+        /// <para>Party walls are most of the cost of a national run: with them every batch also reads the outlines and the stored models of its neighbours. A box that did not reach the options would leave the run measuring them whatever the person chose, and a box that started unchecked for a default run would silently drop them.</para>
+        /// <para>The box is found by name and OK is pressed by raising its click, with no dialog shown. The handler copies the controls into the options before it sets the dialog result, and setting that result on a window that was never shown throws, so the exception is expected and the options are read after it; a window that refused the input would show a message box and hang here instead, which is what keeps this from passing by accident.</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingDataExternalComponentsUpdateOptionsWindow_PartyWalls()
+        {
+            Exception? exception = null;
+            bool checkedFromDefault = false;
+            bool uncheckedFromOptions = false;
+            bool switchedOff = false;
+            bool switchedOn = false;
+
+            Thread thread = new(() =>
+            {
+                try
+                {
+                    List<AdministrativeAreal2DReference> administrativeAreal2DReferences =
+                    [
+                        new() { Id = 4816, Code = "0201", Name = "boleslawiecki", AdministrativeArealType = AdministrativeArealType.County }
+                    ];
+
+                    // A default run measures party walls, so the box starts checked.
+                    PostgreSQLBuildingDataExternalComponentsUpdateOptionsWindow postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow_Default = new(new PostgreSQLBuildingDataExternalComponentsUpdateOptions(), administrativeAreal2DReferences);
+                    checkedFromDefault = postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow_Default.FindName("CheckBox_PartyWalls") is System.Windows.Controls.CheckBox checkBox_Default && checkBox_Default.IsChecked == true;
+
+                    // A run configured without them opens unchecked.
+                    PostgreSQLBuildingDataExternalComponentsUpdateOptionsWindow postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow = new(new PostgreSQLBuildingDataExternalComponentsUpdateOptions() { PartyWalls = false }, administrativeAreal2DReferences);
+                    System.Windows.Controls.CheckBox? checkBox = postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow.FindName("CheckBox_PartyWalls") as System.Windows.Controls.CheckBox;
+                    uncheckedFromOptions = checkBox is not null && checkBox.IsChecked == false;
+
+                    // OK writes the box back, checked or not.
+                    if (checkBox is not null)
+                    {
+                        switchedOn = Press(postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow, checkBox, true);
+                        switchedOff = Press(postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow, checkBox, false);
+                    }
+                }
+                catch (Exception exception_Temp)
+                {
+                    exception = exception_Temp;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            Assert.True(thread.Join(TimeSpan.FromSeconds(60)), "The window waited on a message box - its input was refused.");
+
+            Assert.Null(exception);
+            Assert.True(checkedFromDefault);
+            Assert.True(uncheckedFromOptions);
+            Assert.True(switchedOn);
+            Assert.True(switchedOff);
+        }
+
+        private static bool Press(PostgreSQLBuildingDataExternalComponentsUpdateOptionsWindow window, System.Windows.Controls.CheckBox checkBox, bool partyWalls)
+        {
+            checkBox.IsChecked = partyWalls;
+
+            if (window.FindName("Button_OK") is not System.Windows.Controls.Button button)
+            {
+                return false;
+            }
+
+            try
+            {
+                button.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            }
+            catch (InvalidOperationException)
+            {
+                // DialogResult cannot be set on a window that was never shown; the options are written before that line.
+            }
+
+            return window.PostgreSQLBuildingDataExternalComponentsUpdateOptions.PartyWalls == partyWalls;
+        }
+
+        /// <summary>
+        /// Verifies that the parallel batches box of the external components area options window starts from the options it is given - 0, the automatic default, as 0 and a configured degree as itself - and that OK writes the value back, so a run started from the dialog decides how many batches of a county are in flight (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#54).
+        /// <para>The degree decides the speed and the memory of a run: 0 takes half of the logical processors and 1 is the sequential run of the deployed build, while the memory of the run grows with the degree times the batch size. A box that did not reach the options would leave every run at whatever the options were opened with, and the dialog would appear to offer a setting it does not have.</para>
+        /// <para>The box is found by name and OK is pressed by raising its click, with no dialog shown. The handler copies the controls into the options before it sets the dialog result, and setting that result on a window that was never shown throws, so the exception is expected and the options are read after it; a box holding something the handler refuses would open a message box and hang here instead, which is what keeps this from passing by accident. The counties are left selected, so the handler never takes the refusal path.</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingDataExternalComponentsUpdateOptionsWindow_MaxDegreeOfParallelism()
+        {
+            Exception? exception = null;
+            bool shownFromDefault = false;
+            bool shownFromOptions = false;
+            bool wroteZero = false;
+            bool wroteOne = false;
+            bool wroteEight = false;
+
+            Thread thread = new(() =>
+            {
+                try
+                {
+                    List<AdministrativeAreal2DReference> administrativeAreal2DReferences =
+                    [
+                        new() { Id = 4816, Code = "0201", Name = "boleslawiecki", AdministrativeArealType = AdministrativeArealType.County }
+                    ];
+
+                    // The default is 0 - half of the processors - and the box shows it as itself.
+                    PostgreSQLBuildingDataExternalComponentsUpdateOptionsWindow postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow_Default = new(new PostgreSQLBuildingDataExternalComponentsUpdateOptions(), administrativeAreal2DReferences);
+                    shownFromDefault = postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow_Default.FindName("TextBoxControl_MaxDegreeOfParallelism") is DiGi.UI.WPF.Controls.TextBoxControl textBox_Default && textBox_Default.Value == 0.ToString(System.Globalization.CultureInfo.CurrentCulture);
+
+                    // A run configured for four batches in flight opens with four.
+                    PostgreSQLBuildingDataExternalComponentsUpdateOptionsWindow postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow = new(new PostgreSQLBuildingDataExternalComponentsUpdateOptions() { MaxDegreeOfParallelism = 4 }, administrativeAreal2DReferences);
+                    DiGi.UI.WPF.Controls.TextBoxControl? textBox = postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow.FindName("TextBoxControl_MaxDegreeOfParallelism") as DiGi.UI.WPF.Controls.TextBoxControl;
+                    shownFromOptions = textBox is not null && textBox.Value == 4.ToString(System.Globalization.CultureInfo.CurrentCulture);
+
+                    // OK writes the value back, the automatic 0, the sequential 1 and a degree above 1 alike.
+                    if (textBox is not null)
+                    {
+                        wroteZero = Press(postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow, textBox, 0);
+                        wroteOne = Press(postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow, textBox, 1);
+                        wroteEight = Press(postgreSQLBuildingDataExternalComponentsUpdateOptionsWindow, textBox, 8);
+                    }
+                }
+                catch (Exception exception_Temp)
+                {
+                    exception = exception_Temp;
+                }
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            Assert.True(thread.Join(TimeSpan.FromSeconds(60)), "The window waited on a message box - its input was refused.");
+
+            Assert.Null(exception);
+            Assert.True(shownFromDefault);
+            Assert.True(shownFromOptions);
+            Assert.True(wroteZero);
+            Assert.True(wroteOne);
+            Assert.True(wroteEight);
+        }
+
+        private static bool Press(PostgreSQLBuildingDataExternalComponentsUpdateOptionsWindow window, DiGi.UI.WPF.Controls.TextBoxControl textBoxControl, int maxDegreeOfParallelism)
+        {
+            textBoxControl.Value = maxDegreeOfParallelism.ToString(System.Globalization.CultureInfo.CurrentCulture);
+
+            if (window.FindName("Button_OK") is not System.Windows.Controls.Button button)
+            {
+                return false;
+            }
+
+            try
+            {
+                button.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            }
+            catch (InvalidOperationException)
+            {
+                // DialogResult cannot be set on a window that was never shown; the options are written before that line.
+            }
+
+            return window.PostgreSQLBuildingDataExternalComponentsUpdateOptions.MaxDegreeOfParallelism == maxDegreeOfParallelism;
+        }
     }
 }
