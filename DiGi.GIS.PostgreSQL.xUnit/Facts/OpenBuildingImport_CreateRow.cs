@@ -14,7 +14,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
     {
         /// <summary>
         /// Verifies the per-footprint pipeline of the open building import: a footprint is reprojected once with the run's transformation, filed under a county part and serialized as EPSG:2180, while a footprint the reprojection rejects - here one whose result falls outside the Polish domain - is counted with a rejection reason and never becomes a row (DiGi.GIS.PostgreSQL#125).
-        /// <para>The three outcome channels of <see cref="OpenBuildingPostgreSQLConverter.CreateRow(Footprint, ICoordinateTransformation?, IDictionary{int, IPolygonal2D}?, IDictionary{int, BoundingBox2D}?, IDictionary{int, PolygonalFace2D}?, ISet{int}?, BoundingBox2D?, double, out UpdateRejectionReason?)"/> are pinned against real geometry: a filed row carries the county, the source identifier, the normalised primary source and an object whose stored source reference system is 2180; a footprint outside the scope box is filtered with no reason; a missing transformation (an unsupported source coordinate reference system) and a null footprint are rejections of their own. The county square sits inside the EPSG:2180 domain of use so the valid footprint survives the domain check the reprojection enforces. The fact needs no database.</para>
+        /// <para>The three outcome channels of <see cref="OpenBuildingPostgreSQLConverter.CreateRow(Footprint, ICoordinateTransformation?, IDictionary{int, IPolygonal2D}?, IDictionary{int, CountyFilingGeometry}?, IDictionary{int, BoundingBox2D}?, IDictionary{int, PolygonalFace2D}?, ISet{int}?, BoundingBox2D?, double, out UpdateRejectionReason?)"/> are pinned against real geometry: a filed row carries the county, the source identifier, the normalised primary source and an object whose stored source reference system is 2180; a footprint outside the scope box is filtered with no reason; a missing transformation (an unsupported source coordinate reference system) and a null footprint are rejections of their own. The county square sits inside the EPSG:2180 domain of use so the valid footprint survives the domain check the reprojection enforces. The fact needs no database.</para>
         /// </summary>
         [Fact]
         public void OpenBuildingImport_CreateRow_ReprojectFileFilter()
@@ -24,6 +24,10 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             List<AdministrativeAreal2D> administrativeAreal2Ds = [administrativeAreal2D];
 
             Dictionary<int, IPolygonal2D> polygonal2Ds_ByCountyId = administrativeAreal2Ds.Polygonal2DsByCountyId();
+
+            // The run-local indexes the import builds beside the rings; a square part of four points stays on its
+            // ring (the legacy call decides below 17 points), so these facts exercise the fallback path.
+            Dictionary<int, CountyFilingGeometry> countyFilingGeometries_ByCountyId = polygonal2Ds_ByCountyId.CountyFilingGeometriesByCountyId();
             Dictionary<int, BoundingBox2D> boundingBox2Ds_ByCountyId = [];
 
             foreach (KeyValuePair<int, PolygonalFace2D> pair in administrativeAreal2Ds.PolygonalFace2DsById())
@@ -49,7 +53,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.NotNull(footprint_Valid);
 
             // Filed: reprojected, filed under the county and serialized with the stored source reference system.
-            OpenBuildingRow? openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Valid, coordinateTransformation, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out UpdateRejectionReason? updateRejectionReason);
+            OpenBuildingRow? openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Valid, coordinateTransformation, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out UpdateRejectionReason? updateRejectionReason);
             Assert.NotNull(openBuildingRow);
             Assert.Null(updateRejectionReason);
             Assert.Equal(10, openBuildingRow.CountyId);
@@ -68,24 +72,24 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Footprint? footprint_Outside = OpenBuilding_Footprint("xunit-2", 5.0, 50.0, 0.0001);
             Assert.NotNull(footprint_Outside);
 
-            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Outside, coordinateTransformation, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
+            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Outside, coordinateTransformation, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
             Assert.Null(openBuildingRow);
             Assert.Equal(UpdateRejectionReason.GeometryRejected, updateRejectionReason);
 
             // Filtered, not rejected: outside the scope box the footprint was never in scope.
             BoundingBox2D boundingBox2D_Scope = new(new Point2D(200000, 200000), new Point2D(300000, 300000));
-            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Valid, coordinateTransformation, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, boundingBox2D_Scope, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
+            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Valid, coordinateTransformation, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, boundingBox2D_Scope, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
             Assert.Null(openBuildingRow);
             Assert.Null(updateRejectionReason);
 
             // No transformation for the source coordinate reference system - the readers only emit 4326 and
             // 3035, so this stands for a file the transformation factories could not serve.
-            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Valid, null, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
+            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Valid, null, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
             Assert.Null(openBuildingRow);
             Assert.Equal(UpdateRejectionReason.GeometryRejected, updateRejectionReason);
 
             // A null footprint has nothing to name but itself.
-            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(null, coordinateTransformation, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
+            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(null, coordinateTransformation, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
             Assert.Null(openBuildingRow);
             Assert.Equal(UpdateRejectionReason.Undefined, updateRejectionReason);
         }

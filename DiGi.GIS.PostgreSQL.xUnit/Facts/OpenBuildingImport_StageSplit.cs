@@ -109,6 +109,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 bool isGhsObat = string.Equals(datasetKey, "ghs_obat", StringComparison.OrdinalIgnoreCase);
 
                 Dictionary<int, IPolygonal2D>? polygonal2Ds_ByCountyId = isGhsObat ? null : counties.Polygonal2DsByCountyId();
+                Dictionary<int, CountyFilingGeometry>? countyFilingGeometries_ByCountyId = polygonal2Ds_ByCountyId?.CountyFilingGeometriesByCountyId();
                 Dictionary<int, PolygonalFace2D>? polygonalFace2Ds_ByCountyId = isGhsObat ? counties.PolygonalFace2DsById() : null;
                 Dictionary<int, BoundingBox2D> boundingBox2Ds_ByCountyId = [];
 
@@ -172,7 +173,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                             _ => null,
                         };
 
-                        OpenBuildingRow? openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint, coordinateTransformation, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, polygonalFace2Ds_ByCountyId, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out UpdateRejectionReason? updateRejectionReason);
+                        OpenBuildingRow? openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint, coordinateTransformation, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, polygonalFace2Ds_ByCountyId, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out UpdateRejectionReason? updateRejectionReason);
 
                         if (openBuildingRow is not null)
                         {

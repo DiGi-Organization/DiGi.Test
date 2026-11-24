@@ -21,6 +21,10 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             List<AdministrativeAreal2D> administrativeAreal2Ds = [administrativeAreal2D_A, administrativeAreal2D_B];
 
             Dictionary<int, IPolygonal2D> polygonal2Ds_ByCountyId = administrativeAreal2Ds.Polygonal2DsByCountyId();
+
+            // The run-local indexes the import builds beside the rings; a square part of four points stays on its
+            // ring (the legacy call decides below 17 points), so these facts exercise the fallback path.
+            Dictionary<int, CountyFilingGeometry> countyFilingGeometries_ByCountyId = polygonal2Ds_ByCountyId.CountyFilingGeometriesByCountyId();
             Assert.Equal(2, polygonal2Ds_ByCountyId.Count);
 
             Dictionary<int, BoundingBox2D> boundingBox2Ds_ByCountyId = [];
@@ -38,14 +42,14 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             IPolygonal2D_Square(40, 40, 10, out Polygon2D polygon2D_Inside);
             BoundingBox2D boundingBox2D_Inside = new(new Point2D(40, 40), new Point2D(50, 50));
 
-            int? countyId = Query.OpenBuildingCountyId(boundingBox2D_Inside, polygon2D_Inside, null, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, null, null, Core.Constants.Tolerance.MacroDistance, out bool rejected);
+            int? countyId = Query.OpenBuildingCountyId(boundingBox2D_Inside, polygon2D_Inside, null, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, null, null, Core.Constants.Tolerance.MacroDistance, out bool rejected);
             Assert.Equal(10, countyId);
             Assert.False(rejected);
 
             // Filtered: part A resolves, but part A is not in this run's scope - the row belongs to a later
             // run, not to a rejection list.
             HashSet<int> countyIds_Scope = [20];
-            countyId = Query.OpenBuildingCountyId(boundingBox2D_Inside, polygon2D_Inside, null, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out rejected);
+            countyId = Query.OpenBuildingCountyId(boundingBox2D_Inside, polygon2D_Inside, null, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out rejected);
             Assert.Null(countyId);
             Assert.False(rejected);
 
@@ -54,7 +58,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             IPolygonal2D_Square(50000, 50000, 10, out Polygon2D polygon2D_Outside);
             BoundingBox2D boundingBox2D_Outside = new(new Point2D(50000, 50000), new Point2D(50010, 50010));
 
-            countyId = Query.OpenBuildingCountyId(boundingBox2D_Outside, polygon2D_Outside, null, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
+            countyId = Query.OpenBuildingCountyId(boundingBox2D_Outside, polygon2D_Outside, null, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
             Assert.Null(countyId);
             Assert.True(rejected);
 
@@ -62,7 +66,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             // scope, so its rejection count stays clean even though it lies outside every county.
             BoundingBox2D boundingBox2D_Scope = new(new Point2D(0, 0), new Point2D(200, 200));
 
-            countyId = Query.OpenBuildingCountyId(boundingBox2D_Outside, polygon2D_Outside, null, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, null, boundingBox2D_Scope, Core.Constants.Tolerance.MacroDistance, out rejected);
+            countyId = Query.OpenBuildingCountyId(boundingBox2D_Outside, polygon2D_Outside, null, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, null, boundingBox2D_Scope, Core.Constants.Tolerance.MacroDistance, out rejected);
             Assert.Null(countyId);
             Assert.False(rejected);
 
@@ -72,7 +76,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             IPolygonal2D_Square(150, 150, 10, out Polygon2D polygon2D_Gap);
             BoundingBox2D boundingBox2D_Gap = new(new Point2D(150, 150), new Point2D(160, 160));
 
-            countyId = Query.OpenBuildingCountyId(boundingBox2D_Gap, polygon2D_Gap, null, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, null, boundingBox2D_Scope, Core.Constants.Tolerance.MacroDistance, out rejected);
+            countyId = Query.OpenBuildingCountyId(boundingBox2D_Gap, polygon2D_Gap, null, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, null, boundingBox2D_Scope, Core.Constants.Tolerance.MacroDistance, out rejected);
             Assert.Null(countyId);
             Assert.True(rejected);
 
@@ -81,22 +85,22 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Dictionary<int, PolygonalFace2D> polygonalFace2Ds_ByCountyId = administrativeAreal2Ds.PolygonalFace2DsById();
             BoundingBox2D boundingBox2D_Point = new(new Point2D(45, 45), new Point2D(45, 45));
 
-            countyId = Query.OpenBuildingCountyId(boundingBox2D_Point, null, new Point2D(45, 45), polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, polygonalFace2Ds_ByCountyId, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
+            countyId = Query.OpenBuildingCountyId(boundingBox2D_Point, null, new Point2D(45, 45), polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, polygonalFace2Ds_ByCountyId, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
             Assert.Equal(10, countyId);
             Assert.False(rejected);
 
             BoundingBox2D boundingBox2D_PointOutside = new(new Point2D(50000, 50000), new Point2D(50000, 50000));
-            countyId = Query.OpenBuildingCountyId(boundingBox2D_PointOutside, null, new Point2D(50000, 50000), polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, polygonalFace2Ds_ByCountyId, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
+            countyId = Query.OpenBuildingCountyId(boundingBox2D_PointOutside, null, new Point2D(50000, 50000), polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, polygonalFace2Ds_ByCountyId, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
             Assert.Null(countyId);
             Assert.True(rejected);
 
             // A centroid run without faces cannot file anything, and a null envelope is always a rejection:
             // there is nothing to place.
-            countyId = Query.OpenBuildingCountyId(boundingBox2D_Point, null, new Point2D(45, 45), polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
+            countyId = Query.OpenBuildingCountyId(boundingBox2D_Point, null, new Point2D(45, 45), polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
             Assert.Null(countyId);
             Assert.True(rejected);
 
-            countyId = Query.OpenBuildingCountyId(null, polygon2D_Inside, null, polygonal2Ds_ByCountyId, boundingBox2Ds_ByCountyId, null, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
+            countyId = Query.OpenBuildingCountyId(null, polygon2D_Inside, null, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, null, null, Core.Constants.Tolerance.MacroDistance, out rejected);
             Assert.Null(countyId);
             Assert.True(rejected);
         }
