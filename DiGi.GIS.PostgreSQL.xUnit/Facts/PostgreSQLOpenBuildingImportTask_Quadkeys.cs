@@ -90,6 +90,11 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                         CountyIds = [countyId.Value],
                         Version = version,
                         DownloadDate = DateTime.Today,
+
+                        // The folders carry made-up quadkeys whose tiles lie far from the scratch county the
+                        // footprints sit in: read as real tiles, both files would be left unread as outside the
+                        // scope (DiGi.GIS.PostgreSQL#170). This fact is about source identity, so it reads them.
+                        SkipSourcesOutOfScope = false,
                     }
                 };
 

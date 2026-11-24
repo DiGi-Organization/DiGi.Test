@@ -64,6 +64,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 [nameof(BuildingDatasetRelease.Sha256)] = "abc",
                 [nameof(BuildingDatasetRelease.RowCount)] = 14_400_000L,
                 [nameof(BuildingDatasetRelease.CreatedAt)] = createdAt,
+                [nameof(BuildingDatasetRelease.SkippedFileNames)] = JsonNode.Parse("[\"quadkey=120213032/part-00129.csv.gz\"]"),
             };
 
             BuildingDatasetRelease buildingDatasetRelease = new(jsonObject);
@@ -79,8 +80,34 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal("abc", buildingDatasetRelease.Sha256);
             Assert.Equal(14_400_000L, buildingDatasetRelease.RowCount);
             Assert.NotNull(buildingDatasetRelease.CreatedAt);
+            Assert.Equal(["quadkey=120213032/part-00129.csv.gz"], buildingDatasetRelease.SkippedFileNames);
 
             Core.xUnit.Query.SerializationCheck(buildingDatasetRelease);
+
+            // The copy constructor, member by member: a member added without its copy line fails here.
+            BuildingDatasetRelease buildingDatasetRelease_Copy = new(buildingDatasetRelease);
+            Assert.Equal(buildingDatasetRelease.Id, buildingDatasetRelease_Copy.Id);
+            Assert.Equal(buildingDatasetRelease.DatasetKey, buildingDatasetRelease_Copy.DatasetKey);
+            Assert.Equal(buildingDatasetRelease.Version, buildingDatasetRelease_Copy.Version);
+            Assert.Equal(buildingDatasetRelease.DownloadDate, buildingDatasetRelease_Copy.DownloadDate);
+            Assert.Equal(buildingDatasetRelease.SourceUrl, buildingDatasetRelease_Copy.SourceUrl);
+            Assert.Equal(buildingDatasetRelease.Licence, buildingDatasetRelease_Copy.Licence);
+            Assert.Equal(buildingDatasetRelease.SourceObservationDate, buildingDatasetRelease_Copy.SourceObservationDate);
+            Assert.Equal(buildingDatasetRelease.AttributeNames, buildingDatasetRelease_Copy.AttributeNames);
+            Assert.NotSame(buildingDatasetRelease.AttributeNames, buildingDatasetRelease_Copy.AttributeNames);
+            Assert.Equal(buildingDatasetRelease.FileName, buildingDatasetRelease_Copy.FileName);
+            Assert.Equal(buildingDatasetRelease.Sha256, buildingDatasetRelease_Copy.Sha256);
+            Assert.Equal(buildingDatasetRelease.RowCount, buildingDatasetRelease_Copy.RowCount);
+            Assert.Equal(buildingDatasetRelease.CreatedAt, buildingDatasetRelease_Copy.CreatedAt);
+            Assert.Equal(buildingDatasetRelease.SkippedFileNames, buildingDatasetRelease_Copy.SkippedFileNames);
+            Assert.NotSame(buildingDatasetRelease.SkippedFileNames, buildingDatasetRelease_Copy.SkippedFileNames);
+
+            // The primary constructor keeps the skipped files it is given, as its own list.
+            List<string> skippedFileNames = ["quadkey=120213032/part-00129.csv.gz"];
+            BuildingDatasetRelease buildingDatasetRelease_Primary = new("microsoft", "2026-02-03", DateTime.Today, skippedFileNames: skippedFileNames);
+            Assert.Equal(skippedFileNames, buildingDatasetRelease_Primary.SkippedFileNames);
+            Assert.NotSame(skippedFileNames, buildingDatasetRelease_Primary.SkippedFileNames);
+            Assert.Null(new BuildingDatasetRelease("microsoft", "2026-02-03", DateTime.Today).SkippedFileNames);
         }
     }
 }
