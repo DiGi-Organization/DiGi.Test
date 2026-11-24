@@ -76,7 +76,7 @@ namespace DiGi.GIS.PostgreSQL.Solar.xUnit
         }
 
         /// <summary>
-        /// Verifies that outcomes keep job order whatever ends each job: with a caster ceiling between the building alone and the building among its neighbours, the 0 m jobs are solved, the 50 m job is over the ceiling and a job with no receiving surface fails - in the order the jobs were given (DiGi.GIS.PostgreSQL#139).
+        /// Verifies that outcomes keep job order whatever ends each job: with a caster ceiling between the building alone and the building among its neighbours, the 0 m jobs are solved, the 50 m job is over the ceiling and a job with no receiving surface fails - in the order the jobs were given (DiGi.GIS.PostgreSQL#139); and that each outcome carries the caster triangle count of its shading model, the solved ones and the one over the ceiling alike (DiGi.GIS.PostgreSQL#167).
         /// </summary>
         [MediumFact]
         public void BuildingSolarRadiationSolveOutcomes_Order()
@@ -120,6 +120,11 @@ namespace DiGi.GIS.PostgreSQL.Solar.xUnit
             Assert.NotNull(buildingSolarRadiationSolveOutcomes[0].BuildingSolarRadiationResult);
             Assert.Null(buildingSolarRadiationSolveOutcomes[1].BuildingSolarRadiationResult);
             Assert.Null(buildingSolarRadiationSolveOutcomes[2].BuildingSolarRadiationResult);
+
+            // The counts the ceiling above was chosen by: the floor alone, the floor plus the neighbour's six faces.
+            Assert.Equal(2, buildingSolarRadiationSolveOutcomes[0].CasterTriangleCount);
+            Assert.Equal(14, buildingSolarRadiationSolveOutcomes[1].CasterTriangleCount);
+            Assert.Equal(2, buildingSolarRadiationSolveOutcomes[3].CasterTriangleCount);
         }
 
         /// <summary>
