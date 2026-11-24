@@ -87,22 +87,27 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         }
 
         /// <summary>
-        /// Verifies the tray wrapper end to end on the throwaway main test database: the options a fact built by hand go through the wrapper's own validation, the SHA-256 is computed from the source file rather than taken as given, the import stores the fixture, and the report the run writes carries the tallies and the register row id (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#38, DiGi-GIS.PostgreSQL#131).
+        /// Verifies the tray wrapper end to end on the throwaway test databases (the county part on Main, the open building tables on Storage): the options a fact built by hand go through the wrapper's own validation, the SHA-256 is computed from the source file rather than taken as given, the import stores the fixture, and the report the run writes carries the tallies and the register row id (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#38, DiGi-GIS.PostgreSQL#131).
         /// <para>The fact writes a crafted Microsoft line-delimited GeoJSON chunk with two features inside a scratch county square, exactly as the core task's own fact does, but drives it through <see cref="UIOpenBuildingImportTask"/> with <see cref="UIOpenBuildingImportTask.SkipOptionsDialog"/> set - the dialog needs a WPF application a test host has not got. The manager is built from the test configuration file, so the fact writes the throwaway database and never the host's. The scratch county, the register row, the partition, the crafted file and the report are all removed in <c>finally</c>. Medium test (a live database server).</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task UIOpenBuildingImportTask_EndToEnd()
         {
             (ConnectionData connectionData_Main, PostgreSQLConfigurationFile configurationFile, _) = TestConnectionData_Main_Test();
+            (ConnectionData connectionData_Storage, PostgreSQLConfigurationFile configurationFile_Storage, _) = TestConnectionData_Storage_Test();
 
             await using NpgsqlConnection? npgsqlConnection = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Main);
             Assert.NotNull(npgsqlConnection);
             await npgsqlConnection.OpenAsync();
 
+            await using NpgsqlConnection? npgsqlConnection_Storage = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Storage);
+            Assert.NotNull(npgsqlConnection_Storage);
+            await npgsqlConnection_Storage.OpenAsync();
+
             // The manager is built from the test configuration file: the fact writes the throwaway database,
             // never the host's (the task would otherwise read the host conf beside the assembly).
             GISPostgreSQLConverterManager gISPostgreSQLConverterManager = new();
-            Assert.True(gISPostgreSQLConverterManager.Add(new OpenBuildingPostgreSQLConverter(connectionData_Main), configurationFile));
+            Assert.True(gISPostgreSQLConverterManager.Add(new OpenBuildingPostgreSQLConverter(connectionData_Storage), configurationFile_Storage));
             Assert.True(gISPostgreSQLConverterManager.Add(new AdministrativeAreal2DPostgreSQLConverter(connectionData_Main), configurationFile));
 
             AdministrativeAreal2DPostgreSQLConverter? administrativeAreal2DPostgreSQLConverter = gISPostgreSQLConverterManager.GetPostgreSQLConverter<AdministrativeAreal2DPostgreSQLConverter>();
@@ -175,12 +180,12 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 Assert.Equal(2L, task.RowCount);
                 Assert.Equal(0L, task.FilteredCount);
                 Assert.Equal(0L, task.RejectionCount);
-                Assert.Equal(2L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection, "microsoft", [countyId.Value]));
+                Assert.Equal(2L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection_Storage, "microsoft", [countyId.Value]));
 
                 // The register row id reaches the caller through the task (DiGi.GIS.PostgreSQL#131) and matches
                 // the row the register now holds for this release.
                 Assert.NotNull(task.DatasetId);
-                Assert.Equal(await OpenBuildingRegisterIdAsync(npgsqlConnection, version), (long?)task.DatasetId);
+                Assert.Equal(await OpenBuildingRegisterIdAsync(npgsqlConnection_Storage, version), (long?)task.DatasetId);
 
                 // The digest stored on the options is the hash of the file that was imported.
                 string sha256 = System.Convert.ToHexStringLower(SHA256.HashData(await File.ReadAllBytesAsync(sourcePath)));
@@ -203,9 +208,9 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 // The release and its partition first, then the county part they were filed under.
                 if (countyId is not null)
                 {
-                    if (await OpenBuildingRegisterIdAsync(npgsqlConnection, version) is long)
+                    if (await OpenBuildingRegisterIdAsync(npgsqlConnection_Storage, version) is long)
                     {
-                        await using NpgsqlCommand npgsqlCommand_Delete = new($"DELETE FROM {PostgreSQL.Constants.TableName.BuildingDataset} WHERE dataset_key = 'microsoft' AND version = @version;", npgsqlConnection);
+                        await using NpgsqlCommand npgsqlCommand_Delete = new($"DELETE FROM {PostgreSQL.Constants.TableName.BuildingDataset} WHERE dataset_key = 'microsoft' AND version = @version;", npgsqlConnection_Storage);
                         npgsqlCommand_Delete.Parameters.AddWithValue("version", version);
                         await npgsqlCommand_Delete.ExecuteNonQueryAsync();
                     }
@@ -213,7 +218,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                     string? tableName = PostgreSQL.Query.OpenBuildingTableName("microsoft");
                     Assert.NotNull(tableName);
 
-                    await using NpgsqlCommand npgsqlCommand_Drop = new($"DROP TABLE IF EXISTS {tableName}_{countyId.Value};", npgsqlConnection);
+                    await using NpgsqlCommand npgsqlCommand_Drop = new($"DROP TABLE IF EXISTS {tableName}_{countyId.Value};", npgsqlConnection_Storage);
                     await npgsqlCommand_Drop.ExecuteNonQueryAsync();
 
                     await administrativeAreal2DPostgreSQLConverter.RemoveAsync([countyId.Value]);

@@ -59,17 +59,21 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         }
 
         /// <summary>
-        /// Verifies, on the throwaway main test database, that the size read reports the partition of an imported county part with exactly the size PostgreSQL gives that partition, and the GHS-OBAT table whole (DiGi.GIS.PostgreSQL#150).
+        /// Verifies, on the throwaway test databases (the scratch county on Main, every open building table on Storage), that the size read reports the partition of an imported county part with exactly the size PostgreSQL gives that partition, and the GHS-OBAT table whole (DiGi.GIS.PostgreSQL#150).
         /// <para>Two footprints are imported into a guid-based scratch county part of <c>eubucco_building_2d</c>. Scoped to that part, the read answers one row whose <c>TotalSize</c> equals <c>pg_total_relation_size</c> of the partition read independently - a differential check, not a plausibility range - and a second, absent county id adds nothing. The key is matched case-insensitively and reported canonical. Unscoped by dataset, the read adds exactly one GHS-OBAT row with a null county part. An unknown key answers null. The scratch county, its partition and the register row are removed in <c>finally</c>. Medium test (a live database server).</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task OpenBuilding_GetSizes_ReportsThePartitionOfTheScope()
         {
-            (ConnectionData connectionData_Main, _) = TestConnectionDatas();
+            (ConnectionData connectionData_Main, ConnectionData connectionData_Storage) = TestConnectionDatas();
 
             await using NpgsqlConnection? npgsqlConnection = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Main);
             Assert.NotNull(npgsqlConnection);
             await npgsqlConnection.OpenAsync();
+
+            await using NpgsqlConnection? npgsqlConnection_Storage = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Storage);
+            Assert.NotNull(npgsqlConnection_Storage);
+            await npgsqlConnection_Storage.OpenAsync();
 
             string reference = $"xunit-open-building-{Guid.NewGuid():N}";
             string code = $"TST{Guid.NewGuid():N}";
@@ -79,6 +83,8 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             try
             {
                 countyId = await OpenBuilding_ScratchCountyIdAsync(npgsqlConnection, reference, code);
+                Assert.True(await OpenBuildingPostgreSQLConverter.CreateTablesAsync(npgsqlConnection_Storage), "the open building tables could not be created on the throwaway Storage test database.");
+                List<AdministrativeAreal2D> counties = await OpenBuilding_CountiesAsync(npgsqlConnection);
 
                 Footprint[] footprints =
                 [
@@ -86,12 +92,13 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                     OpenBuilding_ScratchFootprint("xunit-size-2"),
                 ];
 
-                OpenBuildingPostgreSQLConverter openBuildingPostgreSQLConverter = new(connectionData_Main);
+                OpenBuildingPostgreSQLConverter openBuildingPostgreSQLConverter = new(connectionData_Storage);
 
                 OpenBuildingImportResult? openBuildingImportResult = await openBuildingPostgreSQLConverter.ImportAsync(
                     OpenBuilding_Stream(footprints, default),
                     new BuildingDatasetRelease("eubucco", version, DateTime.Today),
                     [countyId.Value],
+                    counties,
                     cancellationToken: default);
 
                 Assert.NotNull(openBuildingImportResult);
@@ -100,7 +107,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 // An id no county part can have (the scratch id is a fresh identity value, far below it).
                 int countyId_Absent = int.MaxValue;
 
-                List<OpenBuildingTableSizeResult>? openBuildingTableSizeResults = await OpenBuildingPostgreSQLConverter.GetSizesAsync(npgsqlConnection, " EUBUCCO ", [countyId.Value, countyId_Absent]);
+                List<OpenBuildingTableSizeResult>? openBuildingTableSizeResults = await OpenBuildingPostgreSQLConverter.GetSizesAsync(npgsqlConnection_Storage, " EUBUCCO ", [countyId.Value, countyId_Absent]);
                 Assert.NotNull(openBuildingTableSizeResults);
 
                 OpenBuildingTableSizeResult openBuildingTableSizeResult = Assert.Single(openBuildingTableSizeResults);
@@ -108,12 +115,12 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(Constants.TableName.EUBUCCO_Building2D, openBuildingTableSizeResult.TableName);
                 Assert.Equal(countyId.Value, openBuildingTableSizeResult.CountyId);
 
-                object? totalSize_Expected = await ScalarAsync(npgsqlConnection, $"SELECT pg_total_relation_size('{Constants.TableName.EUBUCCO_Building2D}_{countyId.Value}');");
+                object? totalSize_Expected = await ScalarAsync(npgsqlConnection_Storage, $"SELECT pg_total_relation_size('{Constants.TableName.EUBUCCO_Building2D}_{countyId.Value}');");
                 Assert.Equal(totalSize_Expected, openBuildingTableSizeResult.TotalSize);
                 Assert.True(openBuildingTableSizeResult.TotalSize > 0);
 
                 // Every dataset: the same partition row, plus the GHS-OBAT table whole and never filtered by county.
-                List<OpenBuildingTableSizeResult>? openBuildingTableSizeResults_All = await OpenBuildingPostgreSQLConverter.GetSizesAsync(npgsqlConnection, countyIds: [countyId.Value]);
+                List<OpenBuildingTableSizeResult>? openBuildingTableSizeResults_All = await OpenBuildingPostgreSQLConverter.GetSizesAsync(npgsqlConnection_Storage, countyIds: [countyId.Value]);
                 Assert.NotNull(openBuildingTableSizeResults_All);
                 Assert.Contains(openBuildingTableSizeResults_All, x => x.DatasetKey == "eubucco" && x.CountyId == countyId.Value);
 
@@ -123,11 +130,11 @@ namespace DiGi.GIS.PostgreSQL.xUnit
 
                 Assert.All(openBuildingTableSizeResults_All.Where(x => x.CountyId is not null), x => Assert.Equal(countyId.Value, x.CountyId));
 
-                Assert.Null(await OpenBuildingPostgreSQLConverter.GetSizesAsync(npgsqlConnection, "zzz"));
+                Assert.Null(await OpenBuildingPostgreSQLConverter.GetSizesAsync(npgsqlConnection_Storage, "zzz"));
             }
             finally
             {
-                await OpenBuilding_CleanupAsync(npgsqlConnection, [reference], [version], countyId);
+                await OpenBuilding_CleanupAsync(npgsqlConnection, npgsqlConnection_Storage, [reference], [version], countyId);
             }
         }
     }

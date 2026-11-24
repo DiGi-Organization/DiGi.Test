@@ -38,6 +38,40 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         }
 
         /// <summary>
+        /// The configuration name of the throwaway storage test database, kept in the git-ignored <c>DiGi.Test/user files/</c>.
+        /// </summary>
+        private const string fileName_PostgreSQL_Storage_Test = "GIS_PostgreSQL_Storage_Test.conf";
+
+        /// <summary>
+        /// Reads the throwaway storage test database configuration from <c>DiGi.Test/user files/</c>, skipping the calling fact when it is missing, names the host's storage or main database, names the throwaway main database or does not answer.
+        /// <para>The open building tables live on the Storage database (DiGi-Organization/DiGi.GIS.PostgreSQL#168), so the facts that write them need this one beside the main test database; the same guards as <see cref="TestConnectionData_Main_Test"/> apply.</para>
+        /// </summary>
+        /// <returns>The test connection data, its parsed configuration file, and the path it was read from.</returns>
+        private static (ConnectionData ConnectionData, PostgreSQLConfigurationFile PostgreSQLConfigurationFile, string Path) TestConnectionData_Storage_Test()
+        {
+            string? directory = Core.xUnit.Query.UserFilesDirectory(Assembly.GetExecutingAssembly());
+            Skip.If(directory is null, "The DiGi.Test/user files directory could not be resolved.");
+
+            string path = Path.Combine(directory!, fileName_PostgreSQL_Storage_Test);
+            Skip.If(!File.Exists(path), $"{fileName_PostgreSQL_Storage_Test} is needed in DiGi.Test/user files. Point it at a throwaway database - never a host's.");
+
+            PostgreSQLConfigurationFile? postgreSQLConfigurationFile = DiGi.PostgreSQL.Create.PostgreSQLConfigurationFile(path);
+            ConnectionData? connectionData = DiGi.PostgreSQL.Create.ConnectionData(postgreSQLConfigurationFile);
+            Skip.If(connectionData is null, $"{fileName_PostgreSQL_Storage_Test} is incomplete - it names no database.");
+
+            foreach (string fileName in new string[] { PostgreSQL.Constants.FileName.PostgreSQL_Main, PostgreSQL.Constants.FileName.PostgreSQL_Storage })
+            {
+                Skip.If(IsSameDatabase(connectionData, TestConnectionData(fileName)), $"{fileName_PostgreSQL_Storage_Test} names the database of {fileName}; the facts write what they test and refuse to run there.");
+            }
+
+            Skip.If(IsSameDatabase(connectionData, TestConnectionData(fileName_PostgreSQL_Main_Test)), $"{fileName_PostgreSQL_Storage_Test} names the database of {fileName_PostgreSQL_Main_Test}.");
+
+            Skip.IfNot(DiGi.PostgreSQL.Query.IsAvailable(connectionData!), "The PostgreSQL storage test database is not reachable.");
+
+            return (connectionData!, postgreSQLConfigurationFile!, path);
+        }
+
+        /// <summary>
         /// Reads a configuration file from <c>DiGi.Test/user files/</c>.
         /// </summary>
         /// <param name="fileName">The name of the configuration file.</param>

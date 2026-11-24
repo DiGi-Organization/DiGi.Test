@@ -15,17 +15,21 @@ namespace DiGi.GIS.PostgreSQL.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Verifies, on the throwaway main test database, the import task itself end to end, once scoped by county list and once by bounding box (DiGi.GIS.PostgreSQL#125).
+        /// Verifies, on the throwaway test databases (the scratch county on Main, every open building table on Storage), the import task itself end to end, once scoped by county list and once by bounding box (DiGi.GIS.PostgreSQL#125).
         /// <para>The fact writes a crafted Microsoft line-delimited GeoJSON chunk with two features inside the scratch county square, so the task runs its real path: option validation, the reader it dispatches for the dataset, the sibling widening of a named county, the SQL bounding-box prefilter that resolves a pilot box to its counties, the reprojection with the run's transformation, filing, binary COPY and the register - both runs storing two rows with <c>primary_source = 'microsoft'</c>, the second run replacing the first's snapshot in the same partition, and each run keeping its own register row whose id the task surfaces as <see cref="PostgreSQLOpenBuildingImportTask.DatasetId"/> (DiGi.GIS.PostgreSQL#131). The manager is built from the test configuration file, so the fact writes the throwaway database and never the host's. The scratch county, both partitions, both register rows and the crafted file are removed in <c>finally</c>. Medium test (a live database server).</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task PostgreSQLOpenBuildingImportTask_BothScopes()
         {
-            (ConnectionData connectionData_Main, _) = TestConnectionDatas();
+            (ConnectionData connectionData_Main, ConnectionData connectionData_Storage) = TestConnectionDatas();
 
             await using NpgsqlConnection? npgsqlConnection = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Main);
             Assert.NotNull(npgsqlConnection);
             await npgsqlConnection.OpenAsync();
+
+            await using NpgsqlConnection? npgsqlConnection_Storage = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Storage);
+            Assert.NotNull(npgsqlConnection_Storage);
+            await npgsqlConnection_Storage.OpenAsync();
 
             string reference = $"xunit-open-building-{Guid.NewGuid():N}";
             string code = $"TST{Guid.NewGuid():N}";
@@ -37,6 +41,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             try
             {
                 countyId = await OpenBuilding_ScratchCountyIdAsync(npgsqlConnection, reference, code);
+                Assert.True(await OpenBuildingPostgreSQLConverter.CreateTablesAsync(npgsqlConnection_Storage), "the open building tables could not be created on the throwaway Storage test database.");
 
                 // A crafted Microsoft chunk: two features around the EPSG:4326 position of the scratch centre,
                 // one line-delimited GeoJSON feature per line, invariant-culture coordinates.
@@ -68,8 +73,11 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 PostgreSQLConfigurationFile? configurationFile = DiGi.PostgreSQL.Create.PostgreSQLConfigurationFile(Path.Combine(directory!, fileName_PostgreSQL_Main_Test));
                 Assert.NotNull(configurationFile);
 
+                PostgreSQLConfigurationFile? configurationFile_Storage = DiGi.PostgreSQL.Create.PostgreSQLConfigurationFile(Path.Combine(directory!, fileName_PostgreSQL_Storage_Test));
+                Assert.NotNull(configurationFile_Storage);
+
                 GISPostgreSQLConverterManager gISPostgreSQLConverterManager = new();
-                Assert.True(gISPostgreSQLConverterManager.Add(new OpenBuildingPostgreSQLConverter(connectionData_Main), configurationFile));
+                Assert.True(gISPostgreSQLConverterManager.Add(new OpenBuildingPostgreSQLConverter(connectionData_Storage), configurationFile_Storage));
                 Assert.True(gISPostgreSQLConverterManager.Add(new AdministrativeAreal2DPostgreSQLConverter(connectionData_Main), configurationFile));
 
                 // Run 1: county-list scope. The task widens the named part to its siblings, opens the Microsoft
@@ -98,7 +106,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(2L, postgreSQLOpenBuildingImportTask_County.RowCount);
                 Assert.Equal(0L, postgreSQLOpenBuildingImportTask_County.FilteredCount);
                 Assert.Equal(0L, postgreSQLOpenBuildingImportTask_County.RejectionCount);
-                Assert.Equal(2L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection, "microsoft", [countyId.Value]));
+                Assert.Equal(2L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection_Storage, "microsoft", [countyId.Value]));
 
                 // The result carries the register row id (DiGi.GIS.PostgreSQL#131): null before the run,
                 // and after it equal to the row the register holds for this release.
@@ -127,7 +135,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(2L, postgreSQLOpenBuildingImportTask_Box.RowCount);
                 Assert.Equal(0L, postgreSQLOpenBuildingImportTask_Box.FilteredCount);
                 Assert.Equal(0L, postgreSQLOpenBuildingImportTask_Box.RejectionCount);
-                Assert.Equal(2L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection, "microsoft", [countyId.Value]));
+                Assert.Equal(2L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection_Storage, "microsoft", [countyId.Value]));
 
                 // The second run registers its own release and answers its own row id (DiGi.GIS.PostgreSQL#131).
                 Assert.NotNull(postgreSQLOpenBuildingImportTask_Box.DatasetId);
@@ -138,18 +146,18 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 // keep their own register row.
                 string commandText = $@"SELECT count(*) FROM {Constants.TableName.Microsoft_Building2D}
                     WHERE county_id = {countyId.Value} AND primary_source = 'register';";
-                Assert.Equal(0L, await ScalarAsync(npgsqlConnection, commandText));
+                Assert.Equal(0L, await ScalarAsync(npgsqlConnection_Storage, commandText));
 
                 commandText = $@"SELECT count(*) FROM {Constants.TableName.Microsoft_Building2D}
                     WHERE county_id = {countyId.Value} AND primary_source = 'microsoft';";
-                Assert.Equal(2L, await ScalarAsync(npgsqlConnection, commandText));
+                Assert.Equal(2L, await ScalarAsync(npgsqlConnection_Storage, commandText));
 
-                Assert.Equal(1L, await OpenBuildingPostgreSQLConverter.GetReleaseCountAsync(npgsqlConnection, "microsoft", version_County, DateTime.Today));
-                Assert.Equal(1L, await OpenBuildingPostgreSQLConverter.GetReleaseCountAsync(npgsqlConnection, "microsoft", version_Box, DateTime.Today));
+                Assert.Equal(1L, await OpenBuildingPostgreSQLConverter.GetReleaseCountAsync(npgsqlConnection_Storage, "microsoft", version_County, DateTime.Today));
+                Assert.Equal(1L, await OpenBuildingPostgreSQLConverter.GetReleaseCountAsync(npgsqlConnection_Storage, "microsoft", version_Box, DateTime.Today));
             }
             finally
             {
-                await OpenBuilding_CleanupAsync(npgsqlConnection, [reference], [version_County, version_Box], countyId, "microsoft");
+                await OpenBuilding_CleanupAsync(npgsqlConnection, npgsqlConnection_Storage, [reference], [version_County, version_Box], countyId, "microsoft");
 
                 if (File.Exists(sourcePath))
                 {
@@ -162,7 +170,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             // created with a unique version, so the key resolves to their row.
             async Task<long?> RegisterIdAsync(string version)
             {
-                object? result = await ScalarAsync(npgsqlConnection, $"SELECT id FROM {Constants.TableName.BuildingDataset} WHERE dataset_key = 'microsoft' AND version = '{version}' AND download_date = DATE '{DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}';");
+                object? result = await ScalarAsync(npgsqlConnection_Storage, $"SELECT id FROM {Constants.TableName.BuildingDataset} WHERE dataset_key = 'microsoft' AND version = '{version}' AND download_date = DATE '{DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}';");
                 return result is null || result is DBNull ? null : System.Convert.ToInt64(result, CultureInfo.CurrentCulture);
             }
         }

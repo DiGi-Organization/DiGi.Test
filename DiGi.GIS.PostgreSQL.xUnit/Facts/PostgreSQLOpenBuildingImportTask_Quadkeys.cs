@@ -14,17 +14,21 @@ namespace DiGi.GIS.PostgreSQL.xUnit
     public partial class Facts
     {
         /// <summary>
-        /// Verifies, on the throwaway main test database, that one Microsoft run over two chunks published under different quadkeys stores every footprint once, under its own chunk's quadkey (DiGi-Organization/DiGi.GIS.PostgreSQL#132).
+        /// Verifies, on the throwaway test databases (the scratch county on Main, every open building table on Storage), that one Microsoft run over two chunks published under different quadkeys stores every footprint once, under its own chunk's quadkey (DiGi-Organization/DiGi.GIS.PostgreSQL#132).
         /// <para>Before #132 the run handed a single typed quadkey to every file, and the reader restarts the feature index per file, so the two chunks' <c>quadkey:index</c> source identifiers collided and every row's provenance named one chunk. The fact writes two crafted chunks of two features each into <c>quadkey=&lt;digits&gt;</c> folders, runs the task with no typed quadkey and asserts four rows, four distinct source identifiers - two per quadkey - and the provenance quadkey of each row. A second run with two files sharing a typed quadkey is refused before anything is written. The scratch county, its partition, the register row and the crafted files are removed in <c>finally</c>. Medium test (a live database server).</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task PostgreSQLOpenBuildingImportTask_Quadkeys()
         {
-            (ConnectionData connectionData_Main, _) = TestConnectionDatas();
+            (ConnectionData connectionData_Main, ConnectionData connectionData_Storage) = TestConnectionDatas();
 
             await using NpgsqlConnection? npgsqlConnection = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Main);
             Assert.NotNull(npgsqlConnection);
             await npgsqlConnection.OpenAsync();
+
+            await using NpgsqlConnection? npgsqlConnection_Storage = DiGi.PostgreSQL.Create.NpgsqlConnection(connectionData_Storage);
+            Assert.NotNull(npgsqlConnection_Storage);
+            await npgsqlConnection_Storage.OpenAsync();
 
             string reference = $"xunit-open-building-{Guid.NewGuid():N}";
             string code = $"TST{Guid.NewGuid():N}";
@@ -38,6 +42,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             try
             {
                 countyId = await OpenBuilding_ScratchCountyIdAsync(npgsqlConnection, reference, code);
+                Assert.True(await OpenBuildingPostgreSQLConverter.CreateTablesAsync(npgsqlConnection_Storage), "the open building tables could not be created on the throwaway Storage test database.");
 
                 Point3D? point3D = GIS.Convert.ToEPSG4326(new Point2D(openBuilding_ScratchX, openBuilding_ScratchY));
                 Assert.NotNull(point3D);
@@ -68,8 +73,11 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 PostgreSQLConfigurationFile? configurationFile = DiGi.PostgreSQL.Create.PostgreSQLConfigurationFile(Path.Combine(directory!, fileName_PostgreSQL_Main_Test));
                 Assert.NotNull(configurationFile);
 
+                PostgreSQLConfigurationFile? configurationFile_Storage = DiGi.PostgreSQL.Create.PostgreSQLConfigurationFile(Path.Combine(directory!, fileName_PostgreSQL_Storage_Test));
+                Assert.NotNull(configurationFile_Storage);
+
                 GISPostgreSQLConverterManager gISPostgreSQLConverterManager = new();
-                Assert.True(gISPostgreSQLConverterManager.Add(new OpenBuildingPostgreSQLConverter(connectionData_Main), configurationFile));
+                Assert.True(gISPostgreSQLConverterManager.Add(new OpenBuildingPostgreSQLConverter(connectionData_Storage), configurationFile_Storage));
                 Assert.True(gISPostgreSQLConverterManager.Add(new AdministrativeAreal2DPostgreSQLConverter(connectionData_Main), configurationFile));
 
                 // One run, two chunks, no typed quadkey: each file is read under its own folder's quadkey.
@@ -91,9 +99,9 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(0L, postgreSQLOpenBuildingImportTask.RejectionCount);
 
                 string tableName = Constants.TableName.Microsoft_Building2D;
-                Assert.Equal(4L, await ScalarAsync(npgsqlConnection, $"SELECT count(DISTINCT source_id) FROM {tableName} WHERE county_id = {countyId.Value};"));
-                Assert.Equal(2L, await ScalarAsync(npgsqlConnection, $"SELECT count(*) FROM {tableName} WHERE county_id = {countyId.Value} AND source_id LIKE '0321001:%' AND provenance->>'quadkey' = '0321001';"));
-                Assert.Equal(2L, await ScalarAsync(npgsqlConnection, $"SELECT count(*) FROM {tableName} WHERE county_id = {countyId.Value} AND source_id LIKE '0321002:%' AND provenance->>'quadkey' = '0321002';"));
+                Assert.Equal(4L, await ScalarAsync(npgsqlConnection_Storage, $"SELECT count(DISTINCT source_id) FROM {tableName} WHERE county_id = {countyId.Value};"));
+                Assert.Equal(2L, await ScalarAsync(npgsqlConnection_Storage, $"SELECT count(*) FROM {tableName} WHERE county_id = {countyId.Value} AND source_id LIKE '0321001:%' AND provenance->>'quadkey' = '0321001';"));
+                Assert.Equal(2L, await ScalarAsync(npgsqlConnection_Storage, $"SELECT count(*) FROM {tableName} WHERE county_id = {countyId.Value} AND source_id LIKE '0321002:%' AND provenance->>'quadkey' = '0321002';"));
 
                 // Two files under one typed quadkey (neither in a quadkey folder) would collide: the run is
                 // refused before the partition is touched, so the four rows above survive it.
@@ -121,12 +129,12 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 await taskCompletionSource.Task;
 
                 Assert.False(postgreSQLOpenBuildingImportTask_Refused.IsSucceeded);
-                Assert.Equal(4L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection, "microsoft", [countyId.Value]));
-                Assert.Equal(0L, await OpenBuildingPostgreSQLConverter.GetReleaseCountAsync(npgsqlConnection, "microsoft", version_Refused, DateTime.Today));
+                Assert.Equal(4L, await OpenBuildingPostgreSQLConverter.GetRowCountAsync(npgsqlConnection_Storage, "microsoft", [countyId.Value]));
+                Assert.Equal(0L, await OpenBuildingPostgreSQLConverter.GetReleaseCountAsync(npgsqlConnection_Storage, "microsoft", version_Refused, DateTime.Today));
             }
             finally
             {
-                await OpenBuilding_CleanupAsync(npgsqlConnection, [reference], [version, version_Refused], countyId, "microsoft");
+                await OpenBuilding_CleanupAsync(npgsqlConnection, npgsqlConnection_Storage, [reference], [version, version_Refused], countyId, "microsoft");
 
                 if (Directory.Exists(directory_Root))
                 {
