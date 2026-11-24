@@ -94,6 +94,14 @@
     <Reference Include="DiGi.GIS.IO">
       <HintPath>..\..\DiGi.GIS.IO\bin\DiGi.GIS.IO.dll</HintPath>
     </Reference>
+    <!-- DiGi.OSM is declared on this host because PostgreSQLOpenBuildingImportTask.Footprints carries a
+         List<BuildingReadResult> in its signature (DiGi.GIS.PostgreSQL#169), so a fact calling it resolves
+         the type at compile and at run time. The HintPath does not flow NuGet assets: the facts build an
+         empty list and never read a PBF, so OsmSharp (what DiGi.OSM reads PBF through) is not required here
+         (Coding - Host Dependencies.md). -->
+    <Reference Include="DiGi.OSM">
+      <HintPath>..\..\DiGi.OSM\bin\DiGi.OSM.dll</HintPath>
+    </Reference>
     <Reference Include="DiGi.PostgreSQL">
       <HintPath>..\..\DiGi.PostgreSQL\bin\DiGi.PostgreSQL.dll</HintPath>
     </Reference>
