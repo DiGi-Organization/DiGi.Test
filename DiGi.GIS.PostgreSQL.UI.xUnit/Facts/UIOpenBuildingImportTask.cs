@@ -200,8 +200,17 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 Assert.Contains($"SHA-256: {sha256}", lines);
                 Assert.Contains("Rows written: 2", lines);
                 Assert.Contains("Out of scope (filtered): 0", lines);
+                Assert.Contains("Rejected before the database: 0", lines);
                 Assert.Contains($"Register row id: {task.DatasetId}", lines);
                 Assert.Contains("Succeeded: True", lines);
+
+                // Nothing was rejected, so the per-reason breakdown is absent: zeros are omitted rather than
+                // listed as seven zero lines (DiGi-Organization/DiGi.GIS.PostgreSQL#172).
+                Assert.Empty(task.RejectionCounts);
+                foreach (PostgreSQL.Enums.UpdateRejectionReason updateRejectionReason in System.Enum.GetValues<PostgreSQL.Enums.UpdateRejectionReason>())
+                {
+                    Assert.DoesNotContain(lines, x => x.StartsWith($"  {Core.Query.Description(updateRejectionReason)}:", StringComparison.Ordinal));
+                }
             }
             finally
             {

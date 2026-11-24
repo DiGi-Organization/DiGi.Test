@@ -26,7 +26,7 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         /// <summary>
         /// Verifies that the open building import stores, counts, samples and registers the same at any degree of parallelism (DiGi.GIS.PostgreSQL#170): the conversion runs on several workers, and the batches are consumed in read order by one writer.
         /// <para>Two kinds of input, each imported at degree one and at degree four into the throwaway Storage database: a synthetic stream of <see cref="count_Parallel_Footprints"/> footprints - EPSG:4326 and EPSG:3035 squares across Poland, multi-face collections, null footprints and footprints outside the country - and the committed sample of every reader (DBSM, EUBUCCO, Overture, Microsoft, GHS-OBAT as CSV and GeoPackage, OSM PBF) read through the task's own <see cref="PostgreSQLOpenBuildingImportTask.Footprints"/>. The counties are a grid of sixteen 200 km squares over Poland, held in memory as the task would hand them over, with every other square in scope, so the runs file, filter and reject.</para>
-        /// <para>Per input the two runs agree on the rows stored (county, source identifier and object, compared as sorted lists), the stored, out-of-scope and rejected counts, the capped rejection sample in order, and the register's attribute list. The scratch partitions and register rows are dropped in <c>finally</c>. Medium test (a live database server).</para>
+        /// <para>Per input the two runs agree on the rows stored (county, source identifier and object, compared as sorted lists), the stored, out-of-scope and rejected counts, the capped rejection sample in order, the per-rejection-reason tally (DiGi.GIS.PostgreSQL#172), and the register's attribute list. The scratch partitions and register rows are dropped in <c>finally</c>. Medium test (a live database server).</para>
         /// </summary>
         [MediumSkippableFact]
         public async Task OpenBuildingImport_ParallelParity()
@@ -85,6 +85,12 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(rows_1, rows_4);
                 Assert.Equal(attributeNames_1, attributeNames_4);
                 Assert.Equal(result_1.Rejections.Select(x => (x.Reference, x.UpdateRejectionReason)), result_4.Rejections.Select(x => (x.Reference, x.UpdateRejectionReason)));
+
+                // The tally is kept by the consuming writer alone, so it cannot differ by degree either;
+                // sorted by reason, because the enumeration order of the two dictionaries is not the contract.
+                Assert.Equal(
+                    result_1.RejectionCounts.OrderBy(x => x.Key).Select(x => (x.Key, x.Value)),
+                    result_4.RejectionCounts.OrderBy(x => x.Key).Select(x => (x.Key, x.Value)));
             }
 
             try

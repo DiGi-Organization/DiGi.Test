@@ -95,6 +95,101 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         }
 
         /// <summary>
+        /// Verifies the three non-row outcomes the import loop's per-rejection-reason tally counts, so the tally itself is built on reasons the pipeline really answers with (DiGi.GIS.PostgreSQL#172).
+        /// <para>Two county parts are loaded - the scratch square and one a hundred kilometres away - and only the scratch square is in scope, so the fact tells the channels apart: a ring of three ordinates (two distinct points, closed by the NetTopologySuite conversion) the reprojection refuses as a whole is <see cref="UpdateRejectionReason.GeometryRejected"/>; a footprint inside a loaded part the scope list does not hold is filtered with no reason at all; a footprint no loaded part reaches is <see cref="UpdateRejectionReason.CountyUnresolved"/> rather than a filter, because nothing was out of scope - it lies outside the digitised territory the run was given. The fact needs no database.</para>
+        /// </summary>
+        [Fact]
+        public void OpenBuildingImport_CreateRow_RejectionReasons()
+        {
+            AdministrativeAreal2D administrativeAreal2D_A = AdministrativeAreal2D_Square(10, "9902", 629950, 484950, 100);
+            AdministrativeAreal2D administrativeAreal2D_B = AdministrativeAreal2D_Square(20, "9902", 699950, 499950, 100);
+            List<AdministrativeAreal2D> administrativeAreal2Ds = [administrativeAreal2D_A, administrativeAreal2D_B];
+
+            Dictionary<int, IPolygonal2D> polygonal2Ds_ByCountyId = administrativeAreal2Ds.Polygonal2DsByCountyId();
+            Dictionary<int, CountyFilingGeometry> countyFilingGeometries_ByCountyId = polygonal2Ds_ByCountyId.CountyFilingGeometriesByCountyId();
+            Dictionary<int, BoundingBox2D> boundingBox2Ds_ByCountyId = [];
+
+            foreach (KeyValuePair<int, PolygonalFace2D> pair in administrativeAreal2Ds.PolygonalFace2DsById())
+            {
+                if (pair.Value.GetBoundingBox() is BoundingBox2D boundingBox2D)
+                {
+                    boundingBox2Ds_ByCountyId[pair.Key] = boundingBox2D;
+                }
+            }
+
+            ICoordinateTransformation? coordinateTransformation = GIS.Create.EPSG2180TransformationFromEPSG4326();
+            Assert.NotNull(coordinateTransformation);
+
+            HashSet<int> countyIds_Scope = [10];
+
+            // The reprojection's refusal of a ring shorter than four ordinates: the whole footprint is
+            // rejected, never half-transformed and never filed.
+            Footprint? footprint_ShortRing = OpenBuilding_ShortRingFootprint("xunit-short-ring");
+            Assert.NotNull(footprint_ShortRing);
+
+            OpenBuildingRow? openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_ShortRing, coordinateTransformation, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out UpdateRejectionReason? updateRejectionReason);
+            Assert.Null(openBuildingRow);
+            Assert.Equal(UpdateRejectionReason.GeometryRejected, updateRejectionReason);
+
+            // Inside part B, which is loaded but not in scope: filtered with no reason - the row belongs
+            // to another run and nothing was lost.
+            Point3D? point3D_OutOfScope = GIS.Convert.ToEPSG4326(new Point2D(700000, 500000));
+            Assert.NotNull(point3D_OutOfScope);
+
+            Footprint? footprint_OutOfScope = OpenBuilding_Footprint("xunit-out-of-scope", point3D_OutOfScope.X, point3D_OutOfScope.Y, 0.00005);
+            Assert.NotNull(footprint_OutOfScope);
+
+            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_OutOfScope, coordinateTransformation, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
+            Assert.Null(openBuildingRow);
+            Assert.Null(updateRejectionReason);
+
+            // Reprojectable and inside the Polish domain, yet between the two loaded parts: no county
+            // envelope reaches it, so Query.OpenBuildingCountyId answers rejected = true.
+            Point3D? point3D_Unresolved = GIS.Convert.ToEPSG4326(new Point2D(660000, 490000));
+            Assert.NotNull(point3D_Unresolved);
+
+            Footprint? footprint_Unresolved = OpenBuilding_Footprint("xunit-unresolved", point3D_Unresolved.X, point3D_Unresolved.Y, 0.00005);
+            Assert.NotNull(footprint_Unresolved);
+
+            openBuildingRow = OpenBuildingPostgreSQLConverter.CreateRow(footprint_Unresolved, coordinateTransformation, polygonal2Ds_ByCountyId, countyFilingGeometries_ByCountyId, boundingBox2Ds_ByCountyId, null, countyIds_Scope, null, Core.Constants.Tolerance.MacroDistance, out updateRejectionReason);
+            Assert.Null(openBuildingRow);
+            Assert.Equal(UpdateRejectionReason.CountyUnresolved, updateRejectionReason);
+        }
+
+        /// <summary>
+        /// Builds the degenerate footprint a ring shorter than four ordinates rejects (DiGi.GIS.PostgreSQL#172): two distinct points of the scratch centre in EPSG:4326, which the NetTopologySuite conversion would close into a ring of three ordinates.
+        /// </summary>
+        /// <param name="sourceId">The identifier the source dataset gives the footprint.</param>
+        /// <returns>The footprint - carrying the polygonal face when the public factory builds one from the degenerate ring, the raw polygon otherwise; both reach the same rejection.</returns>
+        private static Footprint? OpenBuilding_ShortRingFootprint(string sourceId)
+        {
+            Point3D? point3D = GIS.Convert.ToEPSG4326(new Point2D(630000, 485000));
+            Assert.NotNull(point3D);
+
+            Polygon2D polygon2D = new(
+            [
+                new Point2D(point3D.X, point3D.Y),
+                new Point2D(point3D.X + 0.00001, point3D.Y),
+            ]);
+
+            // The face factory may refuse a ring of two points; the raw polygon reaches the same
+            // Geometry Rejected through Reproject's default branch, so either construction is the fixture.
+            IGeometry2D? geometry = Geometry.Planar.Create.PolygonalFace2D(polygon2D);
+            if (geometry is null)
+            {
+                geometry = polygon2D;
+            }
+
+            JsonObject attributes = [];
+            attributes["height"] = 12.5;
+
+            JsonObject provenance = [];
+            provenance["geometry_source"] = "gov-poland-xunit";
+
+            return new Footprint(sourceId, 4326, geometry, attributes, provenance, null);
+        }
+
+        /// <summary>
         /// Builds one footprint in EPSG:4326: a small square around a longitude and latitude, with the attribute bag and provenance the committed EUBUCCO sample carries.
         /// </summary>
         /// <param name="sourceId">The identifier the source dataset gives the footprint.</param>
