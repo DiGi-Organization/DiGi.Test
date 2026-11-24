@@ -340,7 +340,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                     continue;
                 }
 
-                if (child is FrameworkElement frameworkElement && frameworkElement.Visibility == Visibility.Visible)
+                if (child is FrameworkElement frameworkElement && SolarRadiationOptionsWindowIsVisible(frameworkElement, root))
                 {
                     string name = string.IsNullOrEmpty(frameworkElement.Name) ? frameworkElement.GetType().Name : frameworkElement.Name;
 
@@ -372,6 +372,33 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
 
                 SolarRadiationOptionsWindowLayoutFailures(typeName, size, root, child, failures);
             }
+        }
+
+        /// <summary>
+        /// Reports whether an element is actually rendered: visible itself, and visible all the way up to the content being laid out. A control inside a collapsed form keeps its own visible flag while having no size, and that is the form being hidden rather than the control being clipped.
+        /// </summary>
+        /// <param name="frameworkElement">The element to test.</param>
+        /// <param name="root">The content the layout is measured on, where the walk stops.</param>
+        /// <returns>true when every element from the content down to the element is visible.</returns>
+        private static bool SolarRadiationOptionsWindowIsVisible(FrameworkElement frameworkElement, FrameworkElement root)
+        {
+            DependencyObject? dependencyObject = frameworkElement;
+            while (dependencyObject is FrameworkElement element)
+            {
+                if (element.Visibility != Visibility.Visible)
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(element, root))
+                {
+                    return true;
+                }
+
+                dependencyObject = VisualTreeHelper.GetParent(element);
+            }
+
+            return true;
         }
 
         private static Exception? RunSTA(Action action)
