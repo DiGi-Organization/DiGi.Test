@@ -73,6 +73,8 @@ namespace DiGi.GIS.WebAPI.xUnit
                 (typeof(OpenBuildingController), nameof(OpenBuildingController.GetDatasetsAsync), "commandTimeout", 0, false),
                 (typeof(OpenBuildingController), nameof(OpenBuildingController.GetSummariesByCountyIdsAsync), "commandTimeout", 0, false),
                 (typeof(OpenBuildingController), nameof(OpenBuildingController.GetSizesAsync), "commandTimeout", 0, false),
+                (typeof(OpenBuildingController), nameof(OpenBuildingController.GetMatchSummariesAsync), "commandTimeout", 0, false),
+                (typeof(OpenBuildingController), nameof(OpenBuildingController.GetMatchSummariesByCountyIdsAsync), "commandTimeout", 0, false),
                 (typeof(OrtoAreaController), nameof(OrtoAreaController.ValidationSummaryAsync), "commandTimeout", 0, false),
                 (typeof(UnitController), nameof(UnitController.GetStatisticalDataCollectionAsync), "commandTimeout", 0, false),
                 (typeof(OrtoDatasController), nameof(OrtoDatasController.GetQueueSummariesByCountyIdsAsync), "commandTimeout", 0, false),
