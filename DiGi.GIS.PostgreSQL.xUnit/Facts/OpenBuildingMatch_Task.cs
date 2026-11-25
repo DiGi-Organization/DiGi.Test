@@ -139,6 +139,11 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.Equal(1L, total_EUBUCCO.OmissionCount);
                 Assert.Equal(1L, total_EUBUCCO.CommissionCount);
                 Assert.Equal(0.9, total_EUBUCCO.DxMean!.Value, 6);
+                Assert.Equal(0.9, total_EUBUCCO.PositionRms!.Value, 6);
+                Assert.Equal(2.0 / 3.0, total_EUBUCCO.Completeness!.Value, 9);
+                Assert.Equal(0.75, total_EUBUCCO.Correctness!.Value, 9);
+                Assert.NotNull(total_EUBUCCO.AreaCompleteness);
+                Assert.NotNull(total_EUBUCCO.SizeClasses);
                 Assert.Equal(0.0, total_EUBUCCO.DyMean!.Value, 6);
                 Assert.NotNull(total_EUBUCCO.OpenBuildingMatchParameters);
                 Assert.NotNull(total_EUBUCCO.ComputedAt);
@@ -246,6 +251,29 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Close(expected.DxMedian, actual.DxMedian);
                 Close(expected.DyMean, actual.DyMean);
                 Close(expected.DyMedian, actual.DyMedian);
+                Close(expected.DxRms, actual.DxRms);
+                Close(expected.DyRms, actual.DyRms);
+                Close(expected.PositionRms, actual.PositionRms);
+                Close(expected.Completeness, actual.Completeness);
+                Close(expected.Correctness, actual.Correctness);
+                Close(expected.Quality, actual.Quality);
+                Close(expected.AreaCompleteness, actual.AreaCompleteness);
+                Close(expected.AreaCorrectness, actual.AreaCorrectness);
+
+                Assert.Equal(expected.SizeClasses is null, actual.SizeClasses is null);
+                if (expected.SizeClasses is not null && actual.SizeClasses is not null)
+                {
+                    Assert.Equal(expected.SizeClasses.Count, actual.SizeClasses.Count);
+                    for (int j = 0; j < expected.SizeClasses.Count; j++)
+                    {
+                        Assert.Equal(expected.SizeClasses[j].MinArea, actual.SizeClasses[j].MinArea);
+                        Assert.Equal(expected.SizeClasses[j].MaxArea, actual.SizeClasses[j].MaxArea);
+                        Assert.Equal(expected.SizeClasses[j].BDOTCount, actual.SizeClasses[j].BDOTCount);
+                        Assert.Equal(expected.SizeClasses[j].OmissionCount, actual.SizeClasses[j].OmissionCount);
+                        Assert.Equal(expected.SizeClasses[j].DatasetCount, actual.SizeClasses[j].DatasetCount);
+                        Assert.Equal(expected.SizeClasses[j].CommissionCount, actual.SizeClasses[j].CommissionCount);
+                    }
+                }
             }
         }
 

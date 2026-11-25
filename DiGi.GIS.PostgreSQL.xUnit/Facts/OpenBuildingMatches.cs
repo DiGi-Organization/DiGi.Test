@@ -356,6 +356,59 @@ namespace DiGi.GIS.PostgreSQL.xUnit
         }
 
         /// <summary>
+        /// Verifies the areas the link rows carry (DiGi.GIS.PostgreSQL#127): each footprint's own area, and the part of it the other side covers - every overlapping footprint counted, linked or not, and several partners unioned so an overlap between them is not counted twice.
+        /// <para>Two dataset footprints of 80 and 60 m2 overlapping each other by 40 m2 on one 100 m2 register building cover it whole, not 140 m2. A dataset footprint overlapping a register building by 25 % of either - below the minimum share, so an omission and a commission - still reports the 25 m2 it covers, which is what makes the area-based measures differ from the object-level ones. An excluded footprint carries its area and no covered area.</para>
+        /// </summary>
+        [Fact]
+        public void OpenBuildingMatches_CoveredAreas()
+        {
+            List<OpenBuildingMatch>? openBuildingMatches = Query.OpenBuildingMatches(
+                [
+                    OpenBuildingMatch_Rectangle(1, "d1", true, 0, 0, 8, 10),
+                    OpenBuildingMatch_Rectangle(1, "d2", true, 4, 0, 6, 10),
+                    OpenBuildingMatch_Rectangle(1, "d3", true, 107.5, 0, 10, 10),
+                    OpenBuildingMatch_Rectangle(1, "d4", true, 300, 0, 1, 1),
+                ],
+                [
+                    OpenBuildingMatch_Rectangle(1, "b1", false, 0, 0, 10, 10),
+                    OpenBuildingMatch_Rectangle(1, "b2", false, 100, 0, 10, 10),
+                ],
+                new OpenBuildingMatchParameters(minArea: 2),
+                new HashSet<int>() { 1 });
+            Assert.NotNull(openBuildingMatches);
+
+            OpenBuildingMatch openBuildingMatch_D1 = openBuildingMatches.Single(x => x.SourceId == "d1");
+            OpenBuildingMatch openBuildingMatch_D2 = openBuildingMatches.Single(x => x.SourceId == "d2");
+            Assert.Equal(OpenBuildingMatchClass.ManyToOne, openBuildingMatch_D1.OpenBuildingMatchClass);
+            Assert.Equal(100.0, openBuildingMatch_D1.BDOTArea!.Value, 9);
+            Assert.Equal(100.0, openBuildingMatch_D1.BDOTCoveredArea!.Value, 9);
+            Assert.Equal(100.0, openBuildingMatch_D2.BDOTCoveredArea!.Value, 9);
+            Assert.Equal(80.0, openBuildingMatch_D1.SourceArea!.Value, 9);
+            Assert.Equal(80.0, openBuildingMatch_D1.SourceCoveredArea!.Value, 9);
+            Assert.Equal(60.0, openBuildingMatch_D2.SourceCoveredArea!.Value, 9);
+
+            OpenBuildingMatch openBuildingMatch_Omission = openBuildingMatches.Single(x => x.BDOTReference == "b2");
+            Assert.Equal(OpenBuildingMatchClass.Omission, openBuildingMatch_Omission.OpenBuildingMatchClass);
+            Assert.Equal(25.0, openBuildingMatch_Omission.BDOTCoveredArea!.Value, 9);
+            Assert.Null(openBuildingMatch_Omission.SourceArea);
+
+            OpenBuildingMatch openBuildingMatch_Commission = openBuildingMatches.Single(x => x.SourceId == "d3");
+            Assert.Equal(OpenBuildingMatchClass.Commission, openBuildingMatch_Commission.OpenBuildingMatchClass);
+            Assert.Equal(25.0, openBuildingMatch_Commission.SourceCoveredArea!.Value, 9);
+
+            OpenBuildingMatch openBuildingMatch_Excluded = openBuildingMatches.Single(x => x.SourceId == "d4");
+            Assert.Equal(OpenBuildingMatchClass.Excluded, openBuildingMatch_Excluded.OpenBuildingMatchClass);
+            Assert.Equal(1.0, openBuildingMatch_Excluded.SourceArea!.Value, 9);
+            Assert.Null(openBuildingMatch_Excluded.SourceCoveredArea);
+
+            // Area level differs from object level: b2 is an omission yet a quarter covered.
+            List<OpenBuildingMatchSummaryResult>? openBuildingMatchSummaryResults = Query.OpenBuildingMatchSummaries(openBuildingMatches, "osm", 1, new OpenBuildingMatchParameters(minArea: 2), null);
+            Assert.NotNull(openBuildingMatchSummaryResults);
+            Assert.Equal(0.5, openBuildingMatchSummaryResults[0].Completeness!.Value, 12);
+            Assert.Equal(125.0 / 200.0, openBuildingMatchSummaryResults[0].AreaCompleteness!.Value, 9);
+        }
+
+        /// <summary>
         /// Verifies the in-memory summary of a hand-computed case (DiGi.GIS.PostgreSQL#127): counts, rates, the one-to-one geometry measures and their linear-interpolated percentiles, a total row and one row per primary source.
         /// <para>Four register buildings and six dataset footprints: two one-to-one pairs (identical, register; shifted 1 m, osm), an omission, a commission (osm), a register building split by a register and an osm footprint, and a 4 m² register footprint excluded by a 5 m² minimum. The per-source rows carry no BDOT10k figure, and their dataset counts and commissions sum to the total's - the check DiGi.GIS.WebAPI#108 makes on E4.</para>
         /// </summary>
@@ -436,6 +489,44 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             Assert.Equal(total.DatasetCount, osm.DatasetCount + register.DatasetCount);
             Assert.Equal(total.CommissionCount, osm.CommissionCount + register.CommissionCount);
             Assert.Equal(total.DatasetExcludedCount, osm.DatasetExcludedCount + register.DatasetExcludedCount);
+
+            // Object level (ISPRS benchmark): completeness 3/4, correctness 4/5, quality C*R / (C + R - C*R).
+            Assert.Equal(0.75, total.Completeness!.Value, 12);
+            Assert.Equal(0.8, total.Correctness!.Value, 12);
+            Assert.Equal(0.6 / 0.95, total.Quality!.Value, 12);
+            Assert.Null(osm.Completeness);
+            Assert.Null(osm.Quality);
+            Assert.Equal(2.0 / 3.0, osm.Correctness!.Value, 12);
+            Assert.Equal(1.0, register.Correctness!.Value, 12);
+
+            // Area level: BDOT10k 100 + 100 + 100 + 200 m2, covered 100 + 90 + 0 + 200; the dataset (d5 excluded)
+            // 5 x 100 m2, covered 100 + 90 + 0 + 100 + 100.
+            Assert.Equal(390.0 / 500.0, total.AreaCompleteness!.Value, 9);
+            Assert.Equal(390.0 / 500.0, total.AreaCorrectness!.Value, 9);
+            Assert.Null(osm.AreaCompleteness);
+            Assert.Equal(190.0 / 300.0, osm.AreaCorrectness!.Value, 9);
+            Assert.Equal(1.0, register.AreaCorrectness!.Value, 9);
+
+            // Offsets of the two one-to-one pairs: dx 0 and 1 m, dy 0.
+            Assert.Equal(Math.Sqrt(0.5), total.DxRms!.Value, 9);
+            Assert.Equal(0.0, total.DyRms!.Value, 9);
+            Assert.Equal(Math.Sqrt(0.5), total.PositionRms!.Value, 9);
+
+            // Size classes: every counted footprint is 50 m2 or more; d5 (4 m2) is excluded, so no class counts it.
+            Assert.NotNull(total.SizeClasses);
+            Assert.Equal(3, total.SizeClasses.Count);
+            Assert.Equal([0.0, 10.0, 50.0], total.SizeClasses.ConvertAll(x => x.MinArea));
+            Assert.Equal([10.0, 50.0, null], total.SizeClasses.ConvertAll(x => x.MaxArea));
+            Assert.Equal([0L, 0L, 4L], total.SizeClasses.ConvertAll(x => x.BDOTCount));
+            Assert.Equal([0L, 0L, 1L], total.SizeClasses.ConvertAll(x => x.OmissionCount));
+            Assert.Equal([0L, 0L, 5L], total.SizeClasses.ConvertAll(x => x.DatasetCount));
+            Assert.Equal([0L, 0L, 1L], total.SizeClasses.ConvertAll(x => x.CommissionCount));
+            Assert.Equal(0.25, total.SizeClasses[2].OmissionRate!.Value, 12);
+            Assert.Null(total.SizeClasses[0].OmissionRate);
+            Assert.NotNull(osm.SizeClasses);
+            Assert.Null(osm.SizeClasses[2].BDOTCount);
+            Assert.Equal(3L, osm.SizeClasses[2].DatasetCount);
+            Assert.Equal(1L, osm.SizeClasses[2].CommissionCount);
 
             // No rows: one total row of zeros and no measure.
             List<OpenBuildingMatchSummaryResult>? openBuildingMatchSummaryResults_Empty = Query.OpenBuildingMatchSummaries([], "eubucco", 7, openBuildingMatchParameters, null);
@@ -525,8 +616,23 @@ namespace DiGi.GIS.PostgreSQL.xUnit
             }
 
             DateTimeOffset computedAt = new(2026, 11, 25, 10, 30, 0, TimeSpan.FromHours(1));
-            OpenBuildingMatchSummaryResult openBuildingMatchSummaryResult = new("eubucco", 4, "register", 10, 11, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0.8, 0.9, 0.71, 0.72, 0.41, 1.05, 0.93, 0.85, 0.86, -0.12, -0.11, openBuildingMatchParameters, computedAt);
+            OpenBuildingMatchSummaryResult openBuildingMatchSummaryResult = new("eubucco", 4, "register", 10, 11, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0.8, 0.9, 0.71, 0.72, 0.41, 1.05, 0.93, 0.85, 0.86, -0.12, -0.11, 0.9, 0.2, 0.95, 0.75, 0.82, 0.64, 0.8, 0.86, [new OpenBuildingMatchSizeClassResult(0, 10, 3, 1, 4, 2)], openBuildingMatchParameters, computedAt);
             Core.xUnit.Query.SerializationCheck(openBuildingMatchSummaryResult);
+
+            OpenBuildingMatchSizeClassResult openBuildingMatchSizeClassResult = new(50, null, null, null, 7, 1);
+            Core.xUnit.Query.SerializationCheck(openBuildingMatchSizeClassResult);
+            JsonObjectOrFail(openBuildingMatchSizeClassResult.ToJsonObject(), out System.Text.Json.Nodes.JsonObject jsonObject_SizeClass);
+            foreach (OpenBuildingMatchSizeClassResult openBuildingMatchSizeClassResult_Trip in new OpenBuildingMatchSizeClassResult[] { new(openBuildingMatchSizeClassResult), new(jsonObject_SizeClass) })
+            {
+                Assert.Equal(50.0, openBuildingMatchSizeClassResult_Trip.MinArea);
+                Assert.Null(openBuildingMatchSizeClassResult_Trip.MaxArea);
+                Assert.Null(openBuildingMatchSizeClassResult_Trip.BDOTCount);
+                Assert.Null(openBuildingMatchSizeClassResult_Trip.OmissionCount);
+                Assert.Null(openBuildingMatchSizeClassResult_Trip.OmissionRate);
+                Assert.Equal(7L, openBuildingMatchSizeClassResult_Trip.DatasetCount);
+                Assert.Equal(1L, openBuildingMatchSizeClassResult_Trip.CommissionCount);
+                Assert.Equal(1.0 / 7.0, openBuildingMatchSizeClassResult_Trip.CommissionRate!.Value, 12);
+            }
 
             JsonObjectOrFail(openBuildingMatchSummaryResult.ToJsonObject(), out System.Text.Json.Nodes.JsonObject jsonObject_Summary);
             foreach (OpenBuildingMatchSummaryResult openBuildingMatchSummaryResult_Copy in new OpenBuildingMatchSummaryResult[] { new(openBuildingMatchSummaryResult), new(jsonObject_Summary) })
@@ -560,6 +666,23 @@ namespace DiGi.GIS.PostgreSQL.xUnit
                 Assert.NotSame(openBuildingMatchSummaryResult.OpenBuildingMatchParameters, openBuildingMatchSummaryResult_Copy.OpenBuildingMatchParameters);
                 Assert.Equal(0.6, openBuildingMatchSummaryResult_Copy.OpenBuildingMatchParameters.IoUThreshold);
                 Assert.Equal(computedAt, openBuildingMatchSummaryResult_Copy.ComputedAt);
+                Assert.Equal(0.9, openBuildingMatchSummaryResult_Copy.DxRms);
+                Assert.Equal(0.2, openBuildingMatchSummaryResult_Copy.DyRms);
+                Assert.Equal(0.95, openBuildingMatchSummaryResult_Copy.PositionRms);
+                Assert.Equal(0.75, openBuildingMatchSummaryResult_Copy.Completeness);
+                Assert.Equal(0.82, openBuildingMatchSummaryResult_Copy.Correctness);
+                Assert.Equal(0.64, openBuildingMatchSummaryResult_Copy.Quality);
+                Assert.Equal(0.8, openBuildingMatchSummaryResult_Copy.AreaCompleteness);
+                Assert.Equal(0.86, openBuildingMatchSummaryResult_Copy.AreaCorrectness);
+                Assert.NotNull(openBuildingMatchSummaryResult_Copy.SizeClasses);
+                OpenBuildingMatchSizeClassResult openBuildingMatchSizeClassResult_Copy = Assert.Single(openBuildingMatchSummaryResult_Copy.SizeClasses);
+                Assert.NotSame(openBuildingMatchSummaryResult.SizeClasses![0], openBuildingMatchSizeClassResult_Copy);
+                Assert.Equal(0.0, openBuildingMatchSizeClassResult_Copy.MinArea);
+                Assert.Equal(10.0, openBuildingMatchSizeClassResult_Copy.MaxArea);
+                Assert.Equal(3L, openBuildingMatchSizeClassResult_Copy.BDOTCount);
+                Assert.Equal(1L, openBuildingMatchSizeClassResult_Copy.OmissionCount);
+                Assert.Equal(4L, openBuildingMatchSizeClassResult_Copy.DatasetCount);
+                Assert.Equal(2L, openBuildingMatchSizeClassResult_Copy.CommissionCount);
             }
         }
 
