@@ -222,6 +222,177 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         }
 
         /// <summary>
+        /// Verifies that the settings of the match window survive the settings file (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#60): what Export reads from the controls serializes to one file, that file reads back as this window's settings, and a window opened without options filled from it reads the same settings out again through OK's own read.
+        /// <para>The import side runs in a window constructed with no options at all, so every value asserted below can only have come from the file. Both sides go through the real reads: <c>TryReadOptions</c> for the export and <c>TryGetOptions</c> - OK's read with its validation - after the import.</para>
+        /// </summary>
+        [Fact]
+        public void OpenBuildingMatchOptionsWindow_SettingsRoundTrip()
+        {
+            PostgreSQLOpenBuildingMatchTaskOptions postgreSQLOpenBuildingMatchTaskOptions = new()
+            {
+                DatasetKeys = ["eubucco", "osm"],
+                CountyIds = [1001, 1003],
+                OpenBuildingMatchParameters = new OpenBuildingMatchParameters(0.6, 0.25, 12.5, 3, 150),
+                Persist = false,
+            };
+
+            List<string> failures = [];
+            string? json = null;
+            string? json_AfterImport = null;
+            PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_Read = null;
+
+            Exception? exception = RunSTA(() =>
+            {
+                OpenBuildingMatchOptionsWindow openBuildingMatchOptionsWindow = new(postgreSQLOpenBuildingMatchTaskOptions, OpenBuildingImportOptionsWindowCounties(5));
+
+                if (openBuildingMatchOptionsWindow.TryReadOptions(false, out PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_Exported, out string? message_Export) && postgreSQLOpenBuildingMatchTaskOptions_Exported is not null)
+                {
+                    json = Core.Convert.ToSystem_String(postgreSQLOpenBuildingMatchTaskOptions_Exported);
+                }
+                else
+                {
+                    Expect(false, $"the export was refused: {message_Export}");
+                    return;
+                }
+
+                if (OpenBuildingMatchOptionsWindow.TryReadSettings(json, out string? message_Read) is not PostgreSQLOpenBuildingMatchTaskOptions postgreSQLOpenBuildingMatchTaskOptions_Imported)
+                {
+                    Expect(false, $"the exported file was refused: {message_Read}");
+                    return;
+                }
+
+                // Opened without options: what it ends up holding can only be the file's.
+                OpenBuildingMatchOptionsWindow openBuildingMatchOptionsWindow_Imported = new(null, OpenBuildingImportOptionsWindowCounties(5));
+                openBuildingMatchOptionsWindow_Imported.SetControls(postgreSQLOpenBuildingMatchTaskOptions_Imported);
+
+                if (openBuildingMatchOptionsWindow_Imported.TryGetOptions(out string? message_Accepted))
+                {
+                    postgreSQLOpenBuildingMatchTaskOptions_Read = openBuildingMatchOptionsWindow_Imported.PostgreSQLOpenBuildingMatchTaskOptions;
+                    json_AfterImport = Core.Convert.ToSystem_String(postgreSQLOpenBuildingMatchTaskOptions_Read);
+                }
+                else
+                {
+                    Expect(false, $"the imported settings were refused by OK: {message_Accepted}");
+                }
+            });
+
+            void Expect(bool condition, string failure)
+            {
+                if (!condition)
+                {
+                    failures.Add(failure);
+                }
+            }
+
+            Assert.Null(exception);
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+
+            Assert.False(string.IsNullOrWhiteSpace(json));
+            Assert.NotNull(postgreSQLOpenBuildingMatchTaskOptions_Read);
+
+            // Every serialized value came back - the same settings, written twice.
+            Assert.Equal(json, json_AfterImport);
+
+            // And the same, named: the dataset subset, the county parts, the rule, the store-links box, no box.
+            Assert.NotNull(postgreSQLOpenBuildingMatchTaskOptions_Read!.DatasetKeys);
+            Assert.True(postgreSQLOpenBuildingMatchTaskOptions_Read!.DatasetKeys!.SetEquals(["eubucco", "osm"]));
+            Assert.NotNull(postgreSQLOpenBuildingMatchTaskOptions_Read!.CountyIds);
+            Assert.True(postgreSQLOpenBuildingMatchTaskOptions_Read!.CountyIds!.SetEquals([1001, 1003]));
+            Assert.NotNull(postgreSQLOpenBuildingMatchTaskOptions_Read!.OpenBuildingMatchParameters);
+            Assert.Equal(0.6, postgreSQLOpenBuildingMatchTaskOptions_Read!.OpenBuildingMatchParameters!.IoUThreshold);
+            Assert.Equal(0.25, postgreSQLOpenBuildingMatchTaskOptions_Read!.OpenBuildingMatchParameters!.MinOverlapShare);
+            Assert.Equal(12.5, postgreSQLOpenBuildingMatchTaskOptions_Read!.OpenBuildingMatchParameters!.MinArea);
+            Assert.Equal(3d, postgreSQLOpenBuildingMatchTaskOptions_Read!.OpenBuildingMatchParameters!.MaxCentroidDistance);
+            Assert.Equal(150d, postgreSQLOpenBuildingMatchTaskOptions_Read!.OpenBuildingMatchParameters!.BoundaryMargin);
+            Assert.False(postgreSQLOpenBuildingMatchTaskOptions_Read!.Persist);
+            Assert.Null(postgreSQLOpenBuildingMatchTaskOptions_Read!.BoundingBox2D);
+
+            // The window's own options are what the caller gave it: the export read writes nothing.
+            Assert.False(postgreSQLOpenBuildingMatchTaskOptions.Persist);
+            Assert.Equal(0.6, postgreSQLOpenBuildingMatchTaskOptions.OpenBuildingMatchParameters!.IoUThreshold);
+        }
+
+        /// <summary>
+        /// Verifies the edges of the settings file of the match window (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#60): an unfinished window still exports - an empty scope saved as no scope, no dataset saved as an empty set and never as "all" - while a rule parameter that is not a number and a bounding box with only some of its four coordinates are refused with the reason OK gives, and the file read accepts only one settings object of this window.
+        /// <para>The file read is called directly: the Import button opens a file dialog, which a fact cannot show (Coding - WPF Deferred Loading.md section 5).</para>
+        /// </summary>
+        [Fact]
+        public void OpenBuildingMatchOptionsWindow_SettingsRefusals()
+        {
+            List<string> failures = [];
+
+            Exception? exception = RunSTA(() =>
+            {
+                OpenBuildingMatchOptionsWindow openBuildingMatchOptionsWindow = new(null, OpenBuildingImportOptionsWindowCounties(5));
+
+                // No county selected and the box untouched: written as no scope rather than refused.
+                Expect(openBuildingMatchOptionsWindow.TryReadOptions(false, out PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_NoScope, out string? message_NoScope), $"an unscoped export was refused: {message_NoScope}");
+                Expect(postgreSQLOpenBuildingMatchTaskOptions_NoScope?.CountyIds is null, "an empty county selection was written as a scope");
+                Expect(postgreSQLOpenBuildingMatchTaskOptions_NoScope?.BoundingBox2D is null, "a box was written with the county scope");
+                Expect(postgreSQLOpenBuildingMatchTaskOptions_NoScope?.DatasetKeys is null, "every dataset checked was not written as \"all\"");
+
+                // No dataset checked: an empty set - matching none - never "all".
+                foreach (CheckBox checkBox in new CheckBox[] { openBuildingMatchOptionsWindow.CheckBox_EUBUCCO, openBuildingMatchOptionsWindow.CheckBox_Overture, openBuildingMatchOptionsWindow.CheckBox_OSM, openBuildingMatchOptionsWindow.CheckBox_DBSM, openBuildingMatchOptionsWindow.CheckBox_Microsoft })
+                {
+                    checkBox.IsChecked = false;
+                }
+
+                Expect(openBuildingMatchOptionsWindow.TryReadOptions(false, out PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_NoDataset, out string? message_NoDataset), $"an export with no dataset was refused: {message_NoDataset}");
+                Expect(postgreSQLOpenBuildingMatchTaskOptions_NoDataset?.DatasetKeys is HashSet<string> datasetKeys_Empty && datasetKeys_Empty.Count == 0, "no dataset checked was written as \"all\"");
+
+                // A rule parameter that is not a number could not be written back as typed.
+                openBuildingMatchOptionsWindow.TextBoxControl_IoUThreshold.Value = "half";
+                Expect(!openBuildingMatchOptionsWindow.TryReadOptions(false, out _, out string? message_Parameter) && message_Parameter is not null, "a rule parameter that is not a number was exported");
+                openBuildingMatchOptionsWindow.TextBoxControl_IoUThreshold.Value = "0.5";
+
+                // A box with only some of its four coordinates: refused; all four export.
+                openBuildingMatchOptionsWindow.RadioButton_BoundingBox.IsChecked = true;
+                openBuildingMatchOptionsWindow.TextBoxControl_X1.Value = "629000";
+                Expect(!openBuildingMatchOptionsWindow.TryReadOptions(false, out _, out string? message_HalfBox) && message_HalfBox is not null && message_HalfBox.Contains("four coordinates", StringComparison.Ordinal), "a bounding box with one of its four coordinates was exported");
+
+                openBuildingMatchOptionsWindow.TextBoxControl_Y1.Value = "519000";
+                openBuildingMatchOptionsWindow.TextBoxControl_X2.Value = "631000";
+                openBuildingMatchOptionsWindow.TextBoxControl_Y2.Value = "521000";
+                Expect(openBuildingMatchOptionsWindow.TryReadOptions(false, out PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_Box, out string? message_Box), $"a filled box was refused: {message_Box}");
+                Expect(postgreSQLOpenBuildingMatchTaskOptions_Box?.BoundingBox2D is BoundingBox2D boundingBox2D && boundingBox2D.Min.X == 629000 && boundingBox2D.Max.Y == 521000, "the filled box was not written");
+            });
+
+            void Expect(bool condition, string failure)
+            {
+                if (!condition)
+                {
+                    failures.Add(failure);
+                }
+            }
+
+            Assert.Null(exception);
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+
+            string? json_Self = Core.Convert.ToSystem_String(new PostgreSQLOpenBuildingMatchTaskOptions() { CountyIds = [1001] });
+            string? json_Foreign = Core.Convert.ToSystem_String(new PostgreSQLOpenBuildingImportTaskOptions());
+            string? json_Several = json_Self is null ? null : $"[{json_Self},{json_Self}]";
+
+            PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_Self = OpenBuildingMatchOptionsWindow.TryReadSettings(json_Self, out string? message_Self);
+            PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_Foreign = OpenBuildingMatchOptionsWindow.TryReadSettings(json_Foreign, out string? message_Foreign);
+            PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_NotJson = OpenBuildingMatchOptionsWindow.TryReadSettings("this is not JSON", out string? message_NotJson);
+            PostgreSQLOpenBuildingMatchTaskOptions? postgreSQLOpenBuildingMatchTaskOptions_Several = OpenBuildingMatchOptionsWindow.TryReadSettings(json_Several, out string? message_Several);
+
+            // This window's own file: one settings object, read with no reason to refuse.
+            Assert.NotNull(postgreSQLOpenBuildingMatchTaskOptions_Self);
+            Assert.Null(message_Self);
+
+            // Everything else answers no settings of this window, so the controls are never touched.
+            Assert.Null(postgreSQLOpenBuildingMatchTaskOptions_Foreign);
+            Assert.False(string.IsNullOrWhiteSpace(message_Foreign));
+
+            Assert.Null(postgreSQLOpenBuildingMatchTaskOptions_NotJson);
+            Assert.False(string.IsNullOrWhiteSpace(message_NotJson));
+
+            Assert.Null(postgreSQLOpenBuildingMatchTaskOptions_Several);
+            Assert.False(string.IsNullOrWhiteSpace(message_Several));
+        }
+
+        /// <summary>
         /// Verifies the layout of the open building match options window without the host, at its opening and at its minimum size, for both scopes: no control clipped or outside the window, no caption cut short, the scope form in the right-hand column and the county list showing at least 25 rows at the default size (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#57; <c>Coding - WPF Deferred Loading.md</c> section 7).
         /// <para>The same harness as <see cref="OpenBuildingImportOptionsWindow_Layout"/>: the content is detached and laid out at the client size, the list given 60 county parts so a row count means something, and the scope switched through <c>IsChecked</c>, never through OK.</para>
         /// </summary>
