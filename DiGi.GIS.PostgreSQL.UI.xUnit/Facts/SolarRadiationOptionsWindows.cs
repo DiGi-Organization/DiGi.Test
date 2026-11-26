@@ -170,6 +170,158 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         }
 
         /// <summary>
+        /// Verifies that the solve window's settings survive the settings file (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#59): what Export reads from the controls serializes to one file, that file reads back as this window's settings, and a window opened without options fills from it so that reading its controls gives the same settings again.
+        /// <para>The import side runs in a window constructed with no options at all, so every value asserted below can only have come from the file. The radii are given out of order and hold a duplicate and a negative value, which the window strips - the file therefore holds the ordered list the solve takes.</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingSolarRadiationSolveOptionsWindow_SettingsRoundTrip()
+        {
+            PostgreSQLBuildingSolarRadiationSolveOptions postgreSQLBuildingSolarRadiationSolveOptions = new()
+            {
+                CountyIds = [55417, 4816],
+                Radii = [100, 0, 50, 50, -5],
+                SkipExisting = false,
+                BatchSize = 25,
+                TileSize = 125,
+                ReceiverCountMax = 300,
+                CasterTriangleCountMax = 64_000,
+                CommandTimeout = 900,
+                BuildingCountMax = 500,
+                MaxDegreeOfParallelism = 6
+            };
+
+            bool? exported = null;
+            string? message_Export = null;
+            string? json = null;
+            string? message_Read = null;
+            bool? accepted = null;
+            string? message_Accepted = null;
+            string? json_AfterImport = null;
+            PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Imported = null;
+            PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Read = null;
+
+            Exception? exception = RunSTA(() =>
+            {
+                PostgreSQLBuildingSolarRadiationSolveOptionsWindow postgreSQLBuildingSolarRadiationSolveOptionsWindow = new(postgreSQLBuildingSolarRadiationSolveOptions, SolarRadiationOptionsWindowCounties());
+
+                PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Exported = postgreSQLBuildingSolarRadiationSolveOptionsWindow.CreateOptions(false, out message_Export);
+                exported = postgreSQLBuildingSolarRadiationSolveOptions_Exported is not null;
+
+                json = Core.Convert.ToSystem_String(postgreSQLBuildingSolarRadiationSolveOptions_Exported);
+                postgreSQLBuildingSolarRadiationSolveOptions_Imported = PostgreSQLBuildingSolarRadiationSolveOptionsWindow.TryReadSettings(json, out message_Read);
+                if (postgreSQLBuildingSolarRadiationSolveOptions_Imported is null)
+                {
+                    return;
+                }
+
+                // Opened without options: what it reads out can only be the file's, not the window's own defaults.
+                PostgreSQLBuildingSolarRadiationSolveOptionsWindow postgreSQLBuildingSolarRadiationSolveOptionsWindow_Imported = new(null, SolarRadiationOptionsWindowCounties());
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow_Imported.SetControls(postgreSQLBuildingSolarRadiationSolveOptions_Imported);
+
+                postgreSQLBuildingSolarRadiationSolveOptions_Read = postgreSQLBuildingSolarRadiationSolveOptionsWindow_Imported.CreateOptions(true, out message_Accepted);
+                accepted = postgreSQLBuildingSolarRadiationSolveOptions_Read is not null;
+                json_AfterImport = Core.Convert.ToSystem_String(postgreSQLBuildingSolarRadiationSolveOptions_Read);
+            });
+
+            Assert.Null(exception);
+
+            // Export: the controls read with no reason to refuse, into one file.
+            Assert.True(exported);
+            Assert.Null(message_Export);
+            Assert.False(string.IsNullOrWhiteSpace(json));
+
+            // Read back as this window's settings: exactly one object, no reason to refuse.
+            Assert.Null(message_Read);
+            Assert.NotNull(postgreSQLBuildingSolarRadiationSolveOptions_Imported);
+
+            // Import: accepted as a complete window, so the same values are read out again.
+            Assert.True(accepted);
+            Assert.Null(message_Accepted);
+            Assert.NotNull(postgreSQLBuildingSolarRadiationSolveOptions_Read);
+
+            // Every serialized value came back - the same settings, written twice.
+            Assert.Equal(json, json_AfterImport);
+
+            // And the same, named: the counties by identifier, the radii ordered and stripped, the rest as typed.
+            Assert.NotNull(postgreSQLBuildingSolarRadiationSolveOptions_Read!.CountyIds);
+            Assert.Equal(2, postgreSQLBuildingSolarRadiationSolveOptions_Read!.CountyIds!.Count);
+            Assert.Contains(4816, postgreSQLBuildingSolarRadiationSolveOptions_Read!.CountyIds!);
+            Assert.Contains(55417, postgreSQLBuildingSolarRadiationSolveOptions_Read!.CountyIds!);
+            Assert.Equal([0, 50, 100], postgreSQLBuildingSolarRadiationSolveOptions_Read!.Radii);
+            Assert.False(postgreSQLBuildingSolarRadiationSolveOptions_Read!.SkipExisting);
+            Assert.Equal(25, postgreSQLBuildingSolarRadiationSolveOptions_Read!.BatchSize);
+            Assert.Equal(125d, postgreSQLBuildingSolarRadiationSolveOptions_Read!.TileSize);
+            Assert.Equal(300, postgreSQLBuildingSolarRadiationSolveOptions_Read!.ReceiverCountMax);
+            Assert.Equal(64_000, postgreSQLBuildingSolarRadiationSolveOptions_Read!.CasterTriangleCountMax);
+            Assert.Equal(900, postgreSQLBuildingSolarRadiationSolveOptions_Read!.CommandTimeout);
+            Assert.Equal(500, postgreSQLBuildingSolarRadiationSolveOptions_Read!.BuildingCountMax);
+            Assert.Equal(6, postgreSQLBuildingSolarRadiationSolveOptions_Read!.MaxDegreeOfParallelism);
+        }
+
+        /// <summary>
+        /// Verifies the two edges of the settings file of the solve window (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#59): a window with no county selected still exports - unfinished work is what the file is for - while a malformed value is refused with the reason OK gives, and the file read accepts only one settings object of this window, refusing another window's settings, a file that is not JSON and a file holding several settings.
+        /// <para>The file read is called directly, and its refusals are asserted from the outside: the Import button opens a file dialog, which a fact cannot show (Coding - WPF Deferred Loading.md section 5).</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingSolarRadiationSolveOptionsWindow_SettingsRefusals()
+        {
+            bool? exported_Empty = null;
+            string? message_Exported_Empty = null;
+            PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_ExportedEmpty = null;
+            bool? refused_Malformed = null;
+            string? message_Exported_Malformed = null;
+
+            Exception? exception = RunSTA(() =>
+            {
+                PostgreSQLBuildingSolarRadiationSolveOptionsWindow postgreSQLBuildingSolarRadiationSolveOptionsWindow = new(null, SolarRadiationOptionsWindowCounties());
+
+                // No county selected and nothing else touched: saved as no scope rather than refused.
+                PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Exported = postgreSQLBuildingSolarRadiationSolveOptionsWindow.CreateOptions(false, out message_Exported_Empty);
+                exported_Empty = postgreSQLBuildingSolarRadiationSolveOptions_Exported is not null;
+                postgreSQLBuildingSolarRadiationSolveOptions_ExportedEmpty = postgreSQLBuildingSolarRadiationSolveOptions_Exported;
+
+                // A value that is there but malformed could not be written back as typed, so nothing is written.
+                postgreSQLBuildingSolarRadiationSolveOptionsWindow.TextBoxControl_BatchSize.Value = "abc";
+                refused_Malformed = postgreSQLBuildingSolarRadiationSolveOptionsWindow.CreateOptions(false, out message_Exported_Malformed) is null;
+            });
+
+            string? json_Self = Core.Convert.ToSystem_String(new PostgreSQLBuildingSolarRadiationSolveOptions());
+            string? json_Foreign = Core.Convert.ToSystem_String(new PostgreSQLBuildingSolarRadiationContextExportOptions());
+            string? json_Several = json_Self is null ? null : $"[{json_Self},{json_Self}]";
+
+            PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Self = PostgreSQLBuildingSolarRadiationSolveOptionsWindow.TryReadSettings(json_Self, out string? message_Self);
+            PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Foreign = PostgreSQLBuildingSolarRadiationSolveOptionsWindow.TryReadSettings(json_Foreign, out string? message_Foreign);
+            PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_NotJson = PostgreSQLBuildingSolarRadiationSolveOptionsWindow.TryReadSettings("this is not JSON", out string? message_NotJson);
+            PostgreSQLBuildingSolarRadiationSolveOptions? postgreSQLBuildingSolarRadiationSolveOptions_Several = PostgreSQLBuildingSolarRadiationSolveOptionsWindow.TryReadSettings(json_Several, out string? message_Several);
+
+            Assert.Null(exception);
+
+            // An unfinished window exports: no county selected is no scope, not a refusal.
+            Assert.True(exported_Empty);
+            Assert.Null(message_Exported_Empty);
+            Assert.NotNull(postgreSQLBuildingSolarRadiationSolveOptions_ExportedEmpty);
+            Assert.Null(postgreSQLBuildingSolarRadiationSolveOptions_ExportedEmpty!.CountyIds);
+
+            // A malformed value is refused with a reason and changes nothing.
+            Assert.True(refused_Malformed);
+            Assert.False(string.IsNullOrWhiteSpace(message_Exported_Malformed));
+
+            // This window's own file: one settings object, read with no reason to refuse.
+            Assert.Null(message_Self);
+            Assert.NotNull(postgreSQLBuildingSolarRadiationSolveOptions_Self);
+
+            // Everything else answers no settings of this window, so the controls are never touched.
+            Assert.Null(postgreSQLBuildingSolarRadiationSolveOptions_Foreign);
+            Assert.False(string.IsNullOrWhiteSpace(message_Foreign));
+
+            Assert.Null(postgreSQLBuildingSolarRadiationSolveOptions_NotJson);
+            Assert.False(string.IsNullOrWhiteSpace(message_NotJson));
+
+            Assert.Null(postgreSQLBuildingSolarRadiationSolveOptions_Several);
+            Assert.False(string.IsNullOrWhiteSpace(message_Several));
+        }
+
+        /// <summary>
         /// Verifies that the solar urban-context export options window builds without a database or a running application, keeps the radii in the column order given, proposes <see cref="Query.SolarContextDirectory(string?)"/> when the options carry no folder, keeps a folder they do carry, and works on a copy (DiGi.GIS.PostgreSQL.UI#44).
         /// </summary>
         [Fact]
