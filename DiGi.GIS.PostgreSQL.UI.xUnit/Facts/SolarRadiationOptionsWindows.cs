@@ -424,6 +424,223 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         /// Verifies the layout of the three solar radiation options windows without the host, at their opening and at their minimum size: every named control gets a size, lies inside the window, and no caption is cut short (<c>Coding - WPF Deferred Loading.md</c> §7, DiGi.GIS.PostgreSQL.UI#44).
         /// <para>A window is laid out by the handle it gets when shown, and a test must not put a dialog on screen, so the window's content is taken out and laid out on its own at the window's client size (the window less its border and caption). That is the layout the dialog shows; what it does not cover is the system font size of a particular machine.</para>
         /// </summary>
+        /// <summary>
+        /// Verifies that the settings of the building data solar summary window survive the settings file (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#66): what Export reads from the controls serializes to one file, that file reads back as this window's settings, and a window opened with no options filled from it reads the same settings out again through OK's own read.
+        /// <para>All five option members have a control, so the round trip is complete: the county subset, the radius (a value and the empty box), the skip box, the batch size and the timeout. The import side runs in a window constructed with no options, so every value asserted can only have come from the file.</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_SettingsRoundTrip()
+        {
+            PostgreSQLBuildingDataSolarRadiationUpdateOptions postgreSQLBuildingDataSolarRadiationUpdateOptions = new()
+            {
+                CountyIds = [55417, 4816],
+                Radius = 100,
+                SkipCompleted = true,
+                BatchSize = 2500,
+                CommandTimeout = 900,
+            };
+
+            List<string> failures = [];
+            string? json = null;
+            string? json_AfterImport = null;
+            PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_Read = null;
+            PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Read = null;
+
+            Exception? exception = RunSTA(() =>
+            {
+                PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow = new(postgreSQLBuildingDataSolarRadiationUpdateOptions, SolarRadiationOptionsWindowCounties());
+
+                Expect(!ReferenceEquals(postgreSQLBuildingDataSolarRadiationUpdateOptions, postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.PostgreSQLBuildingDataSolarRadiationUpdateOptions), "the window holds the caller's options instead of a copy");
+
+                if (postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_Exported, out string? message_Export) && postgreSQLBuildingDataSolarRadiationUpdateOptions_Exported is not null)
+                {
+                    json = Core.Convert.ToSystem_String(postgreSQLBuildingDataSolarRadiationUpdateOptions_Exported);
+                }
+                else
+                {
+                    Expect(false, $"the export was refused: {message_Export}");
+                    return;
+                }
+
+                if (PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadSettings(json, out string? message_Read) is not PostgreSQLBuildingDataSolarRadiationUpdateOptions postgreSQLBuildingDataSolarRadiationUpdateOptions_Imported)
+                {
+                    Expect(false, $"the exported file was refused: {message_Read}");
+                    return;
+                }
+
+                // Opened without options: what it ends up holding can only be the file's.
+                PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_Imported = new(null, SolarRadiationOptionsWindowCounties());
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_Imported.SetControls(postgreSQLBuildingDataSolarRadiationUpdateOptions_Imported);
+
+                if (postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_Imported.TryGetOptions(out string? message_Accepted))
+                {
+                    postgreSQLBuildingDataSolarRadiationUpdateOptions_Read = postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_Imported.PostgreSQLBuildingDataSolarRadiationUpdateOptions;
+                    json_AfterImport = Core.Convert.ToSystem_String(postgreSQLBuildingDataSolarRadiationUpdateOptions_Read);
+                }
+                else
+                {
+                    Expect(false, $"the imported settings were refused by OK: {message_Accepted}");
+                }
+
+                // The empty radius is a value of its own: a file with no radius has to empty the radius box of a
+                // window that shows one, and OK has to read that empty box back as no radius.
+                PostgreSQLBuildingDataSolarRadiationUpdateOptions postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius = new()
+                {
+                    CountyIds = [4816],
+                    Radius = null,
+                };
+
+                PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_NoRadius = new(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius, SolarRadiationOptionsWindowCounties());
+                if (!postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_NoRadius.TryReadOptions(false, out PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Exported, out string? message_NoRadius) || postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Exported is null)
+                {
+                    Expect(false, $"the no-radius export was refused: {message_NoRadius}");
+                    return;
+                }
+
+                Expect(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Exported.Radius is null, "an empty radius box was written as a radius");
+
+                if (PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadSettings(Core.Convert.ToSystem_String(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Exported), out string? message_NoRadius_Read) is not PostgreSQLBuildingDataSolarRadiationUpdateOptions postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Imported)
+                {
+                    Expect(false, $"the no-radius file was refused: {message_NoRadius_Read}");
+                    return;
+                }
+
+                PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_RadiusShown = new(postgreSQLBuildingDataSolarRadiationUpdateOptions, SolarRadiationOptionsWindowCounties());
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_RadiusShown.SetControls(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Imported);
+
+                if (postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_RadiusShown.TryGetOptions(out string? message_NoRadius_Ok))
+                {
+                    postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Read = postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_RadiusShown.PostgreSQLBuildingDataSolarRadiationUpdateOptions;
+                }
+                else
+                {
+                    Expect(false, $"the no-radius import was refused by OK: {message_NoRadius_Ok}");
+                }
+            });
+
+            void Expect(bool condition, string failure)
+            {
+                if (!condition)
+                {
+                    failures.Add(failure);
+                }
+            }
+
+            Assert.Null(exception);
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+
+            Assert.False(string.IsNullOrWhiteSpace(json));
+            Assert.NotNull(postgreSQLBuildingDataSolarRadiationUpdateOptions_Read);
+
+            // Every serialized value came back - the same settings, written twice.
+            Assert.Equal(json, json_AfterImport);
+
+            // And the same, named: the county subset, the radius, the skip box, the batch size, the timeout.
+            Assert.NotNull(postgreSQLBuildingDataSolarRadiationUpdateOptions_Read!.CountyIds);
+            Assert.True(postgreSQLBuildingDataSolarRadiationUpdateOptions_Read!.CountyIds!.SetEquals([55417, 4816]));
+            Assert.NotNull(postgreSQLBuildingDataSolarRadiationUpdateOptions_Read!.Radius);
+            Assert.Equal(100d, postgreSQLBuildingDataSolarRadiationUpdateOptions_Read!.Radius!.Value);
+            Assert.True(postgreSQLBuildingDataSolarRadiationUpdateOptions_Read!.SkipCompleted);
+            Assert.Equal(2500, postgreSQLBuildingDataSolarRadiationUpdateOptions_Read!.BatchSize);
+            Assert.Equal(900, postgreSQLBuildingDataSolarRadiationUpdateOptions_Read!.CommandTimeout);
+
+            // The file with no radius emptied the box of the window that showed one.
+            Assert.NotNull(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Read);
+            Assert.Null(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Read!.Radius);
+            Assert.NotNull(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Read!.CountyIds);
+            Assert.True(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoRadius_Read!.CountyIds!.SetEquals([4816]));
+
+            // The window's own options are what the caller gave them: the export read writes nothing.
+            Assert.NotNull(postgreSQLBuildingDataSolarRadiationUpdateOptions.Radius);
+            Assert.Equal(100d, postgreSQLBuildingDataSolarRadiationUpdateOptions.Radius!.Value);
+        }
+
+        /// <summary>
+        /// Verifies the edges of the settings file of the building data solar summary window (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#66): an unfinished window still exports - a radius below zero, a batch size of zero, a missing county - while a box that does not hold its number is refused with the reason OK gives, and the file read accepts only one settings object of this window.
+        /// <para>The file read is called directly: the Import button opens a file dialog, which a fact cannot show (Coding - WPF Deferred Loading.md section 5).</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow_SettingsRefusals()
+        {
+            List<string> failures = [];
+
+            Exception? exception = RunSTA(() =>
+            {
+                PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow = new(null, SolarRadiationOptionsWindowCounties());
+
+                // A radius that is not a number could not be written back as typed; NaN parses but does not
+                // survive JSON; -5 is a number and is OK's to refuse on read-back.
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TextBoxControl_Radius.Value = "half";
+                Expect(!postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadOptions(false, out _, out string? message_Half) && message_Half is not null && message_Half.Contains("Radius", StringComparison.Ordinal), "a radius that is not a number was exported");
+
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TextBoxControl_Radius.Value = "NaN";
+                Expect(!postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadOptions(false, out _, out string? message_NaN) && message_NaN is not null, "a radius of NaN was exported");
+
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.SetControls(new PostgreSQLBuildingDataSolarRadiationUpdateOptions());
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.ListBoxControl_Counties.SelectItems<AdministrativeAreal2DReference>(x => true);
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TextBoxControl_Radius.Value = "-5";
+                Expect(postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_Negative, out string? message_Negative) && postgreSQLBuildingDataSolarRadiationUpdateOptions_Negative is not null, $"a negative radius was refused by the export: {message_Negative}");
+                Expect(postgreSQLBuildingDataSolarRadiationUpdateOptions_Negative?.Radius == -5, "the negative radius was not written as typed");
+                Expect(!postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryGetOptions(out string? message_Negative_Ok) && message_Negative_Ok is not null && message_Negative_Ok.Contains("Radius", StringComparison.Ordinal), "a negative radius passed OK");
+
+                // A batch size that is not a whole number is refused on both paths; zero exports and is OK's.
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.SetControls(new PostgreSQLBuildingDataSolarRadiationUpdateOptions());
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.ListBoxControl_Counties.SelectItems<AdministrativeAreal2DReference>(x => true);
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TextBoxControl_BatchSize.Value = "half";
+                Expect(!postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadOptions(false, out _, out string? message_Batch) && message_Batch is not null && message_Batch.Contains("Batch size", StringComparison.Ordinal), "a batch size that is not a number was exported");
+
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.SetControls(new PostgreSQLBuildingDataSolarRadiationUpdateOptions());
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.ListBoxControl_Counties.SelectItems<AdministrativeAreal2DReference>(x => true);
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TextBoxControl_BatchSize.Value = "0";
+                Expect(postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_Batch, out string? message_BatchZero) && postgreSQLBuildingDataSolarRadiationUpdateOptions_Batch is not null, $"a batch size of zero was refused by the export: {message_BatchZero}");
+                Expect(!postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryGetOptions(out string? message_BatchZero_Ok) && message_BatchZero_Ok is not null && message_BatchZero_Ok.Contains("Batch size", StringComparison.Ordinal), "a batch size of zero passed OK");
+
+                // No county: written as no county list, refused by OK - and the refused reads wrote nothing.
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.SetControls(new PostgreSQLBuildingDataSolarRadiationUpdateOptions());
+                postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.ListBoxControl_Counties.SelectItems<AdministrativeAreal2DReference>(x => false);
+                Expect(postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_NoCounty, out string? message_NoCounty) && postgreSQLBuildingDataSolarRadiationUpdateOptions_NoCounty is not null, $"an export without a county was refused: {message_NoCounty}");
+                Expect(postgreSQLBuildingDataSolarRadiationUpdateOptions_NoCounty?.CountyIds is null, "an empty county selection was written as a scope");
+                Expect(!postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryGetOptions(out string? message_NoCounty_Ok) && message_NoCounty_Ok is not null && message_NoCounty_Ok.Contains("county", StringComparison.OrdinalIgnoreCase), "an empty county selection passed OK");
+
+                Expect(postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.PostgreSQLBuildingDataSolarRadiationUpdateOptions.BatchSize == 1000, "a refused read wrote the batch size");
+                Expect(postgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.PostgreSQLBuildingDataSolarRadiationUpdateOptions.CountyIds is null, "a refused read wrote the county list");
+            });
+
+            void Expect(bool condition, string failure)
+            {
+                if (!condition)
+                {
+                    failures.Add(failure);
+                }
+            }
+
+            Assert.Null(exception);
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+
+            string? json_Self = Core.Convert.ToSystem_String(new PostgreSQLBuildingDataSolarRadiationUpdateOptions());
+            string? json_Foreign = Core.Convert.ToSystem_String(new PostgreSQLUpdateOccupancyOptions());
+            string? json_Several = json_Self is null ? null : $"[{json_Self},{json_Self}]";
+
+            PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_Self = PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadSettings(json_Self, out string? message_Self);
+            PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_Foreign = PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadSettings(json_Foreign, out string? message_Foreign);
+            PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_NotJson = PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadSettings("this is not JSON", out string? message_NotJson);
+            PostgreSQLBuildingDataSolarRadiationUpdateOptions? postgreSQLBuildingDataSolarRadiationUpdateOptions_Several = PostgreSQLBuildingDataSolarRadiationUpdateOptionsWindow.TryReadSettings(json_Several, out string? message_Several);
+
+            // This window's own file: one settings object, read with no reason to refuse.
+            Assert.NotNull(postgreSQLBuildingDataSolarRadiationUpdateOptions_Self);
+            Assert.Null(message_Self);
+
+            // Everything else answers no settings of this window, so the controls are never touched.
+            Assert.Null(postgreSQLBuildingDataSolarRadiationUpdateOptions_Foreign);
+            Assert.False(string.IsNullOrWhiteSpace(message_Foreign));
+
+            Assert.Null(postgreSQLBuildingDataSolarRadiationUpdateOptions_NotJson);
+            Assert.False(string.IsNullOrWhiteSpace(message_NotJson));
+
+            Assert.Null(postgreSQLBuildingDataSolarRadiationUpdateOptions_Several);
+            Assert.False(string.IsNullOrWhiteSpace(message_Several));
+        }
+
         [Fact]
         public void SolarRadiationOptionsWindows_Layout()
         {
