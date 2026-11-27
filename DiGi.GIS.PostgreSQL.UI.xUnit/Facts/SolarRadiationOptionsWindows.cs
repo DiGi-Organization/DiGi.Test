@@ -5,6 +5,7 @@ using DiGi.GIS.PostgreSQL.UI.Windows;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -638,6 +639,212 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             Assert.False(string.IsNullOrWhiteSpace(message_NotJson));
 
             Assert.Null(postgreSQLBuildingDataSolarRadiationUpdateOptions_Several);
+            Assert.False(string.IsNullOrWhiteSpace(message_Several));
+        }
+
+        /// <summary>
+        /// Verifies that the settings of the solar urban-context export window survive the settings file (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#71): what Export reads from the controls serializes to one file, that file reads back as this window's settings, and a window opened with no options filled from it reads the same settings out again through OK's own read.
+        /// <para>The radius list has to come back in its order - it is the column order of the files - and neither the export nor the import may create the output folder: only OK does that, so the fact asserts the folder named in the file still does not exist after a full round trip. A relative folder exports as typed and is refused by OK on read-back.</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingSolarRadiationContextExportOptionsWindow_SettingsRoundTrip()
+        {
+            const string outputDirectory = "C:/Temp/digi-solar-context-export-settings-fact";
+
+            PostgreSQLBuildingSolarRadiationContextExportOptions postgreSQLBuildingSolarRadiationContextExportOptions = new()
+            {
+                CountyIds = [55417, 4816],
+                Radii = [0, 100, 200],
+                ResidentialOnly = false,
+                BatchSize = 750,
+                CommandTimeout = 0,
+                OutputDirectory = outputDirectory,
+            };
+
+            List<string> failures = [];
+            string? json = null;
+            string? json_AfterImport = null;
+            PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_Read = null;
+            string? relativeExported = null;
+            string? relativeRefusal = null;
+
+            Exception? exception = RunSTA(() =>
+            {
+                PostgreSQLBuildingSolarRadiationContextExportOptionsWindow postgreSQLBuildingSolarRadiationContextExportOptionsWindow = new(postgreSQLBuildingSolarRadiationContextExportOptions, SolarRadiationOptionsWindowCounties());
+
+                Expect(!ReferenceEquals(postgreSQLBuildingSolarRadiationContextExportOptions, postgreSQLBuildingSolarRadiationContextExportOptionsWindow.PostgreSQLBuildingSolarRadiationContextExportOptions), "the window holds the caller's options instead of a copy");
+
+                if (postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_Exported, out string? message_Export) && postgreSQLBuildingSolarRadiationContextExportOptions_Exported is not null)
+                {
+                    json = Core.Convert.ToSystem_String(postgreSQLBuildingSolarRadiationContextExportOptions_Exported);
+                }
+                else
+                {
+                    Expect(false, $"the export was refused: {message_Export}");
+                    return;
+                }
+
+                if (PostgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadSettings(json, out string? message_Read) is not PostgreSQLBuildingSolarRadiationContextExportOptions postgreSQLBuildingSolarRadiationContextExportOptions_Imported)
+                {
+                    Expect(false, $"the exported file was refused: {message_Read}");
+                    return;
+                }
+
+                // Opened without options: what it ends up holding can only be the file's. TryGetOptions is the
+                // fact-driven part of OK - and must not create the folder the file names.
+                PostgreSQLBuildingSolarRadiationContextExportOptionsWindow postgreSQLBuildingSolarRadiationContextExportOptionsWindow_Imported = new(null, SolarRadiationOptionsWindowCounties());
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow_Imported.SetControls(postgreSQLBuildingSolarRadiationContextExportOptions_Imported);
+
+                if (postgreSQLBuildingSolarRadiationContextExportOptionsWindow_Imported.TryGetOptions(out string? message_Accepted))
+                {
+                    postgreSQLBuildingSolarRadiationContextExportOptions_Read = postgreSQLBuildingSolarRadiationContextExportOptionsWindow_Imported.PostgreSQLBuildingSolarRadiationContextExportOptions;
+                    json_AfterImport = Core.Convert.ToSystem_String(postgreSQLBuildingSolarRadiationContextExportOptions_Read);
+                }
+                else
+                {
+                    Expect(false, $"the imported settings were refused by OK: {message_Accepted}");
+                }
+
+                // A relative folder exports as typed - it is a string that could be written back - and OK's own
+                // full-path rule refuses it on read-back.
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.SetControls(postgreSQLBuildingSolarRadiationContextExportOptions);
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TextBoxControl_OutputDirectory.Value = "relative/context";
+                if (postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_Relative, out string? message_Relative) && postgreSQLBuildingSolarRadiationContextExportOptions_Relative is not null)
+                {
+                    relativeExported = postgreSQLBuildingSolarRadiationContextExportOptions_Relative.OutputDirectory;
+                }
+                else
+                {
+                    Expect(false, $"a relative folder was refused by the export: {message_Relative}");
+                }
+
+                relativeRefusal = postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryGetOptions(out string? message_Relative_Ok) ? null : message_Relative_Ok;
+            });
+
+            void Expect(bool condition, string failure)
+            {
+                if (!condition)
+                {
+                    failures.Add(failure);
+                }
+            }
+
+            Assert.Null(exception);
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+
+            Assert.False(string.IsNullOrWhiteSpace(json));
+            Assert.NotNull(postgreSQLBuildingSolarRadiationContextExportOptions_Read);
+
+            // Every serialized value came back - the same settings, written twice.
+            Assert.Equal(json, json_AfterImport);
+
+            // And the same, named: the counties, the radius order, the filter, the batch, the timeout, the folder.
+            Assert.NotNull(postgreSQLBuildingSolarRadiationContextExportOptions_Read!.CountyIds);
+            Assert.True(postgreSQLBuildingSolarRadiationContextExportOptions_Read!.CountyIds!.SetEquals([55417, 4816]));
+            Assert.NotNull(postgreSQLBuildingSolarRadiationContextExportOptions_Read!.Radii);
+            Assert.True(postgreSQLBuildingSolarRadiationContextExportOptions_Read!.Radii!.SequenceEqual([0d, 100d, 200d]));
+            Assert.False(postgreSQLBuildingSolarRadiationContextExportOptions_Read!.ResidentialOnly);
+            Assert.Equal(750, postgreSQLBuildingSolarRadiationContextExportOptions_Read!.BatchSize);
+            Assert.Equal(0, postgreSQLBuildingSolarRadiationContextExportOptions_Read!.CommandTimeout);
+            Assert.Equal(outputDirectory, postgreSQLBuildingSolarRadiationContextExportOptions_Read!.OutputDirectory);
+
+            // Neither the export nor the import created the folder - only OK does that, through its handler.
+            Assert.False(Directory.Exists(outputDirectory), "the export or the import created the output folder");
+
+            // The relative folder was written as typed and refused by OK's full-path rule.
+            Assert.Equal("relative/context", relativeExported);
+            Assert.False(string.IsNullOrWhiteSpace(relativeRefusal));
+            Assert.Contains("full path", relativeRefusal!, StringComparison.Ordinal);
+
+            // The window's own options are what the caller gave them: the export read writes nothing.
+            Assert.Equal(750, postgreSQLBuildingSolarRadiationContextExportOptions.BatchSize);
+            Assert.NotNull(postgreSQLBuildingSolarRadiationContextExportOptions.Radii);
+        }
+
+        /// <summary>
+        /// Verifies the edges of the settings file of the solar urban-context export window (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#71): an unfinished window still exports - no county, no radius - while a box that does not hold a whole number is refused with the reason OK gives, and the file read accepts only one settings object of this window.
+        /// <para>The file read is called directly: the Import button opens a file dialog, which a fact cannot show (Coding - WPF Deferred Loading.md section 5).</para>
+        /// </summary>
+        [Fact]
+        public void PostgreSQLBuildingSolarRadiationContextExportOptionsWindow_SettingsRefusals()
+        {
+            List<string> failures = [];
+
+            Exception? exception = RunSTA(() =>
+            {
+                PostgreSQLBuildingSolarRadiationContextExportOptions postgreSQLBuildingSolarRadiationContextExportOptions = new()
+                {
+                    CountyIds = [55417],
+                    Radii = [0],
+                    OutputDirectory = "C:/Temp/digi-solar-context-refusals-fact",
+                };
+
+                PostgreSQLBuildingSolarRadiationContextExportOptionsWindow postgreSQLBuildingSolarRadiationContextExportOptionsWindow = new(postgreSQLBuildingSolarRadiationContextExportOptions, SolarRadiationOptionsWindowCounties());
+
+                // A batch size that is not a whole number could not be written back as typed.
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TextBoxControl_BatchSize.Value = "half";
+                Expect(!postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadOptions(false, out _, out string? message_Half) && message_Half is not null && message_Half.Contains("Batch size", StringComparison.Ordinal), "a batch size that is not a number was exported");
+
+                // A batch size of zero is a whole number: it exports and OK's range rule refuses it.
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.SetControls(postgreSQLBuildingSolarRadiationContextExportOptions);
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TextBoxControl_BatchSize.Value = "0";
+                Expect(postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_Batch, out string? message_Batch) && postgreSQLBuildingSolarRadiationContextExportOptions_Batch is not null, $"a batch size of zero was refused by the export: {message_Batch}");
+                Expect(!postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryGetOptions(out string? message_Batch_Ok) && message_Batch_Ok is not null && message_Batch_Ok.Contains("Batch size", StringComparison.Ordinal), "a batch size of zero passed OK");
+
+                // No radius: an empty list exports as an empty list, and OK refuses it - while the county of the
+                // file is still selected, so the radius rule is what answers.
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.SetControls(postgreSQLBuildingSolarRadiationContextExportOptions);
+                PostgreSQLBuildingSolarRadiationContextExportOptions postgreSQLBuildingSolarRadiationContextExportOptions_NoRadii = new() { CountyIds = [55417], Radii = null, OutputDirectory = "C:/Temp/digi-solar-context-refusals-fact" };
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.SetControls(postgreSQLBuildingSolarRadiationContextExportOptions_NoRadii);
+                Expect(postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_NoRadii_Exported, out string? message_NoRadii) && postgreSQLBuildingSolarRadiationContextExportOptions_NoRadii_Exported is not null, $"an export without a radius was refused: {message_NoRadii}");
+                Expect(postgreSQLBuildingSolarRadiationContextExportOptions_NoRadii_Exported?.Radii is not null && postgreSQLBuildingSolarRadiationContextExportOptions_NoRadii_Exported!.Radii!.Count == 0, "no radius was written as the default radii");
+                Expect(!postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryGetOptions(out string? message_NoRadii_Ok) && message_NoRadii_Ok is not null && message_NoRadii_Ok.Contains("radius", StringComparison.OrdinalIgnoreCase), "an empty radius list passed OK");
+
+                // No county: written as no county list, refused by OK first of its rules.
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.SetControls(postgreSQLBuildingSolarRadiationContextExportOptions);
+                postgreSQLBuildingSolarRadiationContextExportOptionsWindow.ListBoxControl_Counties.SelectItems<AdministrativeAreal2DReference>(x => false);
+                Expect(postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadOptions(false, out PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_NoCounty, out string? message_NoCounty) && postgreSQLBuildingSolarRadiationContextExportOptions_NoCounty is not null, $"an export without a county was refused: {message_NoCounty}");
+                Expect(postgreSQLBuildingSolarRadiationContextExportOptions_NoCounty?.CountyIds is null, "an empty county selection was written as a scope");
+                Expect(!postgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryGetOptions(out string? message_NoCounty_Ok) && message_NoCounty_Ok is not null && message_NoCounty_Ok.Contains("county", StringComparison.OrdinalIgnoreCase), "an empty county selection passed OK");
+
+                // The refused reads wrote nothing: the options still hold what the window was opened with.
+                Expect(postgreSQLBuildingSolarRadiationContextExportOptionsWindow.PostgreSQLBuildingSolarRadiationContextExportOptions.CountyIds is HashSet<int> countyIds_Held && countyIds_Held.SetEquals([55417]), "a refused read wrote the county list");
+                Expect(postgreSQLBuildingSolarRadiationContextExportOptionsWindow.PostgreSQLBuildingSolarRadiationContextExportOptions.Radii is List<double> radii_Held && radii_Held.Count == 1 && radii_Held[0] == 0, "a refused read wrote the radii");
+                Expect(postgreSQLBuildingSolarRadiationContextExportOptionsWindow.PostgreSQLBuildingSolarRadiationContextExportOptions.BatchSize == 1000, "a refused read wrote the batch size");
+            });
+
+            void Expect(bool condition, string failure)
+            {
+                if (!condition)
+                {
+                    failures.Add(failure);
+                }
+            }
+
+            Assert.Null(exception);
+            Assert.True(failures.Count == 0, string.Join(Environment.NewLine, failures));
+
+            string? json_Self = Core.Convert.ToSystem_String(new PostgreSQLBuildingSolarRadiationContextExportOptions());
+            string? json_Foreign = Core.Convert.ToSystem_String(new PostgreSQLUpdateOccupancyOptions());
+            string? json_Several = json_Self is null ? null : $"[{json_Self},{json_Self}]";
+
+            PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_Self = PostgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadSettings(json_Self, out string? message_Self);
+            PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_Foreign = PostgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadSettings(json_Foreign, out string? message_Foreign);
+            PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_NotJson = PostgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadSettings("this is not JSON", out string? message_NotJson);
+            PostgreSQLBuildingSolarRadiationContextExportOptions? postgreSQLBuildingSolarRadiationContextExportOptions_Several = PostgreSQLBuildingSolarRadiationContextExportOptionsWindow.TryReadSettings(json_Several, out string? message_Several);
+
+            // This window's own file: one settings object, read with no reason to refuse.
+            Assert.NotNull(postgreSQLBuildingSolarRadiationContextExportOptions_Self);
+            Assert.Null(message_Self);
+
+            // Everything else answers no settings of this window, so the controls are never touched.
+            Assert.Null(postgreSQLBuildingSolarRadiationContextExportOptions_Foreign);
+            Assert.False(string.IsNullOrWhiteSpace(message_Foreign));
+
+            Assert.Null(postgreSQLBuildingSolarRadiationContextExportOptions_NotJson);
+            Assert.False(string.IsNullOrWhiteSpace(message_NotJson));
+
+            Assert.Null(postgreSQLBuildingSolarRadiationContextExportOptions_Several);
             Assert.False(string.IsNullOrWhiteSpace(message_Several));
         }
 
