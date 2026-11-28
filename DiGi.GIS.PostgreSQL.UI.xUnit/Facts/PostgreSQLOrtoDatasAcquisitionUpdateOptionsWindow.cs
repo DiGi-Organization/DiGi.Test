@@ -21,6 +21,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 LastYear = 2015,
                 PageSize = 250,
                 CommandTimeout = 0,
+                MaxDegreeOfParallelism = 3,
                 CountyIds = [1001, 1003],
             };
 
@@ -107,10 +108,11 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
             // Every serialized value came back - the same settings, written twice.
             Assert.Equal(json, json_AfterImport);
 
-            // And the same, named: the last year, the page size, the timeout, the county subset.
+            // And the same, named: the last year, the page size, the timeout, the parallel parts, the county subset.
             Assert.Equal(2015, postgreSQLOrtoDatasAcquisitionUpdateOptions_Read!.LastYear);
             Assert.Equal(250, postgreSQLOrtoDatasAcquisitionUpdateOptions_Read!.PageSize);
             Assert.Equal(0, postgreSQLOrtoDatasAcquisitionUpdateOptions_Read!.CommandTimeout);
+            Assert.Equal(3, postgreSQLOrtoDatasAcquisitionUpdateOptions_Read!.MaxDegreeOfParallelism);
             Assert.NotNull(postgreSQLOrtoDatasAcquisitionUpdateOptions_Read!.CountyIds);
             Assert.True(postgreSQLOrtoDatasAcquisitionUpdateOptions_Read!.CountyIds!.SetEquals([1001, 1003]));
 
@@ -123,7 +125,7 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
         }
 
         /// <summary>
-        /// Verifies the edges of the settings file of the acquisition backfill window (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#70): an unfinished window still exports - a last year below 1900 or a missing county written as it stands - while a box that does not hold its number is refused with the reason OK gives, and the file read accepts only one settings object of this window.
+        /// Verifies the edges of the settings file of the acquisition backfill window (DiGi-Organization/DiGi.GIS.PostgreSQL.UI#70): an unfinished window still exports - a last year below 1900, a parallel degree below zero or a missing county written as it stands - while a box that does not hold its number is refused with the reason OK gives, and the file read accepts only one settings object of this window.
         /// <para>The file read is called directly: the Import button opens a file dialog, which a fact cannot show (Coding - WPF Deferred Loading.md section 5).</para>
         /// </summary>
         [Fact]
@@ -138,6 +140,17 @@ namespace DiGi.GIS.PostgreSQL.UI.xUnit
                 // A page size that is not a whole number could not be written back as typed.
                 postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.TextBoxControl_PageSize.Value = "half";
                 Expect(!postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.TryReadOptions(false, out _, out string? message_Half) && message_Half is not null && message_Half.Contains("Page size", StringComparison.Ordinal), "a page size that is not a number was exported");
+
+                // A parallel-parts box that is not a whole number could not be written back as typed either.
+                postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.SetControls(new PostgreSQLOrtoDatasAcquisitionUpdateOptions());
+                postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.TextBoxControl_MaxDegreeOfParallelism.Value = "several";
+                Expect(!postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.TryReadOptions(false, out _, out string? message_Parallel) && message_Parallel is not null && message_Parallel.Contains("Parallel county parts", StringComparison.Ordinal), "a parallel value that is not a number was exported");
+
+                // A negative degree is a whole number: the export takes it as typed, OK's rule refuses it (DiGi.GIS.PostgreSQL#177).
+                postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.SetControls(new PostgreSQLOrtoDatasAcquisitionUpdateOptions());
+                postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.TextBoxControl_MaxDegreeOfParallelism.Value = "-1";
+                Expect(postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.TryReadOptions(false, out PostgreSQLOrtoDatasAcquisitionUpdateOptions? postgreSQLOrtoDatasAcquisitionUpdateOptions_Negative, out string? message_Negative) && postgreSQLOrtoDatasAcquisitionUpdateOptions_Negative is not null && postgreSQLOrtoDatasAcquisitionUpdateOptions_Negative.MaxDegreeOfParallelism == -1, $"a negative parallel value was refused by the export: {message_Negative}");
+                Expect(!postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.TryGetOptions(out string? message_Negative_Ok) && message_Negative_Ok is not null && message_Negative_Ok.Contains("Parallel county parts", StringComparison.Ordinal), "a negative parallel value passed OK");
 
                 // A last year below 1900 is a whole number: the export takes it and OK's range rule refuses it.
                 postgreSQLOrtoDatasAcquisitionUpdateOptionsWindow.SetControls(new PostgreSQLOrtoDatasAcquisitionUpdateOptions());
